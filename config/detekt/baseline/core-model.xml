@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:TitleKey.kt:TitleKey$"\\s*[-–—:(\\[]?\\s*(game of the year|goty|definitive|deluxe|complete|ultimate|standard|digital deluxe|remastered|director'?s cut|anniversary|enhanced|gold|premium)( edition)?\\s*[)\\]]?\\s*$"</ID>
+  </CurrentIssues>
+</SmellBaseline>

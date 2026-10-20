@@ -19,7 +19,9 @@ kotlin {
 dependencies {
     api(projects.platform.api)
     implementation(projects.core.network)
+    testImplementation(projects.core.testing)
     testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor.client.cio)
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)
 }

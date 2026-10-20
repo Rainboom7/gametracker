@@ -8,6 +8,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
+import io.ktor.serialization.ContentConvertException
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerializationException
 import java.io.IOException
@@ -24,6 +25,9 @@ suspend inline fun <T> platformCall(platform: Platform, block: () -> T): T =
         throw e
     } catch (e: CancellationException) {
         throw e
+    } catch (e: ContentConvertException) {
+        // Ktor wraps body decoding failures (JsonConvertException); without this they'd look like network errors.
+        throw PlatformException.Protocol(platform, "Unexpected response format: ${e.message}", e)
     } catch (e: SerializationException) {
         throw PlatformException.Protocol(platform, "Unexpected response format: ${e.message}", e)
     } catch (e: IllegalArgumentException) {

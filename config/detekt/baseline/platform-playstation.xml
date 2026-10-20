@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:PlayStationSource.kt:PlayStationSource.Companion$3</ID>
+    <ID>MagicNumber:PlayStationSource.kt:PlayStationSource.Companion$4</ID>
+    <ID>MaxLineLength:PlayStationSourceTest.kt:PlayStationSourceTest$respond("""{"onlineId":"kratos","avatars":[{"size":"s","url":"https://a/s.png"},{"size":"xl","url":"https://a/xl.png"}]}""", HttpStatusCode.OK, json)</ID>
+    <ID>MaxLineLength:PlayStationSourceTest.kt:PlayStationSourceTest$respond(fixture(if (request.url.parameters["offset"] == "0") "played_titles_page1.json" else "played_titles_page2.json"), HttpStatusCode.OK, json)</ID>
+    <ID>SwallowedException:PlayStationSource.kt:PlayStationSource.&lt;no name provided&gt;$e: PlatformException.InvalidInput</ID>
+    <ID>SwallowedException:PlayStationSource.kt:PlayStationSource.&lt;no name provided&gt;$e: PlatformException.Protocol</ID>
+    <ID>SwallowedException:PsnApi.kt:PsnApi$e: PlatformException.AuthExpired</ID>
+    <ID>SwallowedException:PsnAuth.kt:PsnAuth$e: PlatformException.AuthExpired</ID>
+    <ID>SwallowedException:PsnAuth.kt:PsnAuth$e: PlatformException.Protocol</ID>
+  </CurrentIssues>
+</SmellBaseline>

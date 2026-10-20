@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:ActivityCalculator.kt:ActivityCalculator$12L</ID>
+    <ID>MagicNumber:ActivityCalculator.kt:ActivityCalculator$6</ID>
+    <ID>MagicNumber:Repositories.kt:DefaultLibraryRepository$100</ID>
+  </CurrentIssues>
+</SmellBaseline>

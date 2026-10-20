@@ -38,6 +38,10 @@ androidxTestRunner = "1.6.2"
 androidxTestExt = "1.2.1"
 robolectric = "4.15.1"
 
+# Quality
+detekt = "2.0.0-alpha.6"
+kover = "0.9.11"
+
 [libraries]
 # Gradle plugins (root buildscript classpath, see build.gradle.kts)
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -45,6 +49,8 @@ kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ve
 kotlin-serializationPlugin = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-composeCompilerPlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+detekt-gradlePlugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+kover-gradlePlugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "kover" }
 hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }

@@ -1,0 +1,56 @@
+# Only deviations from detekt's default config (buildUponDefaultConfig = true).
+# Run `./gradlew detekt` locally; reports land in <module>/build/reports/detekt/.
+
+complexity:
+  LongParameterList:
+    # Composables and DTO constructors routinely take many parameters.
+    allowedFunctionParameters: 8
+    allowedConstructorParameters: 10
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable']
+  LongMethod:
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # Store interfaces and their fakes mirror DAO-style CRUD surfaces.
+    allowedFunctionsPerClass: 15
+    allowedFunctionsPerInterface: 15
+    ignoreAnnotatedFunctions: ['Preview']
+    ignorePrivate: true
+  CyclomaticComplexMethod:
+    ignoreSimpleWhenEntries: true
+
+naming:
+  FunctionNaming:
+    # Composables are PascalCase; tests use `backtick names`.
+    ignoreAnnotated: ['Composable', 'Test']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+
+style:
+  MagicNumber:
+    excludes: ['**/test/**', '**/androidTest/**', '**/*Dtos.kt']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  MaxLineLength:
+    maxLineLength: 160
+    excludeCommentStatements: true
+  UnusedPrivateFunction:
+    ignoreAnnotated: ['Preview']
+  LoopWithTooManyJumpStatements:
+    # Paging loops stop on several independent conditions.
+    maxJumpCount: 3
+  ThrowsCount:
+    # Mapping HTTP / auth failures to PlatformException is a chain of throws by design.
+    active: false
+  ReturnCount:
+    max: 4
+    excludeGuardClauses: true
+  ForbiddenComment:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    # platformCall deliberately catches Exception to classify Ktor errors.
+    excludes: ['**/core/network/**']
+  SwallowedException:
+    ignoredExceptionTypes: ['CancellationException', 'DateTimeParseException', 'SerializationException', 'NumberFormatException']

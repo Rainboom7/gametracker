@@ -35,6 +35,7 @@ include(
     ":core:model",
     ":core:common",
     ":core:network",
+    ":core:testing",
     ":core:data",
     ":platform:api",
     ":platform:steam",

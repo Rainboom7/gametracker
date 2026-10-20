@@ -17,11 +17,51 @@ buildscript {
     dependencies {
         classpath(libs.kotlin.gradlePlugin)
         classpath(libs.kotlin.serializationPlugin)
+        classpath(libs.detekt.gradlePlugin)
+        classpath(libs.kover.gradlePlugin)
         if (!jvmOnly) {
             classpath(libs.android.gradlePlugin)
             classpath(libs.kotlin.composeCompilerPlugin)
             classpath(libs.ksp.gradlePlugin)
             classpath(libs.hilt.gradlePlugin)
         }
+    }
+}
+
+// Quality gates: detekt on every module, kover coverage merged at the root,
+// and `*LiveTest` classes (real network, need secrets) split out of `test` into `liveTest`.
+apply(plugin = "org.jetbrains.kotlinx.kover")
+
+subprojects {
+    apply(plugin = "dev.detekt")
+    extensions.configure<dev.detekt.gradle.extensions.DetektExtension> {
+        buildUponDefaultConfig.set(true)
+        config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+        parallel.set(true)
+        // Findings that existed when detekt was introduced; CI fails only on new ones.
+        // Regenerate with `./gradlew detektBaseline` after fixing old findings.
+        baseline.set(rootProject.file("config/detekt/baseline/${path.removePrefix(":").replace(':', '-')}.xml"))
+    }
+
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        apply(plugin = "org.jetbrains.kotlinx.kover")
+        rootProject.dependencies.add("kover", this@subprojects)
+        extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension> {
+            currentProject.instrumentation.disabledForTestTasks.add("liveTest")
+        }
+
+        val testTask = tasks.named<Test>("test")
+        testTask.configure { exclude("**/*LiveTest*") }
+        tasks.register<Test>("liveTest") {
+            description = "Runs *LiveTest against the real services; tests without secrets are skipped."
+            group = "verification"
+            testClassesDirs = testTask.get().testClassesDirs
+            classpath = testTask.get().classpath
+            include("**/*LiveTest*")
+            outputs.upToDateWhen { false }
+        }
+    }
+    tasks.withType<Test>().configureEach {
+        if (name.endsWith("UnitTest")) exclude("**/*LiveTest*")
     }
 }

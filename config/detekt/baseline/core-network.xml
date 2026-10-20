@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:HttpClientFactory.kt:HttpClientFactory$15_000</ID>
+    <ID>MagicNumber:HttpClientFactory.kt:HttpClientFactory$30_000</ID>
+    <ID>MagicNumber:HttpClientFactory.kt:HttpClientFactory$60_000</ID>
+  </CurrentIssues>
+</SmellBaseline>

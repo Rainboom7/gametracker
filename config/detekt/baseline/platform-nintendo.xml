@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MagicNumber:NintendoAuth.kt:NintendoAuth$60</ID>
+    <ID>MaxLineLength:NintendoSourceTest.kt:NintendoSourceTest$path.endsWith("/users/me") -&gt; respond("""{"id":"abc123","nickname":"Link","mii":{"imageOrigin":"https://mii/1.png"}}""", HttpStatusCode.OK, json)</ID>
+    <ID>SwallowedException:NintendoApi.kt:NintendoApi$e: PlatformException.AuthExpired</ID>
+    <ID>SwallowedException:NintendoSource.kt:NintendoSource.&lt;no name provided&gt;$e: PlatformException.Protocol</ID>
+  </CurrentIssues>
+</SmellBaseline>

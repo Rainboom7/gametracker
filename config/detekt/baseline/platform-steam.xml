@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:SteamSourceTest.kt:SteamSourceTest$private val summary = """{"response":{"players":[{"steamid":"$steamId","personaname":"Gabe","avatarfull":"https://a/full.jpg","communityvisibilitystate":3}]}}"""</ID>
+    <ID>SwallowedException:SteamSource.kt:SteamSource.&lt;no name provided&gt;$e: PlatformException.AuthExpired</ID>
+  </CurrentIssues>
+</SmellBaseline>

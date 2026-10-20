@@ -28,7 +28,7 @@ naming:
 
 style:
   MagicNumber:
-    excludes: ['**/test/**', '**/androidTest/**', '**/*Dtos.kt']
+    excludes: ['**/test/**', '**/androidTest/**', '**/core/testing/**', '**/*Dtos.kt']
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
   MaxLineLength:

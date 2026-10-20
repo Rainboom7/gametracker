@@ -177,4 +177,34 @@ class SteamSourceTest {
             assertEquals(Platform.STEAM, e.platform)
         }
     }
+
+    @Test
+    fun `achievement progress is fetched in one batch and apps without achievements are skipped`() = runTest {
+        val (source, _) = source(
+            mapOf(
+                "/ISteamUser/GetPlayerSummaries/v2/" to summary,
+                "/IPlayerService/GetOwnedGames/v1/" to fixture("get_owned_games.json"),
+                "/IPlayerService/GetAchievementsProgress/v1/" to fixture("achievements_progress.json"),
+            ),
+        )
+        source.link()
+        val games = source.fetchLibrary().associateBy { it.id.externalId }
+
+        assertEquals(100, games.getValue("620").achievementProgress)
+        assertEquals(40, games.getValue("1245620").achievementProgress)
+        val call = requests.single { it.url.encodedPath.contains("GetAchievementsProgress") }
+        assertEquals("620", call.url.parameters["appids[0]"])
+    }
+
+    @Test
+    fun `failing achievements endpoint does not fail the library`() = runTest {
+        val (source, _) = source(
+            mapOf(
+                "/ISteamUser/GetPlayerSummaries/v2/" to summary,
+                "/IPlayerService/GetOwnedGames/v1/" to fixture("get_owned_games.json"),
+            ),
+        )
+        source.link()
+        assertTrue(source.fetchLibrary().all { it.achievementProgress == null })
+    }
 }

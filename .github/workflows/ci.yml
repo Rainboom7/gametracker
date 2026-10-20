@@ -70,6 +70,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: unit-tests
+    # Compose screens are also tested under Robolectric in unit-tests; the emulator run is slower,
+    # so it runs on main and on demand, not on every PR push.
+    if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

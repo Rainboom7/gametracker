@@ -29,6 +29,19 @@ internal data class OwnedGameDto(
 )
 
 @Serializable
+internal data class AchievementsProgressResponse(
+    @SerialName("achievement_progress") val progress: List<AchievementProgressDto> = emptyList(),
+)
+
+@Serializable
+internal data class AchievementProgressDto(
+    val appid: Long,
+    val unlocked: Int = 0,
+    val total: Int = 0,
+    val percentage: Double = 0.0,
+)
+
+@Serializable
 internal data class PlayerSummariesResponse(val players: List<PlayerSummaryDto> = emptyList())
 
 @Serializable

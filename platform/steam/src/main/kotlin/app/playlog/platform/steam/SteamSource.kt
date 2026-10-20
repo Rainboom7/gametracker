@@ -1,5 +1,6 @@
 package app.playlog.platform.steam
 
+import app.playlog.core.common.runSuspendCatching
 import app.playlog.core.model.Account
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameId
@@ -51,7 +52,23 @@ class SteamSource internal constructor(
             if (summary != null && summary.communityvisibilitystate != PUBLIC) throw PlatformException.PrivateProfile(platform)
             return emptyList()
         }
-        return response.games.orEmpty().map { it.toGame() }
+        val games = response.games.orEmpty().map { it.toGame() }
+        val progress = achievementProgress(creds, games)
+        return games.map { g -> progress[g.id.externalId.toLong()]?.let { g.copy(achievementProgress = it) } ?: g }
+    }
+
+    /**
+     * Best effort: the batch endpoint is unverified with a plain API key, so any failure just
+     * leaves progress empty instead of failing the sync. Apps without achievements are dropped.
+     */
+    private suspend fun achievementProgress(creds: SteamCredentials, games: List<Game>): Map<Long, Int> {
+        val played = games.filter { !it.playtime.isZero }.map { it.id.externalId.toLong() }
+        val result = mutableMapOf<Long, Int>()
+        for (chunk in played.chunked(ACHIEVEMENT_BATCH)) {
+            val response = runSuspendCatching { api.achievementsProgress(creds.apiKey, creds.steamId, chunk) }.getOrNull() ?: break
+            response.progress.filter { it.total > 0 }.forEach { result[it.appid] = it.unlocked * PERCENT / it.total }
+        }
+        return result
     }
 
     override suspend fun fetchScreenshots(): List<Screenshot> {
@@ -150,6 +167,8 @@ class SteamSource internal constructor(
         const val PUBLIC = 3
         const val PAGE_SIZE = 100
         const val WORKSHOP_FILE_TYPE_SCREENSHOT = 5
+        const val ACHIEVEMENT_BATCH = 100
+        const val PERCENT = 100
         val API_KEY = Regex("^[0-9A-Fa-f]{32}$")
     }
 }

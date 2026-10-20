@@ -58,7 +58,10 @@ interface ActivityDao {
     /** Derived rows accumulate; exact rows already present are left alone. */
     @Transaction
     suspend fun addDerived(entries: List<DailyEntity>) {
-        val merged = entries.mapNotNull { e ->
+        // Collapse duplicates first so two rows for the same game and day in one call add up.
+        val collapsed = entries.groupBy { Triple(it.platform, it.externalId, it.epochDay) }
+            .map { (_, rows) -> rows.first().copy(seconds = rows.sumOf { it.seconds }) }
+        val merged = collapsed.mapNotNull { e ->
             val existing = daily(e.platform, e.externalId, e.epochDay)
             when {
                 existing == null -> e

@@ -37,6 +37,17 @@ internal class SteamApi(
         }.successBody<SteamEnvelope<ResolveVanityResponse>>(Platform.STEAM).response
     }
 
+    /** Achievement progress for many apps in one call (IPlayerService/GetAchievementsProgress). */
+    suspend fun achievementsProgress(key: String, steamId: String, appIds: List<Long>): AchievementsProgressResponse = call {
+        client.get("$baseUrl/IPlayerService/GetAchievementsProgress/v1/") {
+            parameter("key", key)
+            parameter("steamid", steamId)
+            parameter("language", "english")
+            parameter("include_unvetted_apps", true)
+            appIds.forEachIndexed { i, id -> parameter("appids[$i]", id) }
+        }.successBody<SteamEnvelope<AchievementsProgressResponse>>(Platform.STEAM).response
+    }
+
     /** Community screenshots uploaded by the user, newest first. */
     suspend fun screenshots(key: String, steamId: String, page: Int, perPage: Int): UserFilesResponse = call {
         client.get("$baseUrl/IPublishedFileService/GetUserFiles/v1/") {

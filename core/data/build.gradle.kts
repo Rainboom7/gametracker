@@ -20,6 +20,7 @@ dependencies {
     api(projects.platform.api)
     api(libs.kotlinx.coroutines.core)
     testImplementation(libs.turbine)
+    testImplementation(projects.core.testing)
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)
 }

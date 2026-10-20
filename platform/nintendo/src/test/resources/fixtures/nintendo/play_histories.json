@@ -1,0 +1,8 @@
+{"playHistories":[
+{"titleId":"0100F2C0115B6000","titleName":"The Legend of Zelda: Tears of the Kingdom","deviceType":"HAC","imageUrl":"https://cdn.nintendo.example/img/totk.jpg","lastUpdatedAt":"2025-10-19T03:00:00+09:00","firstPlayedAt":"2023-05-12T07:01:00+09:00","lastPlayedAt":"2025-10-18T22:40:00+09:00","totalPlayedDays":120,"totalPlayedMinutes":12035},
+{"titleId":"0100152000022000","titleName":"Mario Kart 8 Deluxe","deviceType":"HAC","imageUrl":"https://cdn.nintendo.example/img/mk8.jpg","lastUpdatedAt":"2025-01-01T00:00:00Z","firstPlayedAt":"2017-04-28T19:00:00Z","lastPlayedAt":"2024-12-31T23:59:00Z","totalPlayedDays":64,"totalPlayedMinutes":3900}
+],"hiddenTitleList":[],
+"recentPlayHistories":[
+{"playedDate":"2025-10-18","dailyPlayHistories":[{"titleId":"0100F2C0115B6000","titleName":"The Legend of Zelda: Tears of the Kingdom","imageUrl":"https://cdn.nintendo.example/img/totk.jpg","totalPlayedMinutes":95}]},
+{"playedDate":"2025-10-17","dailyPlayHistories":[]}
+],"lastUpdatedAt":"2025-10-19T03:00:00+09:00"}

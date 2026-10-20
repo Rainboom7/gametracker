@@ -1,0 +1,5 @@
+{"response":{"game_count":3,"games":[
+{"appid":620,"name":"Portal 2","playtime_forever":1834,"img_icon_url":"2e478fc6874d06ae5baf0d147f6f21203291aa02","has_community_visible_stats":true,"playtime_windows_forever":1500,"playtime_mac_forever":0,"playtime_linux_forever":0,"playtime_deck_forever":334,"rtime_last_played":1727000000,"content_descriptorids":[],"playtime_disconnected":0},
+{"appid":1245620,"name":"ELDEN RING","playtime_2weeks":95,"playtime_forever":7421,"img_icon_url":"b6e290dd5a92ce98f89089a207733c70c769d0e8","has_community_visible_stats":true,"playtime_windows_forever":7421,"playtime_mac_forever":0,"playtime_linux_forever":0,"playtime_deck_forever":0,"rtime_last_played":1760900000,"playtime_disconnected":12},
+{"appid":440,"name":"Team Fortress 2","playtime_forever":0,"img_icon_url":"","has_community_visible_stats":true,"playtime_windows_forever":0,"playtime_mac_forever":0,"playtime_linux_forever":0,"playtime_deck_forever":0,"rtime_last_played":0,"playtime_disconnected":0}
+]}}

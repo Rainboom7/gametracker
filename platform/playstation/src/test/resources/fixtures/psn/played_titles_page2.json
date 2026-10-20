@@ -1,0 +1,5 @@
+{"titles":[
+{"titleId":"PPSA08338_00","name":"Astro Bot","localizedName":"ASTRO BOT","imageUrl":"https://image.api.playstation.com/vulcan/ap/rnd/202406/astro/master.png","category":"ps5_native_game","service":"none_purchased","playCount":5,
+ "concept":{"id":10010000,"name":"ASTRO BOT","media":{"images":[{"url":"https://image.api.playstation.com/vulcan/ap/rnd/202406/astro/cover.jpg","type":"GAMEHUB_COVER_ART"}]}},
+ "media":{},"firstPlayedDateTime":"2024-09-06T12:00:00Z","lastPlayedDateTime":"2024-09-20T12:00:00Z","playDuration":"PT14H5M"}
+],"previousOffset":1,"totalItemCount":3}

@@ -1,0 +1,13 @@
+{"titles":[
+{"titleId":"PPSA01521_00","name":"Marvel's Spider-Man 2","localizedName":"Marvel's Spider-Man 2","imageUrl":"https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/master.png","localizedImageUrl":"https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/master.png","category":"ps5_native_game","service":"none_purchased","playCount":41,
+ "concept":{"id":10002456,"titleIds":["PPSA01521_00","PPSA01522_00"],"name":"Marvel's Spider-Man 2","media":{"audios":[],"videos":[],"images":[
+  {"url":"https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/portrait.jpg","format":"UNKNOWN","type":"PORTRAIT_BANNER"},
+  {"url":"https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/master.png","format":"UNKNOWN","type":"MASTER"},
+  {"url":"https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/ss1.jpg","format":"UNKNOWN","type":"SCREENSHOT"}]},
+  "genres":["ACTION"],"localizedName":{"defaultLanguage":"en-US","metadata":{"en-US":"Marvel's Spider-Man 2"}},"country":"US","language":"en"},
+ "media":{"screenshotUrl":"https://image.api.playstation.com/vulcan/ap/rnd/202306/1219/ss1.jpg"},
+ "firstPlayedDateTime":"2023-10-20T08:00:00.000Z","lastPlayedDateTime":"2025-01-02T21:15:30.120Z","playDuration":"PT243H18M48S"},
+{"titleId":"CUSA00419_00","name":"Bloodborne","localizedName":"Bloodborne","imageUrl":"https://image.api.playstation.com/cdn/UP9000/CUSA00900_00/bb.png","localizedImageUrl":"https://image.api.playstation.com/cdn/UP9000/CUSA00900_00/bb.png","category":"ps4_game","service":"none_purchased","playCount":12,
+ "concept":{"id":204573,"titleIds":["CUSA00419_00"],"name":"Bloodborne","media":{"audios":[],"videos":[],"images":[]}},
+ "media":{},"firstPlayedDateTime":"2020-03-01T10:00:00Z","lastPlayedDateTime":"2020-04-01T10:00:00Z","playDuration":"PT0S"}
+],"nextOffset":2,"previousOffset":0,"totalItemCount":3}

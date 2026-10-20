@@ -1,0 +1,4 @@
+{"response":{"games":[
+{"appid":620,"last_playtime":1727000000,"playtime_2weeks":0,"playtime_forever":1834,"first_playtime":1303500000,"playtime_windows_forever":1500,"playtime_mac_forever":0,"playtime_linux_forever":0,"first_windows_playtime":1303500000,"first_mac_playtime":0,"first_linux_playtime":0,"last_windows_playtime":1700000000,"last_mac_playtime":0,"last_linux_playtime":0,"playtime_disconnected":0},
+{"appid":1245620,"last_playtime":1760900000,"playtime_2weeks":95,"playtime_forever":7421,"first_playtime":1645800000,"playtime_disconnected":12}
+]}}

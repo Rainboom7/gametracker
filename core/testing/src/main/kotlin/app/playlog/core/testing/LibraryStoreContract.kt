@@ -5,6 +5,7 @@ import app.playlog.core.model.DailyPlaytime
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameArtwork
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.Platform
 import app.playlog.core.model.PlaytimeSnapshot
 import app.playlog.core.model.Screenshot
@@ -22,6 +23,7 @@ import java.time.LocalDate
  * Behaviour every [LibraryStore] must share. Subclass it per implementation:
  * the in-memory fake runs it on the JVM, Room runs it under Robolectric.
  */
+@Suppress("TooManyFunctions") // one function per contract case
 abstract class LibraryStoreContract {
     protected abstract fun createStore(): LibraryStore
 
@@ -68,10 +70,11 @@ abstract class LibraryStoreContract {
     }
 
     @Test
-    fun `sync keeps favorite and hidden flags of existing games`() = runTest {
+    fun `sync keeps favorite, hidden and status of existing games`() = runTest {
         store.upsertGames(Platform.STEAM, listOf(hades))
         store.setFavorite(hades.id, true)
         store.setHidden(hades.id, true)
+        store.setStatus(hades.id, GameStatus.COMPLETED)
 
         store.upsertGames(Platform.STEAM, listOf(hades.copy(playtime = Duration.ofMinutes(5_000))))
 
@@ -79,6 +82,16 @@ abstract class LibraryStoreContract {
         assertEquals(Duration.ofMinutes(5_000), stored.playtime)
         assertTrue(stored.isFavorite)
         assertTrue(stored.isHidden)
+        assertEquals(GameStatus.COMPLETED, stored.status)
+    }
+
+    @Test
+    fun `every status round-trips`() = runTest {
+        store.upsertGames(Platform.STEAM, listOf(hades))
+        for (status in GameStatus.entries) {
+            store.setStatus(hades.id, status)
+            assertEquals(status, games().getValue(hades.id).status)
+        }
     }
 
     @Test

@@ -1,0 +1,28 @@
+package app.playlog.core.data
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+
+data class UserSettings(
+    /** WorkManager sync every 6 hours. */
+    val backgroundSync: Boolean = true,
+    /** Load full-size screenshots only on unmetered networks. */
+    val wifiOnlyMedia: Boolean = true,
+    val weeklySummary: Boolean = false,
+    val onboardingFinished: Boolean = false,
+    val nintendoImportBannerDismissed: Boolean = false,
+)
+
+interface UserSettingsRepository {
+    val settings: Flow<UserSettings>
+
+    suspend fun update(transform: (UserSettings) -> UserSettings)
+}
+
+class InMemoryUserSettingsRepository(initial: UserSettings = UserSettings()) : UserSettingsRepository {
+    private val state = MutableStateFlow(initial)
+    override val settings: Flow<UserSettings> = state
+
+    override suspend fun update(transform: (UserSettings) -> UserSettings) = state.update(transform)
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="screenshots_title">Скриншоты</string>
+    <string name="screenshots_import">Импорт</string>
+    <string name="screenshots_nintendo_banner">Снимки Switch не приходят автоматически. Сохраните их на телефон из приложения Nintendo Switch или по QR-коду и импортируйте сюда.</string>
+    <string name="screenshots_dismiss">Скрыть</string>
+    <string name="screenshots_empty">Скриншотов пока нет. Steam и PS5 подтянутся при синхронизации, остальные можно импортировать.</string>
+    <string name="screenshots_unknown_game">Без игры</string>
+    <string name="screenshots_count">%1$d</string>
+    <string name="screenshots_filter_clear">Показать все</string>
+    <string name="screenshots_share">Поделиться</string>
+    <string name="screenshots_open_game">К игре</string>
+    <string name="screenshots_close">Закрыть</string>
+    <string name="screenshots_delete">Удалить</string>
+    <string name="screenshots_import_platform">С какой платформы снимки?</string>
+</resources>

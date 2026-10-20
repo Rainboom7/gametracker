@@ -60,6 +60,7 @@ interface LibraryStore {
 interface AccountStore {
     fun observeAccounts(): Flow<List<Account>>
 
+    /** Inserts or replaces; a null `lastSyncedAt` keeps the stored value. */
     suspend fun upsert(account: Account)
 
     suspend fun updateSyncState(platform: Platform, state: SyncState, syncedAt: Instant? = null)

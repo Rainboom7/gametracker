@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Durations -->
+    <string name="duration_minutes">%1$d мин</string>
+    <string name="duration_hours">%1$s ч</string>
+    <string name="no_playtime_data">нет данных</string>
+
+    <!-- Relative dates -->
+    <string name="date_today">сегодня</string>
+    <string name="date_yesterday">вчера</string>
+    <string name="date_days_ago">%1$d дн. назад</string>
+    <string name="date_never">не запускалась</string>
+
+    <!-- Platforms -->
+    <string name="platform_all">Все</string>
+    <string name="platform_steam">Steam</string>
+    <string name="platform_playstation">PlayStation</string>
+    <string name="platform_nintendo">Nintendo</string>
+
+    <!-- Library items -->
+    <string name="now_playing">СЕЙЧАС ИГРАЮ</string>
+    <string name="cover_description">Обложка %1$s</string>
+    <string name="achievements_progress">Достижения %1$d%%</string>
+    <string name="video_capture">Видео</string>
+
+    <!-- Account rows -->
+    <string name="account_not_connected">Не подключено</string>
+    <string name="account_synced_at">Синхронизировано %1$s</string>
+    <string name="account_never_synced">Ещё не синхронизировано</string>
+    <string name="account_syncing">Синхронизация…</string>
+    <string name="account_auth_expired">Токен истёк · войти заново</string>
+    <string name="account_network_error">Нет сети, повторим позже</string>
+    <string name="account_rate_limited">Слишком много запросов, повторим позже</string>
+    <string name="account_private_profile">Профиль или данные об играх скрыты настройками приватности</string>
+    <string name="account_unknown_error">Ошибка синхронизации</string>
+
+    <!-- Link flow steps -->
+    <string name="link_step_STEAM_OPEN_API_KEY_PAGE">Откройте страницу ключа Steam Web API, войдите и создайте ключ (домен можно указать любой, например localhost).</string>
+    <string name="link_step_STEAM_MAKE_PROFILE_PUBLIC">Если игры не появятся, откройте настройки приватности профиля и сделайте «Сведения об играх» открытыми.</string>
+    <string name="link_step_PSN_SIGN_IN">Войдите в аккаунт PlayStation. Приложение получит токен автоматически.</string>
+    <string name="link_step_PSN_OPEN_NPSSO_PAGE">Запасной вариант: войдите на playstation.com в браузере, откройте эту ссылку и скопируйте значение npsso.</string>
+    <string name="link_step_NINTENDO_SIGN_IN">Войдите в Nintendo Account и нажмите «Выбрать этого пользователя».</string>
+    <string name="link_step_NINTENDO_COPY_LINK">Если вход открыт в браузере: долгим нажатием на кнопку «Выбрать этого пользователя» скопируйте ссылку и вставьте её ниже.</string>
+    <string name="link_step_open">Открыть</string>
+    <string name="link_step_sign_in">Войти</string>
+
+    <!-- Link flow fields -->
+    <string name="link_field_STEAM_API_KEY">Steam Web API key</string>
+    <string name="link_field_STEAM_PROFILE">SteamID64, ссылка на профиль или ник</string>
+    <string name="link_field_PSN_NPSSO">npsso</string>
+    <string name="link_field_PSN_REDIRECT_URL">Ссылка после входа</string>
+    <string name="link_field_NINTENDO_REDIRECT_URL">Ссылка npf…://auth</string>
+</resources>

@@ -106,7 +106,10 @@ class InMemoryAccountStore : AccountStore {
     override fun observeAccounts(): Flow<List<Account>> = accounts.map { m -> m.values.sortedBy { it.platform.ordinal } }
 
     override suspend fun upsert(account: Account) {
-        accounts.update { it + (account.platform to account) }
+        accounts.update { m ->
+            val lastSynced = account.lastSyncedAt ?: m[account.platform]?.lastSyncedAt
+            m + (account.platform to account.copy(lastSyncedAt = lastSynced))
+        }
     }
 
     override suspend fun updateSyncState(platform: Platform, state: SyncState, syncedAt: Instant?) {

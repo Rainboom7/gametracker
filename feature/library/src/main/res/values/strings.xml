@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_title">Библиотека</string>
+    <string name="library_subtitle">%1$d игр · %2$s всего</string>
+    <string name="library_search_hint">Поиск по названию</string>
+    <string name="library_sort">Сортировка</string>
+    <string name="library_sort_last_played">По последней игре</string>
+    <string name="library_sort_playtime">По времени</string>
+    <string name="library_sort_title">По названию</string>
+    <string name="library_sort_first_played">По дате первого запуска</string>
+    <string name="library_empty_title">Здесь будут ваши игры</string>
+    <string name="library_empty_body">Подключите Steam, PlayStation или Nintendo, и библиотека заполнится после первой синхронизации.</string>
+    <string name="library_empty_syncing">Идёт первая синхронизация…</string>
+    <string name="library_connect">Подключить платформу</string>
+    <string name="library_no_results">Ничего не найдено</string>
+</resources>

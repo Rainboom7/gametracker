@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="game_back">Назад</string>
+    <string name="game_total_hours">всего</string>
+    <string name="game_last_played">последний запуск</string>
+    <string name="game_achievements">достижения</string>
+    <string name="game_no_value">—</string>
+    <string name="game_last_14_days">Последние 14 дней</string>
+    <string name="game_chart_description">За 14 дней сыграно %1$s</string>
+    <string name="game_split_description">Время по платформам: %1$s</string>
+    <string name="game_screenshots">Скриншоты</string>
+    <string name="game_screenshots_all">Все %1$d</string>
+    <string name="game_not_found">Игра не найдена</string>
+    <string name="game_favorite">В избранное</string>
+    <string name="game_unfavorite">Убрать из избранного</string>
+    <string name="game_first_played">Впервые: %1$s</string>
+    <string name="game_devices">Устройства: %1$s</string>
+</resources>

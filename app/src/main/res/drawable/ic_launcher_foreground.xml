@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lime play-count bars: three ascending bars inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#C8F55A" android:pathData="M34,62h10a2,2 0,0 1,2 2v12a2,2 0,0 1,-2 2h-10a2,2 0,0 1,-2 -2v-12a2,2 0,0 1,2 -2z" />
+    <path android:fillColor="#C8F55A" android:pathData="M49,48h10a2,2 0,0 1,2 2v26a2,2 0,0 1,-2 2h-10a2,2 0,0 1,-2 -2v-26a2,2 0,0 1,2 -2z" />
+    <path android:fillColor="#C8F55A" android:pathData="M64,32h10a2,2 0,0 1,2 2v42a2,2 0,0 1,-2 2h-10a2,2 0,0 1,-2 -2v-42a2,2 0,0 1,2 -2z" />
+</vector>

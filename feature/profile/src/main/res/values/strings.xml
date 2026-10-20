@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">Профиль</string>
+    <string name="profile_games">игр</string>
+    <string name="profile_hours">часов</string>
+    <string name="profile_completed">пройдено</string>
+    <string name="profile_accounts">Аккаунты</string>
+    <string name="profile_refresh">Обновить</string>
+    <string name="profile_refreshing">Идёт…</string>
+    <string name="profile_settings">Настройки</string>
+    <string name="profile_background_sync">Фоновая синхронизация</string>
+    <string name="profile_background_sync_hint">Каждые 6 часов, при наличии сети</string>
+    <string name="profile_wifi_media">Скриншоты только по Wi‑Fi</string>
+    <string name="profile_weekly_summary">Итоги недели</string>
+    <string name="profile_weekly_summary_hint">Уведомление по воскресеньям</string>
+    <string name="profile_unlink">Отключить</string>
+    <string name="profile_unlink_title">Отключить %1$s?</string>
+    <string name="profile_unlink_body">Ключи будут удалены с устройства. Историю игр можно оставить или удалить.</string>
+    <string name="profile_unlink_keep">Отключить, оставить историю</string>
+    <string name="profile_unlink_delete">Отключить и удалить данные</string>
+    <string name="profile_cancel">Отмена</string>
+    <string name="profile_relink">Войти заново</string>
+    <string name="profile_sync_now">Синхронизировать</string>
+
+    <string name="connect_title">Подключите платформы</string>
+    <string name="connect_body">Playlog собирает время в играх, обложки и скриншоты из ваших аккаунтов. Ключи хранятся только на этом телефоне в зашифрованном виде.</string>
+    <string name="connect_button">Подключить %1$s</string>
+    <string name="connect_done">Готово</string>
+    <string name="connect_continue">Продолжить</string>
+    <string name="connect_later">Подключу позже</string>
+    <string name="connect_how_STEAM">Нужен бесплатный ключ Steam Web API и ссылка на профиль.</string>
+    <string name="connect_how_PLAYSTATION">Вход в аккаунт PlayStation прямо в приложении.</string>
+    <string name="connect_how_NINTENDO">Вход в Nintendo Account прямо в приложении. Скриншоты Switch импортируются вручную.</string>
+
+    <string name="link_title">Подключение %1$s</string>
+    <string name="link_submit">Подключить</string>
+    <string name="link_success">%1$s подключён</string>
+    <string name="link_error_generic">Не получилось подключить: %1$s</string>
+    <string name="link_error_field">Проверьте поле «%1$s»: %2$s</string>
+    <string name="link_or_manual">или вручную</string>
+    <string name="link_webview_title">Вход</string>
+    <string name="link_paste">Вставить</string>
+</resources>

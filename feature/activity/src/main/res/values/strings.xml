@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="activity_title">Активность</string>
+    <string name="activity_week">Неделя</string>
+    <string name="activity_month">Месяц</string>
+    <string name="activity_year">Год</string>
+    <string name="activity_delta_more">+%1$s к прошлому периоду</string>
+    <string name="activity_delta_less">−%1$s к прошлому периоду</string>
+    <string name="activity_delta_same">как в прошлом периоде</string>
+    <string name="activity_chart_description">Сыграно за период: %1$s</string>
+    <string name="activity_top">Топ игр за период</string>
+    <string name="activity_empty">За этот период активности нет. История копится с каждой синхронизацией.</string>
+    <string name="activity_previous">Предыдущий период</string>
+    <string name="activity_next">Следующий период</string>
+    <string name="activity_streak">Серия: %1$d дн. подряд</string>
+</resources>

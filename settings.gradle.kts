@@ -52,7 +52,8 @@ if (!jvmOnly) {
         ":core:ui",
         ":feature:library",
         ":feature:game",
-        ":feature:stats",
-        ":feature:accounts",
+        ":feature:activity",
+        ":feature:screenshots",
+        ":feature:profile",
     )
 }

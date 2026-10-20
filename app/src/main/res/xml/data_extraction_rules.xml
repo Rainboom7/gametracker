@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Secrets are encrypted with a device-bound Keystore key, so a restored copy is useless: skip it. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="datastore/credentials.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="datastore/credentials.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>

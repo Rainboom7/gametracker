@@ -45,5 +45,7 @@ data class Game(
     /** Hardware the game was played on, e.g. "PS5", "Switch", "Windows". */
     val devices: Set<String> = emptySet(),
     val isFavorite: Boolean = false,
+    /** Set by the user, never by sync. */
+    val status: GameStatus = GameStatus.NONE,
     val isHidden: Boolean = false,
 )

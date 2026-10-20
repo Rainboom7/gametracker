@@ -4,7 +4,6 @@
     <string name="game_total_hours">всего</string>
     <string name="game_last_played">последний запуск</string>
     <string name="game_achievements">достижения</string>
-    <string name="game_no_value">—</string>
     <string name="game_last_14_days">Последние 14 дней</string>
     <string name="game_chart_description">За 14 дней сыграно %1$s</string>
     <string name="game_split_description">Время по платформам: %1$s</string>
@@ -15,4 +14,13 @@
     <string name="game_unfavorite">Убрать из избранного</string>
     <string name="game_first_played">Впервые: %1$s</string>
     <string name="game_devices">Устройства: %1$s</string>
+    <string name="game_active_days">дней игры за 2 нед.</string>
+    <string name="game_first_launch">первый запуск</string>
+    <string name="game_status_NONE">Без статуса</string>
+    <string name="game_status_PLAYING">Играю</string>
+    <string name="game_status_COMPLETED">Пройдено</string>
+    <string name="game_status_SHELVED">Отложено</string>
+    <string name="game_status_DROPPED">Брошено</string>
+    <string name="game_suggest_completed">Все достижения получены. Отметить «Пройдено»?</string>
+    <string name="game_suggest_completed_action">Отметить</string>
 </resources>

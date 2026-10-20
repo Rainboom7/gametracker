@@ -21,17 +21,30 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +61,7 @@ import app.playlog.core.designsystem.component.SectionHeader
 import app.playlog.core.designsystem.component.StatTile
 import app.playlog.core.designsystem.theme.Spacing
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.ui.ScreenshotTile
 import app.playlog.core.ui.entryPlaytimeText
 import app.playlog.core.ui.formatPlaytime
@@ -65,7 +79,7 @@ fun GameDetailRoute(
     viewModel: GameDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    GameDetailScreen(state, onBack, onOpenAllScreenshots, viewModel::toggleFavorite)
+    GameDetailScreen(state, onBack, onOpenAllScreenshots, viewModel::toggleFavorite, viewModel::setStatus)
 }
 
 @Composable
@@ -74,13 +88,30 @@ fun GameDetailScreen(
     onBack: () -> Unit,
     onOpenAllScreenshots: (GameId) -> Unit,
     onToggleFavorite: () -> Unit,
+    onSetStatus: (GameStatus) -> Unit,
 ) {
     when (state) {
         GameDetailUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         GameDetailUiState.NotFound -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(stringResource(R.string.game_not_found), style = MaterialTheme.typography.bodyLarge)
         }
-        is GameDetailUiState.Content -> GameDetailContent(state, onBack, onOpenAllScreenshots, onToggleFavorite)
+        is GameDetailUiState.Content -> {
+            val snackbar = remember { SnackbarHostState() }
+            val message = stringResource(R.string.game_suggest_completed)
+            val action = stringResource(R.string.game_suggest_completed_action)
+            // Suggest, never set: completion is the user's call (design spec, Profile section).
+            LaunchedEffect(state.entry.key, state.entry.suggestCompleted) {
+                if (state.entry.suggestCompleted &&
+                    snackbar.showSnackbar(message, actionLabel = action, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed
+                ) {
+                    onSetStatus(GameStatus.COMPLETED)
+                }
+            }
+            Box(Modifier.fillMaxSize()) {
+                GameDetailContent(state, onBack, onOpenAllScreenshots, onToggleFavorite, onSetStatus)
+                SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+            }
+        }
     }
 }
 
@@ -90,6 +121,7 @@ private fun GameDetailContent(
     onBack: () -> Unit,
     onOpenAllScreenshots: (GameId) -> Unit,
     onToggleFavorite: () -> Unit,
+    onSetStatus: (GameStatus) -> Unit,
 ) {
     val entry = state.entry
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -129,6 +161,8 @@ private fun GameDetailContent(
                 Text(entry.title, style = MaterialTheme.typography.headlineMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(Spacing.xs))
                 PlatformBadgeRow(entry.platforms)
+                Spacer(Modifier.height(Spacing.xs))
+                StatusChip(entry.status, onSetStatus)
             }
         }
         Column(
@@ -138,11 +172,7 @@ private fun GameDetailContent(
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                 StatTile(entryPlaytimeText(entry), stringResource(R.string.game_total_hours), Modifier.weight(1f), valueColor = MaterialTheme.colorScheme.primary)
                 StatTile(formatRelativeDate(entry.lastPlayedAt), stringResource(R.string.game_last_played), Modifier.weight(1f))
-                StatTile(
-                    entry.achievementProgress?.let { "$it%" } ?: stringResource(R.string.game_no_value),
-                    stringResource(R.string.game_achievements),
-                    Modifier.weight(1f),
-                )
+                ThirdTile(state, Modifier.weight(1f))
             }
             if (entry.platforms.size > 1) {
                 val caption = platformSplitCaption(entry)
@@ -197,6 +227,60 @@ private fun GameDetailContent(
         }
     }
 }
+
+/** Achievements when the platform reports them, else days played in the window, else the first launch. */
+@Composable
+private fun ThirdTile(state: GameDetailUiState.Content, modifier: Modifier) {
+    val progress = state.entry.achievementProgress
+    val activeDays = state.lastDays.count { !it.total.isZero }
+    when {
+        progress != null -> StatTile("$progress%", stringResource(R.string.game_achievements), modifier)
+        activeDays > 0 -> StatTile(activeDays.toString(), stringResource(R.string.game_active_days), modifier)
+        else -> StatTile(formatRelativeDate(state.entry.firstPlayedAt), stringResource(R.string.game_first_launch), modifier)
+    }
+}
+
+@Composable
+private fun StatusChip(status: GameStatus, onSetStatus: (GameStatus) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        AssistChip(
+            onClick = { open = true },
+            label = { Text(statusLabel(status)) },
+            trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
+            colors = if (status == GameStatus.COMPLETED) {
+                AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    labelColor = MaterialTheme.colorScheme.primary,
+                )
+            } else {
+                AssistChipDefaults.assistChipColors()
+            },
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            GameStatus.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(statusLabel(option)) },
+                    onClick = {
+                        open = false
+                        onSetStatus(option)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun statusLabel(status: GameStatus): String = stringResource(
+    when (status) {
+        GameStatus.NONE -> R.string.game_status_NONE
+        GameStatus.PLAYING -> R.string.game_status_PLAYING
+        GameStatus.COMPLETED -> R.string.game_status_COMPLETED
+        GameStatus.SHELVED -> R.string.game_status_SHELVED
+        GameStatus.DROPPED -> R.string.game_status_DROPPED
+    },
+)
 
 @Composable
 private fun RoundIconButton(onClick: () -> Unit, content: @Composable () -> Unit) {

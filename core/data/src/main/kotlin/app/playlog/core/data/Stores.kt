@@ -4,6 +4,7 @@ import app.playlog.core.model.Account
 import app.playlog.core.model.DailyPlaytime
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.Platform
 import app.playlog.core.model.PlaytimeSnapshot
 import app.playlog.core.model.Screenshot
@@ -21,7 +22,7 @@ interface LibraryStore {
     fun observeGames(): Flow<List<Game>>
 
     /**
-     * Replaces the platform's games with [games], keeping user flags (favorite, hidden) of games
+     * Replaces the platform's games with [games], keeping user flags (favorite, hidden, status) of games
      * that already exist. Games missing from [games] are kept: platforms drop delisted titles.
      */
     suspend fun upsertGames(platform: Platform, games: List<Game>)
@@ -29,6 +30,8 @@ interface LibraryStore {
     suspend fun setFavorite(id: GameId, favorite: Boolean)
 
     suspend fun setHidden(id: GameId, hidden: Boolean)
+
+    suspend fun setStatus(id: GameId, status: GameStatus)
 
     /** Most recent snapshot total per game of [platform]. */
     suspend fun latestTotals(platform: Platform): Map<GameId, Duration>

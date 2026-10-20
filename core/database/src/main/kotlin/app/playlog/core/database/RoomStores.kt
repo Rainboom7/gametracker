@@ -8,6 +8,7 @@ import app.playlog.core.model.DailyPlaytime
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameArtwork
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.Platform
 import app.playlog.core.model.PlaytimeSnapshot
 import app.playlog.core.model.Screenshot
@@ -33,7 +34,11 @@ class RoomLibraryStore(private val db: PlaylogDatabase) : LibraryStore {
             this.games.upsert(
                 games.map { g ->
                     val old = existing[g.id.externalId]
-                    g.toEntity(favorite = old?.isFavorite ?: g.isFavorite, hidden = old?.isHidden ?: g.isHidden)
+                    g.toEntity(
+                        favorite = old?.isFavorite ?: g.isFavorite,
+                        hidden = old?.isHidden ?: g.isHidden,
+                        status = old?.status ?: g.status.name,
+                    )
                 },
             )
         }
@@ -42,6 +47,8 @@ class RoomLibraryStore(private val db: PlaylogDatabase) : LibraryStore {
     override suspend fun setFavorite(id: GameId, favorite: Boolean) = games.setFavorite(id.platform.name, id.externalId, favorite)
 
     override suspend fun setHidden(id: GameId, hidden: Boolean) = games.setHidden(id.platform.name, id.externalId, hidden)
+
+    override suspend fun setStatus(id: GameId, status: GameStatus) = games.setStatus(id.platform.name, id.externalId, status.name)
 
     override suspend fun latestTotals(platform: Platform): Map<GameId, Duration> =
         activity.latestSnapshots(platform.name).associate { GameId(platform, it.externalId) to Duration.ofSeconds(it.totalSeconds) }
@@ -123,9 +130,10 @@ internal fun GameEntity.toModel() = Game(
     devices = devices.split(',').filter { it.isNotBlank() }.toSet(),
     isFavorite = isFavorite,
     isHidden = isHidden,
+    status = runCatching { GameStatus.valueOf(status) }.getOrDefault(GameStatus.NONE),
 )
 
-internal fun Game.toEntity(favorite: Boolean, hidden: Boolean) = GameEntity(
+internal fun Game.toEntity(favorite: Boolean, hidden: Boolean, status: String) = GameEntity(
     platform = id.platform.name,
     externalId = id.externalId,
     title = title,
@@ -142,6 +150,7 @@ internal fun Game.toEntity(favorite: Boolean, hidden: Boolean) = GameEntity(
     devices = devices.sorted().joinToString(","),
     isFavorite = favorite,
     isHidden = hidden,
+    status = status,
 )
 
 internal fun DailyPlaytime.toEntity(exact: Boolean) = DailyEntity(

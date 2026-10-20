@@ -53,6 +53,6 @@ data class ActivitySummary(
 data class ProfileStats(
     val gameCount: Int,
     val totalPlaytime: Duration,
-    /** Games with all achievements / trophies earned. */
+    /** Games the user marked [GameStatus.COMPLETED]. */
     val completedCount: Int,
 )

@@ -25,6 +25,9 @@ interface GameDao {
     @Query("UPDATE games SET isHidden = :hidden WHERE platform = :platform AND externalId = :externalId")
     suspend fun setHidden(platform: String, externalId: String, hidden: Boolean)
 
+    @Query("UPDATE games SET status = :status WHERE platform = :platform AND externalId = :externalId")
+    suspend fun setStatus(platform: String, externalId: String, status: String)
+
     @Query("DELETE FROM games WHERE platform = :platform")
     suspend fun deletePlatform(platform: String)
 }

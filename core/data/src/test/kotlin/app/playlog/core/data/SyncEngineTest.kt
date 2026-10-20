@@ -138,4 +138,15 @@ class SyncEngineTest {
 
         assertTrue(library.observeGames().first().single().isFavorite)
     }
+
+    @Test
+    fun `manual status survives a resync`() = runTest {
+        steam.library = listOf(steamGame(600))
+        engine.syncAll()
+        library.setStatus(portal, app.playlog.core.model.GameStatus.COMPLETED)
+        steam.library = listOf(steamGame(700))
+        engine.syncAll()
+
+        assertEquals(app.playlog.core.model.GameStatus.COMPLETED, library.observeGames().first().single().status)
+    }
 }

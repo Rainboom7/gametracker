@@ -24,6 +24,8 @@ data class GameEntity(
     val devices: String,
     val isFavorite: Boolean,
     val isHidden: Boolean,
+    /** [app.playlog.core.model.GameStatus] name. */
+    val status: String,
 )
 
 @Entity(

@@ -9,6 +9,7 @@ import app.playlog.core.data.LibraryRepository
 import app.playlog.core.data.ScreenshotRepository
 import app.playlog.core.model.ActivityBucket
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Screenshot
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -57,6 +58,11 @@ class GameDetailViewModel @Inject constructor(
     fun toggleFavorite() {
         val entry = (uiState.value as? GameDetailUiState.Content)?.entry ?: return
         viewModelScope.launch { library.setFavorite(entry, !entry.isFavorite) }
+    }
+
+    fun setStatus(status: GameStatus) {
+        val entry = (uiState.value as? GameDetailUiState.Content)?.entry ?: return
+        viewModelScope.launch { library.setStatus(entry, status) }
     }
 
     private companion object {

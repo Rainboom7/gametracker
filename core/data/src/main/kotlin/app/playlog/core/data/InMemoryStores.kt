@@ -4,6 +4,7 @@ import app.playlog.core.model.Account
 import app.playlog.core.model.DailyPlaytime
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.Platform
 import app.playlog.core.model.PlaytimeSnapshot
 import app.playlog.core.model.Screenshot
@@ -37,6 +38,7 @@ class InMemoryLibraryStore : LibraryStore {
                 g.id to g.copy(
                     isFavorite = existing?.isFavorite ?: g.isFavorite,
                     isHidden = existing?.isHidden ?: g.isHidden,
+                    status = existing?.status ?: g.status,
                 )
             }
         }
@@ -48,6 +50,10 @@ class InMemoryLibraryStore : LibraryStore {
 
     override suspend fun setHidden(id: GameId, hidden: Boolean) {
         games.update { m -> m[id]?.let { m + (id to it.copy(isHidden = hidden)) } ?: m }
+    }
+
+    override suspend fun setStatus(id: GameId, status: GameStatus) {
+        games.update { m -> m[id]?.let { m + (id to it.copy(status = status)) } ?: m }
     }
 
     override suspend fun latestTotals(platform: Platform): Map<GameId, Duration> =

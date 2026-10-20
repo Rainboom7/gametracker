@@ -6,6 +6,7 @@ import app.playlog.core.model.ActivityBucket
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
 import app.playlog.core.model.ProfileStats
@@ -31,6 +32,8 @@ interface LibraryRepository {
     suspend fun setFavorite(entry: LibraryEntry, favorite: Boolean)
 
     suspend fun setHidden(entry: LibraryEntry, hidden: Boolean)
+
+    suspend fun setStatus(entry: LibraryEntry, status: GameStatus)
 }
 
 interface ActivityRepository {
@@ -88,7 +91,7 @@ class DefaultLibraryRepository(private val store: LibraryStore) : LibraryReposit
         ProfileStats(
             gameCount = entries.size,
             totalPlaytime = entries.fold(Duration.ZERO) { acc, e -> acc + e.totalPlaytime },
-            completedCount = entries.count { it.achievementProgress == 100 },
+            completedCount = entries.count { it.status == GameStatus.COMPLETED },
         )
     }
 
@@ -98,6 +101,10 @@ class DefaultLibraryRepository(private val store: LibraryStore) : LibraryReposit
 
     override suspend fun setHidden(entry: LibraryEntry, hidden: Boolean) {
         entry.games.forEach { store.setHidden(it.id, hidden) }
+    }
+
+    override suspend fun setStatus(entry: LibraryEntry, status: GameStatus) {
+        entry.games.forEach { store.setStatus(it.id, status) }
     }
 }
 

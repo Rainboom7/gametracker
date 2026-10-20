@@ -45,4 +45,13 @@ class LibraryEntryTest {
         val id = GameId(Platform.PLAYSTATION, "concept:10002456")
         assertEquals(id, GameId.decode(id.encode()))
     }
+
+    @Test
+    fun fullAchievementsSuggestCompletionUntilMarked() {
+        val done = Game(GameId(Platform.PLAYSTATION, "PPSA1"), "Astro Bot", achievementProgress = 100)
+        assertEquals(true, LibraryEntry("astro bot", listOf(done)).suggestCompleted)
+        val marked = LibraryEntry("astro bot", listOf(done.copy(status = GameStatus.COMPLETED)))
+        assertEquals(false, marked.suggestCompleted)
+        assertEquals(GameStatus.COMPLETED, marked.status)
+    }
 }

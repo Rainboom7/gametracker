@@ -24,6 +24,10 @@ data class LibraryEntry(
     val lastPlayedAt: Instant? get() = games.mapNotNull { it.lastPlayedAt }.maxOrNull()
     val firstPlayedAt: Instant? get() = games.mapNotNull { it.firstPlayedAt }.minOrNull()
     val isFavorite: Boolean get() = games.any { it.isFavorite }
+    val status: GameStatus get() = games.firstOrNull { it.status != GameStatus.NONE }?.status ?: GameStatus.NONE
+
+    /** All trophies / achievements earned but not marked completed: the UI suggests marking it. */
+    val suggestCompleted: Boolean get() = achievementProgress == 100 && status != GameStatus.COMPLETED
 
     /** Achievement progress of the platform with the most playtime that reports it. */
     val achievementProgress: Int?

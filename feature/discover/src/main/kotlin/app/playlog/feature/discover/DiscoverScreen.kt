@@ -68,6 +68,8 @@ import app.playlog.core.designsystem.component.PlatformFilterChip
 import app.playlog.core.designsystem.component.SectionHeader
 import app.playlog.core.designsystem.theme.Spacing
 import app.playlog.core.model.Anniversary
+import app.playlog.core.model.DealPick
+import app.playlog.core.model.DealsState
 import app.playlog.core.model.DiscoverShelf
 import app.playlog.core.model.DiscoverSummary
 import app.playlog.core.model.GameId
@@ -85,7 +87,18 @@ import java.time.Duration
 @Composable
 fun DiscoverRoute(onOpenGame: (GameId) -> Unit, viewModel: DiscoverViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    DiscoverScreen(state, onOpenGame, viewModel::spin, viewModel::selectRoulettePlatform)
+    val deals by viewModel.deals.collectAsStateWithLifecycle()
+    val openDeal by viewModel.openDeal.collectAsStateWithLifecycle()
+    DiscoverScreen(
+        state,
+        onOpenGame,
+        viewModel::spin,
+        viewModel::selectRoulettePlatform,
+        deals = deals,
+        onOpenDeal = viewModel::openDeal,
+        onRefreshDeals = viewModel::refreshDeals,
+    )
+    openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
 
 @Composable
@@ -94,6 +107,9 @@ fun DiscoverScreen(
     onOpenGame: (GameId) -> Unit,
     onSpin: () -> Unit,
     onSelectRoulettePlatform: (Platform?) -> Unit,
+    deals: DealsState = DealsState.NoTaste,
+    onOpenDeal: (DealPick) -> Unit = {},
+    onRefreshDeals: () -> Unit = {},
 ) {
     val content = state as? DiscoverUiState.Content
     val summary = content?.summary
@@ -128,6 +144,7 @@ fun DiscoverScreen(
                 summary.topPick?.let { pick ->
                     item(key = "top") { TopPickCard(pick, onClick = { onOpenGame(pick.entry.primary.id) }, Modifier.padding(horizontal = Spacing.lg)) }
                 }
+                item(key = "deals") { DealsShelf(deals, onOpen = onOpenDeal, onRefresh = onRefreshDeals) }
                 item(key = "roulette") {
                     RouletteCard(
                         state = content?.roulette ?: RouletteState(),

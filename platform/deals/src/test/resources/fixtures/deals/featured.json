@@ -1,0 +1,4 @@
+{"specials":{"id":"cat_specials","name":"Specials","items":[
+  {"id":367520,"type":0,"name":"Hollow Knight","discounted":true,"discount_percent":50,"original_price":46500,"final_price":23250,"currency":"RUB","header_image":"https://cdn.test/hk/header.jpg"},
+  {"id":4000,"type":0,"name":"Full Price Game","discounted":false,"discount_percent":0,"original_price":100,"final_price":100,"currency":"RUB"}
+]},"top_sellers":{"items":[]}}

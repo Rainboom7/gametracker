@@ -41,6 +41,7 @@ include(
     ":platform:steam",
     ":platform:playstation",
     ":platform:nintendo",
+    ":platform:deals",
     ":platform:metadata",
 )
 

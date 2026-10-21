@@ -2,7 +2,10 @@ package app.playlog.feature.discover
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.playlog.core.data.DealsRepository
 import app.playlog.core.data.DiscoverRepository
+import app.playlog.core.model.DealPick
+import app.playlog.core.model.DealsState
 import app.playlog.core.model.DiscoverSummary
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
@@ -32,14 +35,31 @@ sealed interface DiscoverUiState {
 }
 
 @HiltViewModel
-class DiscoverViewModel @Inject constructor(private val discover: DiscoverRepository) : ViewModel() {
+class DiscoverViewModel @Inject constructor(
+    private val discover: DiscoverRepository,
+    private val dealsRepository: DealsRepository,
+) : ViewModel() {
     private val roulette = MutableStateFlow(RouletteState())
+
+    val deals: StateFlow<DealsState> = dealsRepository.observe()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DealsState.Loading)
+
+    /** The deal whose detail sheet is open. */
+    val openDeal = MutableStateFlow<DealPick?>(null)
 
     val uiState: StateFlow<DiscoverUiState> = combine(discover.observeSummary(), roulette) { summary, r ->
         DiscoverUiState.Content(summary, r)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DiscoverUiState.Loading)
 
     fun selectRoulettePlatform(platform: Platform?) = roulette.update { RouletteState(platform = platform) }
+
+    fun refreshDeals() {
+        viewModelScope.launch { dealsRepository.refresh() }
+    }
+
+    fun openDeal(pick: DealPick?) {
+        openDeal.value = pick
+    }
 
     fun spin() {
         viewModelScope.launch {

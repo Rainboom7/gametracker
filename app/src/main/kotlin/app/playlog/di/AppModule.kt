@@ -12,6 +12,8 @@ import app.playlog.core.data.DefaultAccountRepository
 import app.playlog.core.data.DefaultActivityRepository
 import app.playlog.core.data.DefaultDiscoverRepository
 import app.playlog.core.data.DiscoverRepository
+import app.playlog.core.data.DealsRepository
+import app.playlog.core.data.DefaultDealsRepository
 import app.playlog.core.data.DefaultGameMetadataRepository
 import app.playlog.core.data.DefaultLibraryRepository
 import app.playlog.core.data.DefaultScreenshotRepository
@@ -31,6 +33,8 @@ import app.playlog.core.network.AiaTrustManager
 import app.playlog.core.network.HttpClientFactory
 import app.playlog.platform.api.CredentialStore
 import app.playlog.platform.api.GamePlatformSource
+import app.playlog.platform.deals.DealsDiskCache
+import app.playlog.platform.deals.OnlineDealsSource
 import app.playlog.platform.metadata.FileMetadataStore
 import app.playlog.platform.metadata.OnlineMetadataSource
 import app.playlog.platform.nintendo.NintendoSource
@@ -123,6 +127,19 @@ object AppModule {
     fun screenshotRepository(store: LibraryStore): ScreenshotRepository = DefaultScreenshotRepository(store)
 
     /** HowLongToBeat and Steam store facts for the game page, cached as files in the cache dir. */
+    @Provides
+    @Singleton
+    fun dealsRepository(@ApplicationContext context: Context, client: HttpClient, library: LibraryRepository, clock: AppClock): DealsRepository {
+        val cache = DealsDiskCache(File(context.cacheDir, "deals"))
+        return DefaultDealsRepository(
+            source = OnlineDealsSource(client, cache, onError = { what, e -> Log.w("Playlog", "Deals: $what failed", e) }),
+            library = library,
+            cache = cache,
+            clock = clock,
+            onError = { e -> Log.w("Playlog", "Deals refresh failed", e) },
+        )
+    }
+
     @Provides
     @Singleton
     fun gameMetadataRepository(@ApplicationContext context: Context, client: HttpClient, clock: AppClock): GameMetadataRepository =

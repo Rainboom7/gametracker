@@ -82,12 +82,12 @@ class DealsDiskCache(
 
     override suspend fun read(): CachedDeals? = withContext(io) {
         readFile(PICKS_FILE, StoredPicks.serializer())?.let { stored ->
-            CachedDeals(stored.picks.map { it.toModel() }, Instant.ofEpochMilli(stored.fetchedAt))
+            CachedDeals(stored.picks.map { it.toModel() }, Instant.ofEpochMilli(stored.fetchedAt), stored.taste)
         }
     }
 
     override suspend fun write(deals: CachedDeals) =
-        write(PICKS_FILE, StoredPicks.serializer(), StoredPicks(deals.fetchedAt.toEpochMilli(), deals.picks.map(StoredPick::of)))
+        write(PICKS_FILE, StoredPicks.serializer(), StoredPicks(deals.fetchedAt.toEpochMilli(), deals.picks.map(StoredPick::of), deals.taste))
 
     private suspend fun <T> state(block: (StoredTags) -> T): T = lock.withLock { block(load()) }
 
@@ -147,7 +147,7 @@ internal data class StoredTagEntry(val at: Long, val tags: Map<String, Int>)
 internal data class StoredAppId(val at: Long, val appId: Long)
 
 @Serializable
-internal data class StoredPicks(val fetchedAt: Long, val picks: List<StoredPick>)
+internal data class StoredPicks(val fetchedAt: Long, val picks: List<StoredPick>, val taste: Map<String, Double> = emptyMap())
 
 @Serializable
 internal data class StoredPick(

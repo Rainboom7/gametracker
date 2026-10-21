@@ -17,8 +17,11 @@ class FakeSource(
     override val capabilities: Set<SourceCapability> = setOf(SourceCapability.TOTAL_PLAYTIME),
     var linked: Boolean = true,
     private val storeCountry: suspend () -> String? = { null },
+    private val wishlist: suspend () -> List<String> = { emptyList() },
 ) : GamePlatformSource {
     override suspend fun storeCountry(): String? = storeCountry.invoke()
+
+    override suspend fun wishlist(): List<String> = wishlist.invoke()
 
     var library: List<Game> = emptyList()
     var daily: List<DailyPlaytime> = emptyList()

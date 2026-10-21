@@ -80,3 +80,9 @@ internal data class PublishedFileDto(
     /** EWorkshopFileType of the item; 5 = screenshot. */
     @SerialName("file_type") val fileType: Int? = null,
 )
+
+@Serializable
+internal data class WishlistResponse(val items: List<WishlistItemDto> = emptyList())
+
+@Serializable
+internal data class WishlistItemDto(val appid: Long, val priority: Int = 0)

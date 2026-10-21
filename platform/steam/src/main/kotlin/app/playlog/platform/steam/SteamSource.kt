@@ -76,6 +76,12 @@ class SteamSource internal constructor(
         api.playerSummary(creds.apiKey, creds.steamId)?.loccountrycode?.uppercase()
     }.getOrNull()
 
+    /** Wishlist in the user's own priority order. */
+    override suspend fun wishlist(): List<String> {
+        val creds = credentials.require()
+        return api.wishlist(creds.apiKey, creds.steamId).items.sortedBy { it.priority }.map { it.appid.toString() }
+    }
+
     override suspend fun fetchScreenshots(): List<Screenshot> {
         val creds = credentials.require()
         val result = mutableListOf<Screenshot>()

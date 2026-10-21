@@ -68,4 +68,9 @@
     <string name="deal_open_store">Открыть в %1$s</string>
     <string name="deal_screenshot">Скриншот %1$d, %2$s</string>
     <string name="deal_reviews">👍 %1$d%%</string>
+    <string name="deal_wish_add">В вишлист</string>
+    <string name="deal_wish_remove">Убрать из вишлиста</string>
+    <string name="deal_lowest">Исторический минимум: %1$s (%2$s, %3$s)</string>
+    <string name="deal_lowest_undated">Исторический минимум: %1$s (%2$s)</string>
+    <string name="deal_full_price">Без скидки</string>
 </resources>

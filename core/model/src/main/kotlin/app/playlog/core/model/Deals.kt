@@ -30,7 +30,13 @@ data class DealPick(
     val sharedTags: List<String> = emptyList(),
     /** 0..1 similarity to the user's taste; 0 for plain store listings. */
     val match: Float = 0f,
+    /** Sale price as a number in the region's currency, for filtering and sorting. */
+    val priceValue: Double? = null,
+    /** Store genres or user tags, most relevant first. */
+    val tags: List<String> = emptyList(),
 ) {
+    val isOnSale: Boolean get() = discountPercent > 0
+
     /** Stable key across platforms for lists. */
     val key: String get() = "${platform.name}:$storeId"
 
@@ -45,7 +51,8 @@ sealed interface DealsState {
     /** Nothing played yet, so there is no taste to match against. */
     data object NoTaste : DealsState
 
-    data class Ready(val picks: List<DealPick>, val fetchedAt: Instant) : DealsState
+    /** [taste] is the user's tag profile (tag → weight, unit length), for matching other deals. */
+    data class Ready(val picks: List<DealPick>, val fetchedAt: Instant, val taste: Map<String, Double> = emptyMap()) : DealsState
 
     /** The stores could not be reached; [stale] holds the last good picks, if any. */
     data class Failed(val stale: List<DealPick>, val message: String? = null) : DealsState
@@ -74,3 +81,44 @@ sealed interface StoreDealsState {
 
     data class Failed(val region: StoreRegion, val message: String?) : StoreDealsState
 }
+
+/** A product's current price in one region; [discountPercent] 0 means full price. */
+data class StorePrice(
+    val priceText: String,
+    val originalPriceText: String? = null,
+    val discountPercent: Int = 0,
+    val priceValue: Double? = null,
+    val endsAt: Instant? = null,
+)
+
+/** What a store knows about one product right now; any part may be missing. */
+data class StoreQuote(
+    val title: String? = null,
+    val headerUrl: String? = null,
+    val storeUrl: String? = null,
+    val price: StorePrice? = null,
+)
+
+/** A game the user wants, with the last price seen in their region. */
+data class WishlistItem(
+    val platform: Platform,
+    val storeId: String,
+    val title: String,
+    val headerUrl: String,
+    val storeUrl: String,
+    val addedAt: Instant,
+    val price: StorePrice? = null,
+    val checkedAt: Instant? = null,
+    /** Deepest discount already notified, so one sale alerts once; reset when the sale ends. */
+    val notifiedDiscount: Int = 0,
+) {
+    val key: String get() = "${platform.name}:$storeId"
+
+    val isOnSale: Boolean get() = (price?.discountPercent ?: 0) > 0
+}
+
+/** A wishlisted game that went on sale or got cheaper since the last check. */
+data class PriceDrop(val item: WishlistItem, val price: StorePrice)
+
+/** Lowest price ever recorded for a game, from a price history service. */
+data class PriceLow(val priceText: String, val at: Instant?, val source: String)

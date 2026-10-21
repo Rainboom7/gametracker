@@ -34,7 +34,7 @@ class DealsRepositoryTest {
         lastSeeds = seeds
         lastOwned = owned
         if (fail) throw IOException("offline")
-        listOf(pick)
+        Recommendation(listOf(pick))
     }
     private val repository = DefaultDealsRepository(source, DefaultLibraryRepository(store), cache, clock)
 

@@ -62,6 +62,7 @@ object DiscoverCalculator {
     val BACKLOG_MAX_PLAYTIME: Duration = Duration.ofHours(1)
     val ALMOST_DONE_RANGE = 60..99
     const val ANNIVERSARY_WINDOW_DAYS = 3L
+    private const val DAYS_PER_YEAR = 365L
     const val SHELF_SIZE = 10
 
     val THRESHOLDS: Map<MilestoneKind, List<Long>> = mapOf(
@@ -72,6 +73,10 @@ object DiscoverCalculator {
         MilestoneKind.PERFECTIONIST to listOf(1, 3, 10, 25),
         MilestoneKind.MULTIPLATFORM to listOf(1, 5, 10, 25),
         MilestoneKind.STREAK to listOf(3, 7, 14, 30, 100),
+        MilestoneKind.BIG_DAY to listOf(3, 6, 10, 14),
+        MilestoneKind.LOYAL to listOf(1, 3, 5, 10),
+        MilestoneKind.PHOTOGRAPHER to listOf(10, 50, 200, 1_000),
+        MilestoneKind.CRITIC to listOf(5, 25, 100),
     )
 
     private val SHELF_ORDER = listOf(PickReason.CONTINUE, PickReason.ALMOST_DONE, PickReason.RETURN_TO, PickReason.BACKLOG)
@@ -118,8 +123,9 @@ object DiscoverCalculator {
         return if (candidates.isEmpty()) null else candidates[random.nextInt(candidates.size)]
     }
 
-    fun milestones(entries: List<LibraryEntry>, daily: List<DailyPlaytime>): List<Milestone> {
-        val values = mapOf(
+    /** Library-derived badges; [extra] adds the ones counted elsewhere (screenshots, ratings). */
+    fun milestones(entries: List<LibraryEntry>, daily: List<DailyPlaytime>, extra: Map<MilestoneKind, Long> = emptyMap()): List<Milestone> {
+        val values = extra + mapOf(
             MilestoneKind.MARATHON to (entries.maxOfOrNull { it.totalPlaytime.toHours() } ?: 0L),
             MilestoneKind.VETERAN to entries.fold(Duration.ZERO) { acc, e -> acc + e.totalPlaytime }.toHours(),
             MilestoneKind.COLLECTOR to entries.size.toLong(),
@@ -127,8 +133,19 @@ object DiscoverCalculator {
             MilestoneKind.PERFECTIONIST to entries.count { it.achievementProgress == 100 }.toLong(),
             MilestoneKind.MULTIPLATFORM to entries.count { it.platforms.size > 1 }.toLong(),
             MilestoneKind.STREAK to longestStreak(daily).toLong(),
+            MilestoneKind.BIG_DAY to biggestDayHours(daily),
+            MilestoneKind.LOYAL to (entries.maxOfOrNull(::loyalYears) ?: 0L),
         )
-        return MilestoneKind.entries.map { Milestone(it, values.getValue(it), THRESHOLDS.getValue(it)) }
+        return MilestoneKind.entries.mapNotNull { kind -> values[kind]?.let { Milestone(kind, it, THRESHOLDS.getValue(kind)) } }
+    }
+
+    private fun biggestDayHours(daily: List<DailyPlaytime>): Long =
+        daily.groupBy { it.date }.values.maxOfOrNull { day -> day.fold(Duration.ZERO) { acc, d -> acc + d.playtime }.toHours() } ?: 0L
+
+    private fun loyalYears(entry: LibraryEntry): Long {
+        val first = entry.firstPlayedAt ?: return 0L
+        val last = entry.lastPlayedAt ?: return 0L
+        return ChronoUnit.DAYS.between(first, last).coerceAtLeast(0L) / DAYS_PER_YEAR
     }
 
     /** Longest run of consecutive days with any play. */

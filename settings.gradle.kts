@@ -61,6 +61,7 @@ if (!jvmOnly) {
         ":feature:activity",
         ":feature:discover",
         ":feature:deals",
+        ":feature:journal",
         ":feature:screenshots",
         ":feature:profile",
     )

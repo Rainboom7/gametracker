@@ -84,6 +84,7 @@ import app.playlog.core.ui.entryPlaytimeText
 import app.playlog.core.ui.formatPlaytime
 import app.playlog.core.ui.platformName
 import app.playlog.feature.deals.GiveawaysHomeCard
+import app.playlog.feature.journal.BadgesStrip
 import java.time.Duration
 
 @Composable
@@ -91,6 +92,7 @@ fun DiscoverRoute(
     onOpenGame: (GameId) -> Unit,
     onOpenAllDeals: () -> Unit,
     onOpenGiveaways: () -> Unit = {},
+    onOpenBadges: () -> Unit = {},
     viewModel: DiscoverViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -106,6 +108,7 @@ fun DiscoverRoute(
         onRefreshDeals = viewModel::refreshDeals,
         onOpenAllDeals = onOpenAllDeals,
         giveaways = { GiveawaysHomeCard(onOpenAll = onOpenGiveaways) },
+        badges = { BadgesStrip(onOpenAll = onOpenBadges) },
     )
     openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
@@ -121,6 +124,7 @@ fun DiscoverScreen(
     onRefreshDeals: () -> Unit = {},
     onOpenAllDeals: () -> Unit = {},
     giveaways: @Composable () -> Unit = {},
+    badges: @Composable () -> Unit = {},
 ) {
     val content = state as? DiscoverUiState.Content
     val summary = content?.summary
@@ -171,7 +175,7 @@ fun DiscoverScreen(
                 if (summary.anniversaries.isNotEmpty()) {
                     item(key = "anniversaries") { Anniversaries(summary.anniversaries, onOpenGame, Modifier.padding(horizontal = Spacing.lg)) }
                 }
-                item(key = "milestones") { Milestones(summary.milestones, Modifier.padding(horizontal = Spacing.lg)) }
+                item(key = "badges") { badges() }
             }
         }
     }
@@ -396,92 +400,6 @@ private fun Anniversaries(items: List<Anniversary>, onOpenGame: (GameId) -> Unit
 }
 
 @Composable
-private fun Milestones(milestones: List<Milestone>, modifier: Modifier = Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-        SectionHeader(stringResource(R.string.discover_milestones))
-        // Earned badges first, the closest to levelling up leading.
-        val ordered = milestones.sortedWith(compareByDescending<Milestone> { it.level > 0 }.thenByDescending { it.progressToNext })
-        ordered.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                row.forEach { MilestoneCard(it, Modifier.weight(1f)) }
-                if (row.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-    }
-}
-
-@Composable
-private fun MilestoneCard(milestone: Milestone, modifier: Modifier = Modifier) {
-    val earned = milestone.level > 0
-    val accent = if (earned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-    Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, if (earned) accent.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(Spacing.sm)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier.size(36.dp).clip(CircleShape).background(accent.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(milestoneIcon(milestone.kind), contentDescription = null, tint = accent, modifier = Modifier.size(20.dp))
-                }
-                Spacer(Modifier.width(Spacing.xs))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        stringResource(milestoneTitle(milestone.kind)),
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        if (milestone.isMaxed) {
-                            stringResource(R.string.discover_milestone_maxed)
-                        } else {
-                            stringResource(R.string.discover_milestone_level, milestone.level, milestone.maxLevel)
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = accent,
-                    )
-                }
-            }
-            Spacer(Modifier.height(Spacing.xs))
-            Text(milestoneValue(milestone.kind, milestone.value), style = MaterialTheme.typography.headlineSmall)
-            Text(
-                stringResource(milestoneDescription(milestone.kind)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Spacer(Modifier.height(Spacing.xs))
-            LinearProgressIndicator(
-                progress = { milestone.progressToNext },
-                modifier = Modifier.fillMaxWidth().height(4.dp).clip(MaterialTheme.shapes.extraSmall),
-                color = accent,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            )
-            milestone.nextTarget?.let { target ->
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.discover_milestone_next, milestoneValue(milestone.kind, target)),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun milestoneValue(kind: MilestoneKind, value: Long): String = when (kind) {
-    MilestoneKind.MARATHON, MilestoneKind.VETERAN -> formatPlaytime(Duration.ofHours(value))
-    else -> value.toString()
-}
-
-@Composable
 private fun daysAgoText(days: Long): String = when {
     days <= 0 -> stringResource(R.string.discover_today)
     days == 1L -> stringResource(R.string.discover_yesterday)
@@ -526,38 +444,6 @@ private fun shelfHint(reason: PickReason): Int = when (reason) {
     PickReason.ALMOST_DONE -> R.string.discover_shelf_hint_ALMOST_DONE
     PickReason.RETURN_TO -> R.string.discover_shelf_hint_RETURN_TO
     PickReason.BACKLOG -> R.string.discover_shelf_hint_BACKLOG
-}
-
-@StringRes
-private fun milestoneTitle(kind: MilestoneKind): Int = when (kind) {
-    MilestoneKind.MARATHON -> R.string.discover_milestone_MARATHON
-    MilestoneKind.VETERAN -> R.string.discover_milestone_VETERAN
-    MilestoneKind.COLLECTOR -> R.string.discover_milestone_COLLECTOR
-    MilestoneKind.FINISHER -> R.string.discover_milestone_FINISHER
-    MilestoneKind.PERFECTIONIST -> R.string.discover_milestone_PERFECTIONIST
-    MilestoneKind.MULTIPLATFORM -> R.string.discover_milestone_MULTIPLATFORM
-    MilestoneKind.STREAK -> R.string.discover_milestone_STREAK
-}
-
-@StringRes
-private fun milestoneDescription(kind: MilestoneKind): Int = when (kind) {
-    MilestoneKind.MARATHON -> R.string.discover_milestone_desc_MARATHON
-    MilestoneKind.VETERAN -> R.string.discover_milestone_desc_VETERAN
-    MilestoneKind.COLLECTOR -> R.string.discover_milestone_desc_COLLECTOR
-    MilestoneKind.FINISHER -> R.string.discover_milestone_desc_FINISHER
-    MilestoneKind.PERFECTIONIST -> R.string.discover_milestone_desc_PERFECTIONIST
-    MilestoneKind.MULTIPLATFORM -> R.string.discover_milestone_desc_MULTIPLATFORM
-    MilestoneKind.STREAK -> R.string.discover_milestone_desc_STREAK
-}
-
-private fun milestoneIcon(kind: MilestoneKind): ImageVector = when (kind) {
-    MilestoneKind.MARATHON -> Icons.Default.Timer
-    MilestoneKind.VETERAN -> Icons.Default.MilitaryTech
-    MilestoneKind.COLLECTOR -> Icons.Default.CollectionsBookmark
-    MilestoneKind.FINISHER -> Icons.Default.Flag
-    MilestoneKind.PERFECTIONIST -> Icons.Default.EmojiEvents
-    MilestoneKind.MULTIPLATFORM -> Icons.Default.Devices
-    MilestoneKind.STREAK -> Icons.Default.LocalFireDepartment
 }
 
 private const val MaxAnniversaries = 5

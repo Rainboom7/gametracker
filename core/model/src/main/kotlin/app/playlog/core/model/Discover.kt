@@ -47,6 +47,18 @@ enum class MilestoneKind {
 
     /** Longest run of consecutive days with any play in the last year. */
     STREAK,
+
+    /** Most hours played in a single day in the last year. */
+    BIG_DAY,
+
+    /** Years between the first and the latest session of one title. */
+    LOYAL,
+
+    /** Screenshots and clips in the gallery. */
+    PHOTOGRAPHER,
+
+    /** Games with a personal rating. */
+    CRITIC,
 }
 
 /**

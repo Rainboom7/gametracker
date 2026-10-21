@@ -41,6 +41,7 @@ dependencies {
     implementation(projects.core.ui)
     implementation(projects.core.data)
     implementation(projects.feature.deals)
+    implementation(projects.feature.journal)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.navigation.compose)

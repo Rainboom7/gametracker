@@ -1,5 +1,6 @@
 package app.playlog.core.ui
 
+import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -73,3 +74,9 @@ fun linkFieldLabel(type: LinkFieldType): String = stringResource(
 )
 
 private const val RelativeDaysLimit = 30
+
+/** [formatPlaytime] outside composition: notifications, widgets, workers. */
+fun Context.formatPlaytime(duration: Duration): String = when (val v = PlaytimeFormat.of(duration)) {
+    is PlaytimeFormat.Value.Minutes -> getString(R.string.duration_minutes, v.minutes)
+    is PlaytimeFormat.Value.Hours -> getString(R.string.duration_hours, v.text)
+}

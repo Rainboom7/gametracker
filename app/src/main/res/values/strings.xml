@@ -38,4 +38,17 @@
     <string name="shortcut_activity_long">Итоги недели</string>
     <string name="shortcut_roulette">Случайная игра</string>
     <string name="shortcut_roulette_long">Выбрать случайную игру</string>
+    <string name="badge_unlocked_title">Новый значок: %1$s, ур. %2$d</string>
+    <string name="badge_unlocked_text">%1$s. Загляни в «Значки», там видно, что дальше.</string>
+    <plurals name="badges_unlocked_title">
+        <item quantity="one">%1$d новый значок</item>
+        <item quantity="few">%1$d новых значка</item>
+        <item quantity="many">%1$d новых значков</item>
+        <item quantity="other">%1$d новых значка</item>
+    </plurals>
+    <string name="digest_title">Твоя неделя: %1$s в играх</string>
+    <string name="digest_top">Больше всего: %1$s (%2$s).</string>
+    <string name="digest_more">На %1$s больше, чем неделей раньше.</string>
+    <string name="digest_less">На %1$s меньше, чем неделей раньше.</string>
+    <string name="digest_cta">Открой историю недели.</string>
 </resources>

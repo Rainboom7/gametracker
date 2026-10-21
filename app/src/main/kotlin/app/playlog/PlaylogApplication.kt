@@ -12,6 +12,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import app.playlog.core.data.SyncScheduler
 import app.playlog.core.data.UserSettingsRepository
+import app.playlog.shortcuts.AppShortcuts
 import app.playlog.sync.AlertsWorker
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +41,7 @@ class PlaylogApplication : Application(), Configuration.Provider, SingletonImage
             syncScheduler.setPeriodicSync(settings.settings.first().backgroundSync)
         }
         AlertsWorker.schedule(this)
+        AppShortcuts.publish(this)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(context)

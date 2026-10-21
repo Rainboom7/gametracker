@@ -9,6 +9,7 @@ import androidx.work.workDataOf
 import app.playlog.core.data.SyncEngine
 import app.playlog.core.model.Platform
 import app.playlog.platform.api.PlatformException
+import app.playlog.widget.PlaylogWidget
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -31,6 +32,7 @@ class SyncWorker @AssistedInject constructor(
                 Log.w(TAG, "Sync ${r.platform} failed", r.error)
             }
         }
+        PlaylogWidget.refresh(applicationContext)
         // Network hiccups and rate limits are worth a retry with backoff; auth problems are not.
         val retryable = results.any { it.error is PlatformException.Network || it.error is PlatformException.RateLimited }
         if (retryable && runAttemptCount < MAX_ATTEMPTS) return Result.retry()

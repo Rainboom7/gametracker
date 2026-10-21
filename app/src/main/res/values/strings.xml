@@ -24,4 +24,18 @@
     <string name="deals_drop_title">%1$s: −%2$d%%</string>
     <string name="deals_drop_text">%1$s в %2$s. Нажми, чтобы открыть магазин.</string>
     <string name="deals_drop_text_was">%1$s вместо %2$s в %3$s. Нажми, чтобы открыть магазин.</string>
+    <string name="widget_description">Во что играешь сейчас, часы за неделю и серия дней</string>
+    <string name="widget_now_playing">Сейчас играю</string>
+    <string name="widget_nothing">Пока ничего не запускал</string>
+    <string name="widget_week">⏱ %1$s за неделю</string>
+    <string name="widget_goal">◎ %1$d%% цели</string>
+    <string name="widget_streak">🔥 %1$d дн. подряд</string>
+    <string name="shortcut_ask">Спроси</string>
+    <string name="shortcut_ask_long">Во что поиграть?</string>
+    <string name="shortcut_deals">Скидки</string>
+    <string name="shortcut_deals_long">Скидки для тебя</string>
+    <string name="shortcut_activity">Итоги</string>
+    <string name="shortcut_activity_long">Итоги недели</string>
+    <string name="shortcut_roulette">Случайная игра</string>
+    <string name="shortcut_roulette_long">Выбрать случайную игру</string>
 </resources>

@@ -1,0 +1,4 @@
+{"personalized":false,"country":"PL","prices":[
+ {"title_id":70010000003207,"sales_status":"onsale","regular_price":{"amount":"64,00 zł","currency":"PLN","raw_value":"64"},"discount_price":{"amount":"32,00 zł","currency":"PLN","raw_value":"32","start_datetime":"2026-10-15T15:00:00Z","end_datetime":"2026-10-29T22:59:59Z"}},
+ {"title_id":70010000000001,"sales_status":"onsale","regular_price":{"amount":"100,00 zł","currency":"PLN","raw_value":"100"}}
+]}

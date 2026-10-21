@@ -30,6 +30,8 @@ internal data class PsnLegacyProfile(
     val onlineId: String,
     val accountId: String? = null,
     val avatarUrls: List<PsnLegacyAvatar> = emptyList(),
+    /** Base64 of "<onlineId>@<server>.<region>", e.g. "user@a6.tr"; the store region. */
+    val npId: String? = null,
 ) {
     fun toProfile() = PsnProfileDto(onlineId, avatarUrls.map { PsnAvatarDto(it.size, it.avatarUrl) })
 }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="deals_screen_title">Скидки</string>
+    <string name="deals_back">Назад</string>
+    <string name="deals_region">Регион: %1$s</string>
+    <string name="deals_region_ACCOUNT">из аккаунта</string>
+    <string name="deals_region_MANUAL">выбран вручную</string>
+    <string name="deals_region_DEVICE">по телефону</string>
+    <string name="deals_region_pick">Регион магазина</string>
+    <string name="deals_region_auto">Как в аккаунте</string>
+    <string name="deals_region_hint">Цены и скидки зависят от региона магазина. По умолчанию берём регион привязанного аккаунта.</string>
+    <string name="deals_for_you">Для тебя</string>
+    <string name="deals_all_store">Вся распродажа</string>
+    <string name="deals_unsupported">В регионе %1$s у этого магазина нет распродаж, которые можно показать. Выбери другой регион.</string>
+    <string name="deals_failed_store">Не удалось загрузить скидки: %1$s</string>
+    <string name="deals_retry_store">Повторить</string>
+    <string name="deals_change_region">Сменить регион</string>
+    <string name="deals_empty_store">Сейчас скидок нет, или все они на игры, которые у тебя уже есть.</string>
+    <string name="deals_cancel">Отмена</string>
+</resources>

@@ -13,6 +13,8 @@ import app.playlog.core.data.DefaultActivityRepository
 import app.playlog.core.data.DefaultDiscoverRepository
 import app.playlog.core.data.DiscoverRepository
 import app.playlog.core.data.DealsRepository
+import app.playlog.core.data.DefaultStoreDealsRepository
+import app.playlog.core.data.StoreDealsRepository
 import app.playlog.core.data.DefaultDealsRepository
 import app.playlog.core.data.DefaultGameMetadataRepository
 import app.playlog.core.data.DefaultLibraryRepository
@@ -34,6 +36,10 @@ import app.playlog.core.network.HttpClientFactory
 import app.playlog.platform.api.CredentialStore
 import app.playlog.platform.api.GamePlatformSource
 import app.playlog.platform.deals.DealsDiskCache
+import app.playlog.platform.deals.FileDealsRegionStore
+import app.playlog.platform.deals.NintendoStoreDeals
+import app.playlog.platform.deals.PlayStationStoreDeals
+import app.playlog.platform.deals.SteamStoreDeals
 import app.playlog.platform.deals.OnlineDealsSource
 import app.playlog.platform.metadata.FileMetadataStore
 import app.playlog.platform.metadata.OnlineMetadataSource
@@ -127,6 +133,22 @@ object AppModule {
     fun screenshotRepository(store: LibraryStore): ScreenshotRepository = DefaultScreenshotRepository(store)
 
     /** HowLongToBeat and Steam store facts for the game page, cached as files in the cache dir. */
+    @Provides
+    @Singleton
+    fun storeDealsRepository(
+        @ApplicationContext context: Context,
+        client: HttpClient,
+        sources: Set<@JvmSuppressWildcards GamePlatformSource>,
+        library: LibraryRepository,
+    ): StoreDealsRepository = DefaultStoreDealsRepository(
+        stores = setOf(SteamStoreDeals(client), PlayStationStoreDeals(client), NintendoStoreDeals(client)),
+        platformSources = sources,
+        regions = FileDealsRegionStore(File(context.filesDir, "deals-regions.json")),
+        library = library,
+        deviceCountry = { java.util.Locale.getDefault().country },
+        onError = { platform, e -> Log.w("Playlog", "Store deals failed for $platform", e) },
+    )
+
     @Provides
     @Singleton
     fun dealsRepository(@ApplicationContext context: Context, client: HttpClient, library: LibraryRepository, clock: AppClock): DealsRepository {

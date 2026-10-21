@@ -1,0 +1,5 @@
+{"data":{"categoryGridRetrieve":{"__typename":"CategoryGrid","id":"3f772501","pageInfo":{"isLast":false,"offset":0,"size":24,"totalCount":900},"products":[
+ {"__typename":"Product","id":"EP9000-PPSA01284_00-ASTROBOT","name":"Astro Bot","platforms":["PS5"],"price":{"__typename":"SkuPrice","basePrice":"2 999,00 TL","discountedPrice":"1 799,00 TL","discountText":"-40%","isFree":false,"endTime":"1767225600000"},"media":[{"role":"MASTER","type":"IMAGE","url":"https://image.api.playstation.com/astro_master.png"},{"role":"SCREENSHOT","type":"IMAGE","url":"https://image.api.playstation.com/astro_s1.jpg"},{"role":"GAMEHUB_COVER_ART","type":"IMAGE","url":"https://image.api.playstation.com/astro_wide.jpg"}]},
+ {"__typename":"Product","id":"EP1-PLUS","name":"Plus Only","price":{"basePrice":"100 TL","discountedPrice":"50 TL","discountText":"-50%","upsellServiceBranding":["PS_PLUS"]},"media":[{"role":"MASTER","url":"https://x/p.png"}]},
+ {"__typename":"Product","id":"EP1-NODISC","name":"Not On Sale","price":{"basePrice":"100 TL","discountedPrice":"100 TL","discountText":null},"media":[{"role":"MASTER","url":"https://x/n.png"}]}
+]}}}

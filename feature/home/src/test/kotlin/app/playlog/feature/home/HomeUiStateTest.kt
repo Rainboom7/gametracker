@@ -80,7 +80,7 @@ class HomeUiStateTest {
 
     @Test
     fun `deals come from fresh picks or the stale ones after a failure`() {
-        val deal = DealPick(1, "Hollow Knight", "https://x/h.jpg", discountPercent = 50, priceText = "250 ₽")
+        val deal = DealPick(Platform.STEAM, "1", "Hollow Knight", "https://x/h.jpg", "https://x/app/1", discountPercent = 50, priceText = "250 ₽")
         fun deals(state: DealsState) = (HomeUiState.build(library, week, 3, discover(null), emptyList(), DayPart.EVENING, state) as HomeUiState.Content).deals
 
         assertEquals(listOf(deal), deals(DealsState.Ready(listOf(deal), now)))

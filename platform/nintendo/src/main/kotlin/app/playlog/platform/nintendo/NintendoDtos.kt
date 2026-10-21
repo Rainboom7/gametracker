@@ -32,6 +32,8 @@ internal data class NintendoUserDto(
     val id: String,
     val nickname: String,
     val mii: NintendoMiiDto? = null,
+    /** Account country, ISO alpha-2 (e.g. "PL"); the eShop region. */
+    val country: String? = null,
 )
 
 @Serializable

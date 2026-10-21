@@ -51,6 +51,8 @@ internal data class PlayerSummaryDto(
     val avatarfull: String? = null,
     /** 1 = private, 3 = public. */
     val communityvisibilitystate: Int = 1,
+    /** Profile country, set by the user; absent when hidden. */
+    val loccountrycode: String? = null,
 )
 
 @Serializable

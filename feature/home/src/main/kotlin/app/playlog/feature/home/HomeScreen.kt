@@ -105,7 +105,7 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
                 Section(stringResource(R.string.home_deals), stringResource(R.string.home_all), actions.onOpenDeals) {
                     val uriHandler = LocalUriHandler.current
                     LazyRow(contentPadding = PaddingValues(horizontal = Spacing.lg), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                        items(state.deals, key = { it.steamAppId }) { pick ->
+                        items(state.deals, key = { it.key }) { pick ->
                             DealCard(pick, onClick = { runCatching { uriHandler.openUri(pick.storeUrl) } })
                         }
                     }

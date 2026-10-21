@@ -79,13 +79,14 @@ import app.playlog.core.model.MilestoneKind
 import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
 import app.playlog.core.model.Platform
+import app.playlog.core.ui.DealDetailSheet
 import app.playlog.core.ui.entryPlaytimeText
 import app.playlog.core.ui.formatPlaytime
 import app.playlog.core.ui.platformName
 import java.time.Duration
 
 @Composable
-fun DiscoverRoute(onOpenGame: (GameId) -> Unit, viewModel: DiscoverViewModel = hiltViewModel()) {
+fun DiscoverRoute(onOpenGame: (GameId) -> Unit, onOpenAllDeals: () -> Unit, viewModel: DiscoverViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val deals by viewModel.deals.collectAsStateWithLifecycle()
     val openDeal by viewModel.openDeal.collectAsStateWithLifecycle()
@@ -97,6 +98,7 @@ fun DiscoverRoute(onOpenGame: (GameId) -> Unit, viewModel: DiscoverViewModel = h
         deals = deals,
         onOpenDeal = viewModel::openDeal,
         onRefreshDeals = viewModel::refreshDeals,
+        onOpenAllDeals = onOpenAllDeals,
     )
     openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
@@ -110,6 +112,7 @@ fun DiscoverScreen(
     deals: DealsState = DealsState.NoTaste,
     onOpenDeal: (DealPick) -> Unit = {},
     onRefreshDeals: () -> Unit = {},
+    onOpenAllDeals: () -> Unit = {},
 ) {
     val content = state as? DiscoverUiState.Content
     val summary = content?.summary
@@ -144,7 +147,7 @@ fun DiscoverScreen(
                 summary.topPick?.let { pick ->
                     item(key = "top") { TopPickCard(pick, onClick = { onOpenGame(pick.entry.primary.id) }, Modifier.padding(horizontal = Spacing.lg)) }
                 }
-                item(key = "deals") { DealsShelf(deals, onOpen = onOpenDeal, onRefresh = onRefreshDeals) }
+                item(key = "deals") { DealsShelf(deals, onOpen = onOpenDeal, onRefresh = onRefreshDeals, onOpenAll = onOpenAllDeals) }
                 item(key = "roulette") {
                     RouletteCard(
                         state = content?.roulette ?: RouletteState(),

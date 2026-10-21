@@ -40,6 +40,10 @@ class PlayStationSource internal constructor(
         SourceCapability.SCREENSHOTS,
     )
 
+    override suspend fun storeCountry(): String? = runSuspendCatching {
+        if (credentials.read() == null) null else api.storeCountry()
+    }.getOrNull()
+
     override suspend fun fetchLibrary(): List<Game> {
         val titles = mutableListOf<PsnTitleDto>()
         var offset = 0

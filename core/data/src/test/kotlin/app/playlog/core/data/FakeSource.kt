@@ -16,7 +16,10 @@ class FakeSource(
     override val platform: Platform,
     override val capabilities: Set<SourceCapability> = setOf(SourceCapability.TOTAL_PLAYTIME),
     var linked: Boolean = true,
+    private val storeCountry: suspend () -> String? = { null },
 ) : GamePlatformSource {
+    override suspend fun storeCountry(): String? = storeCountry.invoke()
+
     var library: List<Game> = emptyList()
     var daily: List<DailyPlaytime> = emptyList()
     var screenshots: List<Screenshot> = emptyList()

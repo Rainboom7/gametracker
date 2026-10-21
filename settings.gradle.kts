@@ -58,6 +58,7 @@ if (!jvmOnly) {
         ":feature:game",
         ":feature:activity",
         ":feature:discover",
+        ":feature:deals",
         ":feature:screenshots",
         ":feature:profile",
     )

@@ -13,8 +13,9 @@ import java.util.Locale
 
 /**
  * 1. Tags the user's most played titles (Steam appid, or a store search by name for console games).
- * 2. Collects Steam games on sale from CheapShark and the Steam front page, minus owned ones.
- * 3. Tags the most promising deals and ranks them by similarity ([DealRecommender]).
+ * 2. Collects Steam games on sale: specials searched by the user's strongest tags ([SteamTasteSpecials]),
+ *    plus CheapShark and the Steam front page, minus owned ones.
+ * 3. Tags the most promising general deals and ranks everything by similarity ([DealRecommender]).
  * 4. Fetches regional prices, descriptions and screenshots for the winners.
  */
 class OnlineDealsSource(
@@ -23,6 +24,7 @@ class OnlineDealsSource(
     private val steamSpy: SteamSpyClient,
     private val tagStore: TagStore,
     private val onError: (String, Throwable) -> Unit = { _, _ -> },
+    private val tasteSpecials: SteamTasteSpecials? = null,
 ) : DealsSource {
 
     constructor(client: HttpClient, tagStore: TagStore, locale: Locale = Locale.getDefault(), onError: (String, Throwable) -> Unit = { _, _ -> }) : this(
@@ -31,6 +33,7 @@ class OnlineDealsSource(
         SteamSpyClient(client),
         tagStore,
         onError,
+        SteamTasteSpecials(client, SteamStoreDeals(client), country = locale.country.ifEmpty { "US" }),
     )
 
     override suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): Recommendation {
@@ -41,30 +44,38 @@ class OnlineDealsSource(
             }
             if (tagged.isEmpty()) throw DealsException("No tags for any played title")
 
-            val candidates = candidates(owned)
+            val taste = DealRecommender.profile(tagged)
+            val targeted = runSuspendCatching { tasteSpecials?.candidates(taste).orEmpty() }
+                .onFailure { onError("taste specials", it) }
+                .getOrDefault(emptyList())
+                .filter { (c, _) -> c.isWorthShowing(owned) }
+            val targetedIds = targeted.mapTo(HashSet()) { it.first.appId }
+            val general = candidates(owned, required = targeted.isEmpty())
+                .filter { it.appId !in targetedIds }
                 .sortedByDescending(::promise)
                 .take(MAX_TAGGED)
                 .mapNotNull { c -> tagsOf(c.appId)?.let { c to it } }
-            val ranked = DealRecommender.rank(tagged, candidates, limit = MAX_RANKED)
+            val ranked = DealRecommender.rank(tagged, targeted + general, limit = MAX_RANKED)
             val picks = ArrayList<DealPick>(MAX_PICKS)
             for (scored in ranked) {
                 if (picks.size == MAX_PICKS) break
                 toPick(scored)?.let(picks::add)
             }
-            return Recommendation(picks, DealRecommender.profile(tagged))
+            return Recommendation(picks, taste)
         } finally {
             tagStore.flush()
         }
     }
 
-    private suspend fun candidates(owned: Ownership): List<DealCandidate> {
+    /** With [required] false a dead feed is tolerated: the taste search already found candidates. */
+    private suspend fun candidates(owned: Ownership, required: Boolean = true): List<DealCandidate> {
         val feeds = listOf(
             runSuspendCatching { cheapShark.steamDeals(page = 0) },
             runSuspendCatching { cheapShark.steamDeals(page = 1) },
             runSuspendCatching { shop.specials() },
         )
         feeds.forEach { r -> r.exceptionOrNull()?.let { onError("deals feed", it) } }
-        if (feeds.all { it.isFailure }) throw DealsException("No deals feed reachable", feeds.first().exceptionOrNull())
+        if (required && feeds.all { it.isFailure }) throw DealsException("No deals feed reachable", feeds.first().exceptionOrNull())
         return feeds.flatMap { it.getOrDefault(emptyList()) }
             .groupBy { it.appId }
             .map { (_, same) -> same.reduce(::mergeCandidates) }

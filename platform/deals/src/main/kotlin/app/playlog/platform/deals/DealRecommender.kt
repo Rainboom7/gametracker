@@ -33,7 +33,7 @@ object DealRecommender {
     private const val MAX_TAGS = 3
 
     /** Tags almost every game has; they would make everything look alike. */
-    private val GENERIC = setOf(
+    internal val GENERIC = setOf(
         "Singleplayer", "Indie", "Action", "Adventure", "Great Soundtrack", "Atmospheric", "Casual", "2D", "3D",
         "Colorful", "Cute", "Story Rich", "Multiplayer", "Free to Play", "Early Access", "Classic", "Funny",
         "Difficult", "Controller", "Family Friendly", "Simulation", "Strategy", "RPG", "Fantasy", "Sci-fi",

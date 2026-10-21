@@ -27,7 +27,7 @@ import app.playlog.core.designsystem.component.Skeleton
 import app.playlog.core.designsystem.theme.Spacing
 import app.playlog.core.model.DealPick
 import app.playlog.core.model.DealsState
-import app.playlog.core.ui.DealCard
+import app.playlog.core.ui.PersonalDealCard
 
 /** "On sale for you": Steam deals similar to what the user plays. Hidden while there is no taste yet. */
 @Composable
@@ -73,10 +73,10 @@ fun DealsShelf(
                 contentPadding = PaddingValues(horizontal = Spacing.lg),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             ) {
-                items(picks, key = { it.key }) { pick -> DealCard(pick, onClick = { onOpen(pick) }) }
+                items(picks, key = { it.key }) { pick -> PersonalDealCard(pick, onClick = { onOpen(pick) }) }
             }
             state is DealsState.Loading -> Row(Modifier.padding(horizontal = Spacing.lg), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                repeat(2) { Skeleton(Modifier.width(260.dp).height(190.dp)) }
+                repeat(2) { Skeleton(Modifier.width(288.dp).height(250.dp)) }
             }
             state is DealsState.Failed -> TextButton(onClick = onRefresh, modifier = Modifier.padding(horizontal = Spacing.sm)) {
                 Text(stringResource(R.string.deals_retry))

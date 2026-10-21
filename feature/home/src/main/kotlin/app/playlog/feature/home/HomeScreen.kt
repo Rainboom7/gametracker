@@ -57,7 +57,7 @@ import app.playlog.core.designsystem.theme.Spacing
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
-import app.playlog.core.ui.DealCard
+import app.playlog.core.ui.PersonalDealCard
 import app.playlog.feature.deals.GiveawaysHomeCard
 import app.playlog.feature.journal.BadgesStrip
 import app.playlog.feature.journal.TodayHomeCard
@@ -128,7 +128,7 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
                     val uriHandler = LocalUriHandler.current
                     LazyRow(contentPadding = PaddingValues(horizontal = Spacing.lg), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
                         items(state.deals, key = { it.key }) { pick ->
-                            DealCard(pick, onClick = { runCatching { uriHandler.openUri(pick.storeUrl) } })
+                            PersonalDealCard(pick, onClick = { runCatching { uriHandler.openUri(pick.storeUrl) } })
                         }
                     }
                 }

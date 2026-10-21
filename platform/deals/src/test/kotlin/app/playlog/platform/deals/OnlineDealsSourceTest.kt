@@ -20,7 +20,7 @@ class OnlineDealsSourceTest {
     private val requests = mutableListOf<String>()
     private val tagStore = InMemoryTagStore()
 
-    private fun source(dealsUp: Boolean = true): OnlineDealsSource {
+    private fun source(dealsUp: Boolean = true, tasteSearch: Boolean = false): OnlineDealsSource {
         val engine = MockEngine { request ->
             val url = request.url
             requests += "${url.host}${url.encodedPath}?${url.parameters["appid"] ?: url.parameters["appids"] ?: url.parameters["term"] ?: ""}"
@@ -28,6 +28,8 @@ class OnlineDealsSourceTest {
                 !dealsUp && (url.host == "cheapshark.test" || url.encodedPath == "/api/featuredcategories") -> null
                 url.host == "cheapshark.test" -> if (url.parameters["pageNumber"] == "0") fixture("cheapshark_deals.json") else "[]"
                 url.encodedPath == "/api/featuredcategories" -> fixture("featured.json")
+                url.encodedPath == "/search/results/" -> fixture("steam_search_taste.json")
+                url.encodedPath == "/tagdata/populartags/english" -> fixture("steam_tags_taste.json")
                 url.encodedPath == "/api/storesearch/" ->
                     if (url.parameters["term"] == "Celeste") fixture("storesearch_celeste.json") else """{"total":0,"items":[]}"""
                 url.host == "spy.test" -> javaClass.getResource("/fixtures/deals/spy_${url.parameters["appid"]}.json")?.readText() ?: fixture("spy_empty.json")
@@ -47,6 +49,8 @@ class OnlineDealsSourceTest {
             SteamShopClient(client, countryCode = "RU", language = "russian", baseUrl = "https://store.test"),
             SteamSpyClient(client, baseUrl = "https://spy.test", minIntervalMillis = 0),
             tagStore,
+            tasteSpecials = SteamTasteSpecials(client, SteamStoreDeals(client, baseUrl = "https://store.test"), "RU", baseUrl = "https://store.test")
+                .takeIf { tasteSearch },
         )
     }
 
@@ -101,5 +105,15 @@ class OnlineDealsSourceTest {
         } catch (e: DealsException) {
             assertTrue(e.message!!.contains("feed"))
         }
+    }
+
+    @Test
+    fun `specials searched by the strongest taste tags join the ranking without SteamSpy calls`() = runTest {
+        val picks = source(tasteSearch = true).recommend(seeds, owned).picks
+
+        assertEquals("Cult Rogue", picks.first().title)
+        assertEquals("600 руб.", picks.first().priceText)
+        assertTrue(requests.none { it == "spy.test/api.php?900100" })
+        assertTrue(requests.any { it.startsWith("store.test/search/results/") })
     }
 }

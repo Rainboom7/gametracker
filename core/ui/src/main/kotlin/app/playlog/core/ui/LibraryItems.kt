@@ -184,8 +184,12 @@ fun ScreenshotTile(screenshot: Screenshot, onClick: () -> Unit, modifier: Modifi
 
 /** Playtime per platform for the split bar caption, e.g. "Steam 118 ч · Nintendo 24 ч". */
 @Composable
-fun platformSplitCaption(entry: LibraryEntry): String =
-    entry.platforms.joinToString(" · ") { p -> "${platformName(p)} ${formatPlaytime(entry.playtimeOn(p))}" }
+fun platformSplitCaption(entry: LibraryEntry): String {
+    // Composable calls can't go inside joinToString's lambda, so the parts are built first.
+    val parts = mutableListOf<String>()
+    for (p in entry.platforms) parts += "${platformName(p)} ${formatPlaytime(entry.playtimeOn(p))}"
+    return parts.joinToString(" · ")
+}
 
 fun LibraryEntry.platformShares(): List<Pair<Platform, Float>> =
     platforms.map { it to playtimeOn(it).toMinutes().toFloat() }.filter { it.second > 0f }

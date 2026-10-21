@@ -293,3 +293,4 @@ private fun RoundIconButton(onClick: () -> Unit, content: @Composable () -> Unit
 
 private val HERO_HEIGHT = 220.dp
 private val COVER_OVERLAP = 60.dp
+private const val MAX_SCREENSHOTS_IN_ROW = 10

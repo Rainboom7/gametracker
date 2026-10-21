@@ -34,7 +34,7 @@ import app.playlog.core.data.ActivityRepository
 import app.playlog.core.data.LibraryRepository
 import app.playlog.core.data.UserSettingsRepository
 import app.playlog.core.model.ActivityPeriod
-import app.playlog.core.ui.PlaytimeFormat
+import app.playlog.core.ui.formatPlaytime
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -109,7 +109,7 @@ private fun WidgetContent(context: Context, snapshot: WidgetSnapshot) {
         )
         Spacer(GlanceModifier.height(10.dp))
         Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
-            Stat(context.getString(R.string.widget_week, playtime(context, snapshot.week)), Lime)
+            Stat(context.getString(R.string.widget_week, context.formatPlaytime(snapshot.week)), Lime)
             snapshot.goalPercent?.let {
                 Spacer(GlanceModifier.width(12.dp))
                 Stat(context.getString(R.string.widget_goal, it), Mint)
@@ -125,11 +125,6 @@ private fun WidgetContent(context: Context, snapshot: WidgetSnapshot) {
 @Composable
 private fun Stat(text: String, color: ColorProvider) {
     Text(text, style = TextStyle(color = color, fontSize = 13.sp, fontWeight = FontWeight.Medium), maxLines = 1)
-}
-
-private fun playtime(context: Context, duration: Duration): String = when (val v = PlaytimeFormat.of(duration)) {
-    is PlaytimeFormat.Value.Minutes -> context.getString(app.playlog.core.ui.R.string.duration_minutes, v.minutes)
-    is PlaytimeFormat.Value.Hours -> context.getString(app.playlog.core.ui.R.string.duration_hours, v.text)
 }
 
 private val Lime = ColorProvider(Color(0xFFC8F55A))

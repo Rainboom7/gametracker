@@ -23,6 +23,7 @@ data class HomeActions(
     /** This week's story recap. */
     val onOpenRecap: () -> Unit = {},
     val onOpenGiveaways: () -> Unit = {},
+    val onOpenBadges: () -> Unit = {},
 )
 
 fun NavGraphBuilder.homeScreen(actions: HomeActions) {

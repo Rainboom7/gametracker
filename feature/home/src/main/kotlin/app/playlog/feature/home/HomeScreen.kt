@@ -59,6 +59,7 @@ import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
 import app.playlog.core.ui.DealCard
 import app.playlog.feature.deals.GiveawaysHomeCard
+import app.playlog.feature.journal.BadgesStrip
 import app.playlog.core.ui.GameCoverCard
 import app.playlog.core.ui.ScreenshotTile
 import app.playlog.core.ui.entryPlaytimeText
@@ -105,6 +106,8 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
             item { ContinueHero(entry, onClick = { actions.onOpenGame(entry.primary.id) }) }
         }
         item { StatBubbles(state) }
+        // Hides itself until the first badge is earned.
+        item { BadgesStrip(onOpenAll = actions.onOpenBadges) }
         item { WeekCard(state, onClick = actions.onOpenActivity, onOpenRecap = actions.onOpenRecap, onSetGoal = onSetGoal) }
         state.topPick?.let { pick ->
             item { PickCard(pick, onClick = { actions.onOpenGame(pick.entry.primary.id) }, onMore = actions.onOpenDiscover) }

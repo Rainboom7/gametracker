@@ -34,6 +34,9 @@ interface GamePlatformSource {
      * platform will not say. Never throws: the deals screen falls back to a manual region.
      */
     suspend fun storeCountry(): String? = null
+
+    /** Store ids on the account's own wishlist, when the platform exposes it. Throws on failure. */
+    suspend fun wishlist(): List<String> = emptyList()
 }
 
 enum class SourceCapability {

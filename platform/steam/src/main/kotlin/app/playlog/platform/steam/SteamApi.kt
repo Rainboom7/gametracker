@@ -64,6 +64,14 @@ internal class SteamApi(
         }.successBody<SteamEnvelope<UserFilesResponse>>(Platform.STEAM).response
     }
 
+    /** The user's store wishlist (IWishlistService); public wishlists only. */
+    suspend fun wishlist(key: String, steamId: String): WishlistResponse = call {
+        client.get("$baseUrl/IWishlistService/GetWishlist/v1/") {
+            parameter("key", key)
+            parameter("steamid", steamId)
+        }.successBody<SteamEnvelope<WishlistResponse>>(Platform.STEAM).response
+    }
+
     private suspend inline fun <T> call(block: () -> T): T = platformCall(Platform.STEAM, block)
 
     private companion object {

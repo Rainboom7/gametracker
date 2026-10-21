@@ -123,6 +123,115 @@ class StoreDealsClientsTest {
     }
 
     @Test
+    fun `steam reads search rows with user tags and reviews`() = runTest {
+        val store = SteamStoreDeals(
+            client { r ->
+                when (r.url.encodedPath) {
+                    "/search/results/" -> fixture("steam_search_rows.json")
+                    "/tagdata/populartags/english" -> fixture("steam_tags.json")
+                    else -> fixture("steam_prices.json")
+                }
+            },
+            baseUrl = "https://store.test",
+        )
+
+        val page = store.page("TR", 0)
+
+        val deadCells = page.deals.single()
+        assertEquals(listOf("Roguelike", "Action Roguelike", "Crafting"), deadCells.tags)
+        assertEquals(96, deadCells.reviewPercent)
+        assertEquals(12.0, deadCells.priceValue!!, 0.001)
+        assertTrue(page.hasMore)
+        assertEquals("588650,1000", requests.first { it.url.encodedPath == "/api/appdetails" }.url.parameters["appids"])
+        assertEquals(1, requests.count { it.url.encodedPath == "/search/results/" })
+    }
+
+    @Test
+    fun `steam quotes name and price wishlisted apps in one call`() = runTest {
+        val store = SteamStoreDeals(client { fixture("steam_getitems.json") }, apiUrl = "https://api.test")
+
+        val quotes = store.quotes("TR", listOf("588650", "1000", "2000"))
+
+        assertEquals("12,00 TL", quotes.getValue("588650").price?.priceText)
+        assertEquals(60, quotes.getValue("588650").price?.discountPercent)
+        assertEquals(Instant.ofEpochSecond(1767225600), quotes.getValue("588650").price?.endsAt)
+        assertEquals(0, quotes.getValue("1000").price?.discountPercent)
+        assertEquals("Coming Soon", quotes.getValue("2000").title)
+        assertEquals(null, quotes.getValue("2000").price)
+        assertTrue(requests.single().url.parameters["input_json"]!!.contains("\"country_code\":\"TR\""))
+    }
+
+    @Test
+    fun `playstation keeps listings branded NONE and tries the next hash on a rotation`() = runTest {
+        val store = PlayStationStoreDeals(
+            client { r ->
+                val hash = r.url.parameters["extensions"].orEmpty()
+                val rotated = hash.contains(PlayStationStoreDeals.CATEGORY_GRID_HASHES.first())
+                if (rotated) """{"errors":[{"message":"PersistedQueryNotFound"}]}""" else fixture("psn_graphql.json")
+            },
+            graphQlUrl = "https://gql.test/op",
+            storeUrl = "https://ps.test",
+        )
+
+        assertEquals(listOf("Astro Bot"), store.page("TR", 0).deals.map { it.title })
+        assertEquals(1799.0, store.page("TR", 0).deals.single().priceValue!!, 0.001)
+        // The working hash is remembered: the second page asks once.
+        assertEquals(3, requests.size)
+    }
+
+    @Test
+    fun `nintendo quotes full price and sale prices`() = runTest {
+        val store = NintendoStoreDeals(client { fixture("nintendo_prices.json") }, priceUrl = "https://price.test/v1/price")
+
+        val quotes = store.quotes("PL", listOf("70010000003207", "70010000000001"))
+
+        assertEquals(50, quotes.getValue("70010000003207").price?.discountPercent)
+        assertEquals("100,00 zł", quotes.getValue("70010000000001").price?.priceText)
+        assertEquals(0, quotes.getValue("70010000000001").price?.discountPercent)
+    }
+
+    @Test
+    fun `nintendo search keeps games that are not on sale`() = runTest {
+        val store = NintendoStoreDeals(
+            client { r -> if (r.url.host == "noe.test") fixture("noe_search.json") else fixture("nintendo_prices.json") },
+            europeSearchUrl = "https://noe.test",
+            priceUrl = "https://price.test/v1/price",
+        )
+
+        val results = store.search("PL", "knight")
+
+        assertEquals(listOf("Hollow Knight", "Not Discounted Here"), results.map { it.title })
+        assertEquals("title:\"knight\"", requests.first().url.parameters["q"])
+        assertEquals("type:GAME", requests.first().url.parameters["fq"])
+    }
+
+    @Test
+    fun `cheapshark finds the all-time low of a Steam game`() = runTest {
+        val history = CheapSharkPriceHistory(
+            client { r -> if (r.url.parameters["steamAppID"] != null) fixture("cheapshark_lookup.json") else fixture("cheapshark_game.json") },
+            baseUrl = "https://cs.test",
+        )
+
+        val low = history.lowest(Platform.STEAM, "588650")!!
+
+        assertEquals("$4.94", low.priceText)
+        assertEquals(Instant.ofEpochSecond(1700000000), low.at)
+        assertEquals(null, history.lowest(Platform.NINTENDO, "1"))
+        history.lowest(Platform.STEAM, "588650")
+        assertEquals("cached", 2, requests.size)
+    }
+
+    @Test
+    fun `price text parses every store locale`() {
+        assertEquals(1799.0, PriceText.value("1 799,00 TL")!!, 0.001)
+        assertEquals(19.99, PriceText.value("$19.99")!!, 0.001)
+        assertEquals(1999.0, PriceText.value("₹1,999")!!, 0.001)
+        assertEquals(1299.0, PriceText.value("1.299,00 zł")!!, 0.001)
+        assertEquals(2750.0, PriceText.value("¥2,750")!!, 0.001)
+        assertEquals(null, PriceText.value("Free"))
+    }
+
+    @Test
     fun `npId region helper is covered by the PlayStation module`() {
         // Region detection lives next to each account (platform modules); see PsnApi.regionFromNpId.
         assertTrue(StoreRegions.PLAYSTATION.containsKey("TR"))

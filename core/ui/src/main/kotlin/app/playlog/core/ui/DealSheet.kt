@@ -21,6 +21,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
@@ -28,6 +31,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -41,11 +45,21 @@ import androidx.compose.ui.unit.dp
 import app.playlog.core.designsystem.component.GameImage
 import app.playlog.core.designsystem.component.PlatformBadge
 import app.playlog.core.model.DealPick
+import app.playlog.core.model.PriceLow
 
-/** Screenshots, price, why it was picked, description and a link to the store page. */
+/**
+ * Screenshots, price, why it was picked, description and a link to the store page. The wishlist
+ * button shows when [wished] is known; [lowest] is the price history low, when a service knows it.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DealDetailSheet(pick: DealPick, onDismiss: () -> Unit) {
+fun DealDetailSheet(
+    pick: DealPick,
+    onDismiss: () -> Unit,
+    wished: Boolean? = null,
+    onToggleWish: () -> Unit = {},
+    lowest: PriceLow? = null,
+) {
     val uriHandler = LocalUriHandler.current
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
@@ -60,29 +74,15 @@ fun DealDetailSheet(pick: DealPick, onDismiss: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(pick.title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
                     PlatformBadge(pick.platform)
-                    Spacer(Modifier.width(8.dp))
-                    DiscountBadge(pick.discountPercent)
-                }
-                DealPrice(pick)
-                pick.endsAt?.let { ends ->
-                    IconLine(Icons.Default.Schedule, stringResource(R.string.deal_ends, formatShortDate(ends)))
-                }
-                if (pick.becauseOf.isNotEmpty() || pick.sharedTags.isNotEmpty()) {
-                    IconLine(Icons.Default.LocalOffer, dealReason(pick), highlight = true)
-                }
-                if (pick.match > 0f) {
-                    Text(
-                        stringResource(R.string.deal_match, (pick.match * Percent).toInt()),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (pick.sharedTags.isNotEmpty()) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        pick.sharedTags.forEach { SuggestionChip(onClick = {}, label = { Text(it) }) }
+                    if (pick.isOnSale) {
+                        Spacer(Modifier.width(8.dp))
+                        DiscountBadge(pick.discountPercent)
                     }
                 }
+                DealPrice(pick)
+                DealFacts(pick, lowest)
                 pick.shortDescription?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                if (wished != null) WishlistButton(wished, onToggleWish)
                 Button(onClick = { uriHandler.openUri(pick.storeUrl) }, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
@@ -90,6 +90,46 @@ fun DealDetailSheet(pick: DealPick, onDismiss: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Price history, sale end, why it was picked and tags. */
+@Composable
+private fun DealFacts(pick: DealPick, lowest: PriceLow?) {
+    lowest?.let { low ->
+        IconLine(
+            Icons.AutoMirrored.Filled.TrendingDown,
+            low.at?.let { stringResource(R.string.deal_lowest, low.priceText, formatShortDate(it, withYear = true), low.source) }
+                ?: stringResource(R.string.deal_lowest_undated, low.priceText, low.source),
+        )
+    }
+    pick.endsAt?.let { ends ->
+        IconLine(Icons.Default.Schedule, stringResource(R.string.deal_ends, formatShortDate(ends)))
+    }
+    if (pick.becauseOf.isNotEmpty() || pick.sharedTags.isNotEmpty()) {
+        IconLine(Icons.Default.LocalOffer, dealReason(pick), highlight = true)
+    }
+    if (pick.match > 0f) {
+        Text(
+            stringResource(R.string.deal_match, (pick.match * Percent).toInt()),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    val chips = pick.sharedTags.ifEmpty { pick.tags.take(MaxTags) }
+    if (chips.isNotEmpty()) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            chips.forEach { SuggestionChip(onClick = {}, label = { Text(it) }) }
+        }
+    }
+}
+
+@Composable
+private fun WishlistButton(wished: Boolean, onClick: () -> Unit) {
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+        Icon(if (wished) Icons.Default.Favorite else Icons.Default.FavoriteBorder, contentDescription = null, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(if (wished) R.string.deal_wish_remove else R.string.deal_wish_add))
     }
 }
 
@@ -134,3 +174,4 @@ private fun Screenshots(pick: DealPick) {
 private const val ScreenshotAspect = 16f / 9f
 private const val Percent = 100
 private const val DotAlpha = 0.5f
+private const val MaxTags = 6

@@ -16,7 +16,7 @@ class DealsLiveTest {
     fun `finds deals for a roguelite fan`() = runTest(timeout = 5.minutes) {
         val source = OnlineDealsSource(HttpClientFactory.create(CIO.create()), InMemoryTagStore(), Locale("ru", "RU"))
 
-        val picks = source.recommend(listOf(TasteSeed("Hades", 1145360, 3.0), TasteSeed("Celeste", null, 2.0)), Ownership(setOf(1145360), emptySet()))
+        val picks = source.recommend(listOf(TasteSeed("Hades", 1145360, 3.0), TasteSeed("Celeste", null, 2.0)), Ownership(setOf(1145360), emptySet())).picks
 
         assertTrue("no picks: a feed or SteamSpy format changed", picks.isNotEmpty())
         assertTrue("no screenshots: appdetails format changed", picks.any { it.screenshots.isNotEmpty() })

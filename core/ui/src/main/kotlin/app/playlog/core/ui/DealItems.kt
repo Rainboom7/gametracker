@@ -84,7 +84,12 @@ fun DiscountBadge(percent: Int, modifier: Modifier = Modifier) {
 @Composable
 fun DealPrice(pick: DealPick, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(pick.priceText, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, maxLines = 1)
+        Text(
+            pick.priceText.ifBlank { stringResource(R.string.deal_full_price) },
+            style = MaterialTheme.typography.titleMedium,
+            color = if (pick.isOnSale) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+        )
         pick.originalPriceText?.let { original ->
             Spacer(Modifier.width(8.dp))
             Text(
@@ -117,8 +122,8 @@ fun dealReason(pick: DealPick): String = when {
     else -> stringResource(R.string.deal_on_sale)
 }
 
-/** "29 окт." in the device locale. */
-internal fun formatShortDate(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
-    DateTimeFormatter.ofPattern("d MMM", Locale.getDefault()).format(instant.atZone(zone))
+/** "29 окт." (or "29 окт. 2024") in the device locale. */
+fun formatShortDate(instant: Instant, zone: ZoneId = ZoneId.systemDefault(), withYear: Boolean = false): String =
+    DateTimeFormatter.ofPattern(if (withYear) "d MMM yyyy" else "d MMM", Locale.getDefault()).format(instant.atZone(zone))
 
 private const val HeaderAspect = 460f / 215f

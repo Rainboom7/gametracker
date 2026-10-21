@@ -1,5 +1,6 @@
 package app.playlog.core.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
@@ -35,14 +36,16 @@ fun formatRelativeDate(instant: Instant?, zone: ZoneId = ZoneId.systemDefault())
 
 @Composable
 @ReadOnlyComposable
-fun platformName(platform: Platform?): String = stringResource(
-    when (platform) {
-        null -> R.string.platform_all
-        Platform.STEAM -> R.string.platform_steam
-        Platform.PLAYSTATION -> R.string.platform_playstation
-        Platform.NINTENDO -> R.string.platform_nintendo
-    },
-)
+fun platformName(platform: Platform?): String = stringResource(platformNameRes(platform))
+
+/** For non-Compose callers such as notifications. */
+@StringRes
+fun platformNameRes(platform: Platform?): Int = when (platform) {
+    null -> R.string.platform_all
+    Platform.STEAM -> R.string.platform_steam
+    Platform.PLAYSTATION -> R.string.platform_playstation
+    Platform.NINTENDO -> R.string.platform_nintendo
+}
 
 @Composable
 @ReadOnlyComposable

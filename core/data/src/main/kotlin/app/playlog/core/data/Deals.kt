@@ -39,8 +39,11 @@ data class Ownership(val steamAppIds: Set<Long>, val titleKeys: Set<String>)
  * repository keeps showing the last good result instead of an empty list.
  */
 fun interface DealsSource {
-    suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): List<DealPick>
+    suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): Recommendation
 }
+
+/** Picks plus the tag profile they were matched against. */
+data class Recommendation(val picks: List<DealPick>, val taste: Map<String, Double> = emptyMap())
 
 /** Last computed picks; survives restarts so the shelf shows instantly. */
 interface DealsCache {
@@ -49,7 +52,7 @@ interface DealsCache {
     suspend fun write(deals: CachedDeals)
 }
 
-data class CachedDeals(val picks: List<DealPick>, val fetchedAt: Instant)
+data class CachedDeals(val picks: List<DealPick>, val fetchedAt: Instant, val taste: Map<String, Double> = emptyMap())
 
 class InMemoryDealsCache : DealsCache {
     @Volatile private var value: CachedDeals? = null
@@ -93,7 +96,7 @@ class DefaultDealsRepository(
     private suspend fun update(force: Boolean) = lock.withLock {
         if (!cacheLoaded) {
             cacheLoaded = true
-            cache.read()?.let { state.value = DealsState.Ready(it.picks, it.fetchedAt) }
+            cache.read()?.let { state.value = DealsState.Ready(it.picks, it.fetchedAt, it.taste) }
         }
         val current = state.value
         if (!force && current is DealsState.Ready && current.fetchedAt.plus(ttl).isAfter(clock.now())) return@withLock
@@ -105,10 +108,10 @@ class DefaultDealsRepository(
             return@withLock
         }
         runSuspendCatching { source.recommend(seeds, TasteProfile.ownership(entries)) }
-            .onSuccess { picks ->
-                val result = CachedDeals(picks, clock.now())
+            .onSuccess { recommendation ->
+                val result = CachedDeals(recommendation.picks, clock.now(), recommendation.taste)
                 cache.write(result)
-                state.value = DealsState.Ready(result.picks, result.fetchedAt)
+                state.value = DealsState.Ready(result.picks, result.fetchedAt, result.taste)
             }
             .onFailure { e ->
                 onError(e)
@@ -161,4 +164,17 @@ object TasteProfile {
 
     private fun LibraryEntry.steamAppId(): Long? =
         games.firstOrNull { it.id.platform == Platform.STEAM }?.id?.externalId?.toLongOrNull()
+}
+
+/** How well a store listing's genres or tags fit a taste profile. Pure, so it is unit tested. */
+object TasteMatch {
+    /** Tags arrive most relevant first; earlier ones weigh more, like vote counts would. */
+    fun score(taste: Map<String, Double>, tags: List<String>): Float {
+        if (taste.isEmpty() || tags.isEmpty()) return 0f
+        val byKey = taste.mapKeys { it.key.lowercase() }
+        val weights = tags.distinctBy { it.lowercase() }.mapIndexed { i, tag -> tag.lowercase() to 1.0 / (1 + i) }
+        val norm = kotlin.math.sqrt(weights.sumOf { it.second * it.second })
+        val dot = weights.sumOf { (tag, w) -> w * (byKey[tag] ?: 0.0) }
+        return (dot / norm).toFloat().coerceIn(0f, 1f)
+    }
 }

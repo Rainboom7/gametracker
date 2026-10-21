@@ -12,6 +12,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import app.playlog.core.data.SyncScheduler
 import app.playlog.core.data.UserSettingsRepository
+import app.playlog.sync.WishlistWorker
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +39,7 @@ class PlaylogApplication : Application(), Configuration.Provider, SingletonImage
         appScope.launch {
             syncScheduler.setPeriodicSync(settings.settings.first().backgroundSync)
         }
+        WishlistWorker.schedule(this)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(context)

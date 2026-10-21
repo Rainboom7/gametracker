@@ -3,6 +3,7 @@ package app.playlog.platform.deals
 import app.playlog.core.common.runSuspendCatching
 import app.playlog.core.data.DealsSource
 import app.playlog.core.data.Ownership
+import app.playlog.core.data.Recommendation
 import app.playlog.core.data.TasteSeed
 import app.playlog.core.model.DealPick
 import app.playlog.core.model.Platform
@@ -32,7 +33,7 @@ class OnlineDealsSource(
         onError,
     )
 
-    override suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): List<DealPick> {
+    override suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): Recommendation {
         try {
             val tagged = seeds.mapNotNull { seed ->
                 val appId = seed.steamAppId ?: resolve(seed.title) ?: return@mapNotNull null
@@ -50,7 +51,7 @@ class OnlineDealsSource(
                 if (picks.size == MAX_PICKS) break
                 toPick(scored)?.let(picks::add)
             }
-            return picks
+            return Recommendation(picks, DealRecommender.profile(tagged))
         } finally {
             tagStore.flush()
         }

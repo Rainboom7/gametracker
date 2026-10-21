@@ -59,7 +59,7 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `recommends similar unowned games on sale with regional prices and screenshots`() = runTest {
-        val picks = source().recommend(seeds, owned)
+        val picks = source().recommend(seeds, owned).picks
 
         assertEquals(listOf("Dead Cells", "Hollow Knight"), picks.map { it.title })
         val deadCells = picks.first()
@@ -76,7 +76,7 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `never spends requests on owned, badly reviewed or full price games`() = runTest {
-        source().recommend(seeds, owned)
+        source().recommend(seeds, owned).picks
 
         val spied = requests.filter { it.startsWith("spy.test") }.map { it.substringAfter('?') }.toSet()
         assertEquals(setOf("1145360", "504230", "588650", "367520", "2000"), spied)
@@ -84,19 +84,19 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `console titles are matched to Steam by exact name and cached`() = runTest {
-        source().recommend(seeds, owned)
+        source().recommend(seeds, owned).picks
         assertEquals(504230L, tagStore.appId("celeste"))
         assertEquals(TagStore.NOT_ON_STEAM, tagStore.appId("the legend of zelda tears of the kingdom"))
 
         requests.clear()
-        source().recommend(seeds, owned)
+        source().recommend(seeds, owned).picks
         assertTrue("cached lookups repeat", requests.none { it.contains("storesearch") || it.startsWith("spy.test") })
     }
 
     @Test
     fun `throws when no deals feed is reachable`() = runTest {
         try {
-            source(dealsUp = false).recommend(seeds, owned)
+            source(dealsUp = false).recommend(seeds, owned).picks
             fail("expected DealsException")
         } catch (e: DealsException) {
             assertTrue(e.message!!.contains("feed"))

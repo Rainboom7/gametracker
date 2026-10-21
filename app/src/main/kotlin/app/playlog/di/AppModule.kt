@@ -16,6 +16,9 @@ import app.playlog.core.data.DealsRepository
 import app.playlog.core.data.DefaultStoreDealsRepository
 import app.playlog.core.data.StoreDealsRepository
 import app.playlog.core.data.DefaultDealsRepository
+import app.playlog.core.data.DefaultWishlistRepository
+import app.playlog.core.data.PriceHistory
+import app.playlog.core.data.WishlistRepository
 import app.playlog.core.data.DefaultGameMetadataRepository
 import app.playlog.core.data.DefaultLibraryRepository
 import app.playlog.core.data.DefaultScreenshotRepository
@@ -35,7 +38,9 @@ import app.playlog.core.network.AiaTrustManager
 import app.playlog.core.network.HttpClientFactory
 import app.playlog.platform.api.CredentialStore
 import app.playlog.platform.api.GamePlatformSource
+import app.playlog.platform.deals.CheapSharkPriceHistory
 import app.playlog.platform.deals.DealsDiskCache
+import app.playlog.platform.deals.FileWishlistStore
 import app.playlog.platform.deals.FileDealsRegionStore
 import app.playlog.platform.deals.NintendoStoreDeals
 import app.playlog.platform.deals.PlayStationStoreDeals
@@ -57,6 +62,9 @@ import io.ktor.client.engine.okhttp.OkHttp
 import java.io.File
 import javax.inject.Singleton
 import javax.net.ssl.SSLContext
+
+/** Store requests, statuses and shapes (no tokens); `adb logcat -s Playlog/deals` to see why a store shows nothing. */
+private val DealsLog: (String) -> Unit = { Log.i("Playlog/deals", it) }
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -141,13 +149,36 @@ object AppModule {
         sources: Set<@JvmSuppressWildcards GamePlatformSource>,
         library: LibraryRepository,
     ): StoreDealsRepository = DefaultStoreDealsRepository(
-        stores = setOf(SteamStoreDeals(client), PlayStationStoreDeals(client), NintendoStoreDeals(client)),
+        stores = setOf(
+            SteamStoreDeals(client, log = DealsLog),
+            PlayStationStoreDeals(client, log = DealsLog),
+            NintendoStoreDeals(client, log = DealsLog),
+        ),
         platformSources = sources,
         regions = FileDealsRegionStore(File(context.filesDir, "deals-regions.json")),
         library = library,
         deviceCountry = { java.util.Locale.getDefault().country },
-        onError = { platform, e -> Log.w("Playlog", "Store deals failed for $platform", e) },
+        onError = { platform, e -> Log.w("Playlog/deals", "Store deals failed for $platform", e) },
     )
+
+    @Provides
+    @Singleton
+    fun wishlistRepository(
+        @ApplicationContext context: Context,
+        stores: StoreDealsRepository,
+        sources: Set<@JvmSuppressWildcards GamePlatformSource>,
+        clock: AppClock,
+    ): WishlistRepository = DefaultWishlistRepository(
+        store = FileWishlistStore(File(context.filesDir, "wishlist.json")),
+        stores = stores,
+        platformSources = sources,
+        clock = clock,
+        onError = { platform, e -> Log.w("Playlog/deals", "Wishlist $platform failed", e) },
+    )
+
+    @Provides
+    @Singleton
+    fun priceHistory(client: HttpClient): PriceHistory = CheapSharkPriceHistory(client)
 
     @Provides
     @Singleton

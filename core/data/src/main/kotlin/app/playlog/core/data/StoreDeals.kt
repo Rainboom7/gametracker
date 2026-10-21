@@ -6,6 +6,7 @@ import app.playlog.core.model.Platform
 import app.playlog.core.model.RegionSource
 import app.playlog.core.model.StoreDealsPage
 import app.playlog.core.model.StoreDealsState
+import app.playlog.core.model.StoreQuote
 import app.playlog.core.model.StoreRegion
 import app.playlog.core.model.TitleKey
 import app.playlog.platform.api.GamePlatformSource
@@ -26,6 +27,15 @@ interface StoreDealsSource {
 
     /** Throws when the store cannot be reached or changed its format. */
     suspend fun page(country: String, page: Int): StoreDealsPage
+
+    /**
+     * Current listing of the given store ids, for wishlist price checks. Ids the store did not
+     * answer for are left out, so "unknown" never reads as "not on sale".
+     */
+    suspend fun quotes(country: String, ids: List<String>): Map<String, StoreQuote> = emptyMap()
+
+    /** Store search by title, on sale or not; empty when the store has no search. */
+    suspend fun search(country: String, query: String): List<DealPick> = emptyList()
 }
 
 /** The user's manual region per platform; null means "from the account". */
@@ -60,6 +70,15 @@ interface StoreDealsRepository {
 
     /** A country, or null to go back to the account's region. Reloads the list. */
     suspend fun setRegion(platform: Platform, country: String?)
+
+    /** The region deals and prices for [platform] are shown in. */
+    suspend fun region(platform: Platform): StoreRegion
+
+    /** Throws when the store cannot be reached. */
+    suspend fun search(platform: Platform, query: String): List<DealPick>
+
+    /** Throws when the store cannot be reached; see [StoreDealsSource.quotes]. */
+    suspend fun quotes(platform: Platform, ids: List<String>): Map<String, StoreQuote>
 }
 
 /**
@@ -108,6 +127,23 @@ class DefaultStoreDealsRepository(
     override suspend fun setRegion(platform: Platform, country: String?) {
         regions.set(platform, country)
         load(platform, reset = true)
+    }
+
+    override suspend fun region(platform: Platform): StoreRegion {
+        val slot = slot(platform)
+        return slot.lock.withLock { region(platform, slot) }
+    }
+
+    override suspend fun search(platform: Platform, query: String): List<DealPick> {
+        val region = region(platform)
+        if (region.country !in store(platform).countries) return emptyList()
+        return store(platform).search(region.country, query.trim())
+    }
+
+    override suspend fun quotes(platform: Platform, ids: List<String>): Map<String, StoreQuote> {
+        val region = region(platform)
+        if (ids.isEmpty() || region.country !in store(platform).countries) return emptyMap()
+        return store(platform).quotes(region.country, ids)
     }
 
     private suspend fun load(platform: Platform, reset: Boolean) {

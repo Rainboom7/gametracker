@@ -92,7 +92,7 @@ fun AskScreen(
         when (val result = state.result) {
             AskResult.Idle -> item { Examples(onAsk) }
             AskResult.Thinking -> item { Thinking() }
-            is AskResult.Failed -> item { Failed(onRetry = { onAsk(state.query) }) }
+            is AskResult.Failed -> item { Failed(result.message, onRetry = { onAsk(state.query) }) }
             is AskResult.Answer -> answer(result.answer, onOpenGame, onOpenDeal)
         }
     }
@@ -208,9 +208,11 @@ private fun Thinking() {
 }
 
 @Composable
-private fun Failed(onRetry: () -> Unit) {
+private fun Failed(reason: String?, onRetry: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
         Note(stringResource(R.string.ask_failed))
+        // The technical cause, small: enough for a screenshot to say what broke.
+        reason?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         SecondaryButton(stringResource(R.string.ask_retry), onClick = onRetry)
     }
 }

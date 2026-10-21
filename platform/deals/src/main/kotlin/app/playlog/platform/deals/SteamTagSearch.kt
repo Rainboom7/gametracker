@@ -12,9 +12,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
+import io.ktor.http.URLBuilder
+import io.ktor.http.takeFrom
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * "Спроси" search over the whole Steam catalog, not just specials: user tags (`tags=` by id) and
@@ -79,13 +84,16 @@ class SteamTagSearch(
             ?: jsonRows(query, tagIds, page)
 
     private suspend fun htmlRows(query: FinderQuery, tagIds: List<Int>, page: Int): Pair<List<SteamStoreDeals.Row>, Boolean> {
-        val response = client.get("$baseUrl/search/results/") {
+        val response = searchGet {
             searchParameters(query, tagIds, page)
             parameter("infinite", 1)
         }
         if (!response.status.isSuccess()) throw DealsException("Steam search HTTP ${response.status.value}")
-        val body = TrackerJson.parseToJsonElement(response.bodyAsText()) as? JsonObject ?: throw DealsException("Steam search: not JSON")
-        val html = body.string("results_html") ?: throw DealsException("Steam search: no results_html")
+        val text = response.bodyAsText()
+        val body = runCatching { TrackerJson.parseToJsonElement(text) }.getOrNull() as? JsonObject
+            ?: throw DealsException("Steam search: not JSON (${text.take(SNIPPET).replace('\n', ' ')})")
+        // An empty string is a legitimate "nothing found", not a broken response.
+        val html = (body["results_html"] as? JsonPrimitive)?.content ?: throw DealsException("Steam search: no results_html")
         val total = body.string("total_count")?.toIntOrNull() ?: 0
         val rows = SteamStoreDeals.parseRows(html)
         if (rows.isEmpty() && total > 0) throw DealsException("Steam search: $total results but no parsable rows")
@@ -93,7 +101,7 @@ class SteamTagSearch(
     }
 
     private suspend fun jsonRows(query: FinderQuery, tagIds: List<Int>, page: Int): Pair<List<SteamStoreDeals.Row>, Boolean> {
-        val response = client.get("$baseUrl/search/results/") {
+        val response = searchGet {
             searchParameters(query, tagIds, page)
             parameter("json", 1)
         }
@@ -103,6 +111,23 @@ class SteamTagSearch(
             LOGO_APP.find(item.logo.orEmpty())?.groupValues?.get(1)?.toLongOrNull()?.let { SteamStoreDeals.Row(it, item.name) }
         }
         return rows to (items.size >= SteamStoreDeals.PAGE_SIZE)
+    }
+
+    /**
+     * The shared client does not follow redirects (sign-in flows need the raw 302), but Steam's
+     * search answers some regions and parameter sets with one; follow it here and log every hop.
+     */
+    private suspend fun searchGet(block: HttpRequestBuilder.() -> Unit): HttpResponse {
+        var response = client.get("$baseUrl/search/results/", block)
+        var hops = 0
+        while (response.status.value in REDIRECTS && hops < MAX_HOPS) {
+            val location = response.headers[HttpHeaders.Location] ?: break
+            log("Ask search ${response.status.value} -> ${location.substringBefore('?')}")
+            response = client.get(URLBuilder(response.call.request.url).takeFrom(location).build())
+            hops++
+        }
+        log("Ask search ${response.call.request.url.encodedQuery.take(LOG_QUERY)}: HTTP ${response.status.value}")
+        return response
     }
 
     private fun HttpRequestBuilder.searchParameters(query: FinderQuery, tagIds: List<Int>, page: Int) {
@@ -122,6 +147,10 @@ class SteamTagSearch(
     internal companion object {
         private const val PRICE_BATCH = 50
         private const val TAGS_OF = 5
+        private const val MAX_HOPS = 3
+        private const val SNIPPET = 120
+        private const val LOG_QUERY = 200
+        private val REDIRECTS = 300..399
         private val LOGO_APP = Regex("/apps/(\\d+)/")
 
         /** Store search `category3` ids; the play modes Steam has no category for are left to tags. */

@@ -40,6 +40,7 @@ class AskEngine(
     private val library: LibraryRepository,
     private val deals: DealsRepository,
     private val stores: StoreDealsRepository,
+    private val log: (String) -> Unit = {},
 ) {
     suspend fun ask(text: String): AskAnswer {
         val intent = AskParser.parse(text)
@@ -53,9 +54,17 @@ class AskEngine(
 
         val country = stores.region(Platform.STEAM).country
         val query = storeQuery(intent, similarTags, country)
-        val found = if (query.tags.isEmpty() && query.features.isEmpty() && query.text.isBlank()) emptyList() else finder.find(query)
+        log("Ask '$text': tags=${intent.tags} features=${intent.features} like=${intent.similarTo} -> $query")
+        val found = if (query.tags.isEmpty() && query.features.isEmpty() && query.text.isBlank()) {
+            emptyList()
+        } else {
+            runSuspendCatching { finder.find(query) }
+                .onFailure { log("Ask store search failed: ${it.javaClass.simpleName}: ${it.message}") }
+                .getOrThrow()
+        }
         val taste = taste()
         return answer(intent, similarTags, entries, found, taste)
+            .also { log("Ask '$text': ${found.size} found, ${it.owned.size} owned, ${it.store.size} to buy") }
     }
 
     private suspend fun taste(): Map<String, Double> = withTimeoutOrNull(TASTE_WAIT_MILLIS) {

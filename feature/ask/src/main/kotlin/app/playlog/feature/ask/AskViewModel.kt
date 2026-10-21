@@ -51,7 +51,7 @@ class AskViewModel @Inject constructor(
         job = viewModelScope.launch {
             val result = runSuspendCatching { engine.ask(text) }
                 .onFailure { Log.w(TAG, "Ask failed: ${it.javaClass.simpleName}: ${it.message}", it) }
-                .fold({ AskResult.Answer(it) }, { AskResult.Failed(it.message) })
+                .fold({ AskResult.Answer(it) }, { AskResult.Failed("${it.javaClass.simpleName}: ${it.message}") })
             state.update { it.copy(result = result) }
         }
     }

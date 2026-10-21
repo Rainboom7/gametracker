@@ -54,6 +54,7 @@ if (!jvmOnly) {
         ":feature:library",
         ":feature:game",
         ":feature:activity",
+        ":feature:discover",
         ":feature:screenshots",
         ":feature:profile",
     )

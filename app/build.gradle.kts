@@ -71,6 +71,7 @@ dependencies {
     implementation(projects.feature.library)
     implementation(projects.feature.game)
     implementation(projects.feature.activity)
+    implementation(projects.feature.discover)
     implementation(projects.feature.screenshots)
     implementation(projects.feature.profile)
 

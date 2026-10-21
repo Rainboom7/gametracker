@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_title">Что поиграть</string>
+    <string name="discover_subtitle">Подборки из твоей библиотеки</string>
+    <string name="discover_empty">Подключи аккаунт и синхронизируй библиотеку, тогда здесь появятся подборки.</string>
+
+    <string name="discover_top_pick">Сегодня советуем</string>
+    <string name="discover_open">Открыть</string>
+
+    <string name="discover_shelf_CONTINUE">Продолжить</string>
+    <string name="discover_shelf_ALMOST_DONE">Почти 100%</string>
+    <string name="discover_shelf_RETURN_TO">Вернуться к</string>
+    <string name="discover_shelf_BACKLOG">Бэклог</string>
+    <string name="discover_shelf_hint_CONTINUE">Играл недавно и ещё не прошёл</string>
+    <string name="discover_shelf_hint_ALMOST_DONE">Осталось выбить совсем немного</string>
+    <string name="discover_shelf_hint_RETURN_TO">Много часов, но давно не запускал</string>
+    <string name="discover_shelf_hint_BACKLOG">Куплено, но толком не запускалось</string>
+
+    <string name="discover_reason_CONTINUE">Ты играл в неё %1$s. Самое время продолжить.</string>
+    <string name="discover_reason_ALMOST_DONE">Выбито %1$d%% достижений. До платины рукой подать.</string>
+    <string name="discover_reason_RETURN_TO">Уже %1$s, но ты не запускал её %2$s.</string>
+    <string name="discover_reason_RETURN_TO_unknown">Уже %1$s. Пора вернуться.</string>
+    <string name="discover_reason_BACKLOG">Лежит в бэклоге. Может, сегодня её вечер?</string>
+
+    <string name="discover_caption_progress">%1$d%% ачивок</string>
+    <string name="discover_caption_not_started">Не запускалась</string>
+
+    <string name="discover_roulette_title">Рулетка бэклога</string>
+    <string name="discover_roulette_hint">Не можешь выбрать? Пусть выберет случай. В бэклоге: %1$d</string>
+    <string name="discover_roulette_spin">Выбери за меня</string>
+    <string name="discover_roulette_again">Ещё раз</string>
+    <string name="discover_roulette_empty">На этой платформе бэклог пуст. Красота!</string>
+
+    <string name="discover_anniversaries">В эти дни</string>
+
+    <string name="discover_milestones">Достижения игрока</string>
+    <string name="discover_milestone_level">Ур. %1$d из %2$d</string>
+    <string name="discover_milestone_maxed">Максимум</string>
+    <string name="discover_milestone_next">Следующий уровень: %1$s</string>
+    <string name="discover_milestone_MARATHON">Марафонец</string>
+    <string name="discover_milestone_VETERAN">Ветеран</string>
+    <string name="discover_milestone_COLLECTOR">Коллекционер</string>
+    <string name="discover_milestone_FINISHER">Финишёр</string>
+    <string name="discover_milestone_PERFECTIONIST">Перфекционист</string>
+    <string name="discover_milestone_MULTIPLATFORM">Мультиплатформа</string>
+    <string name="discover_milestone_STREAK">Серия</string>
+    <string name="discover_milestone_desc_MARATHON">Часов в одной игре</string>
+    <string name="discover_milestone_desc_VETERAN">Часов всего</string>
+    <string name="discover_milestone_desc_COLLECTOR">Игр в библиотеке</string>
+    <string name="discover_milestone_desc_FINISHER">Пройденных игр</string>
+    <string name="discover_milestone_desc_PERFECTIONIST">Игр со всеми ачивками</string>
+    <string name="discover_milestone_desc_MULTIPLATFORM">Игр на нескольких платформах</string>
+    <string name="discover_milestone_desc_STREAK">Дней подряд за год</string>
+
+    <plurals name="discover_years_ago">
+        <item quantity="one">%1$d год назад ты впервые запустил её</item>
+        <item quantity="few">%1$d года назад ты впервые запустил её</item>
+        <item quantity="many">%1$d лет назад ты впервые запустил её</item>
+        <item quantity="other">%1$d года назад ты впервые запустил её</item>
+    </plurals>
+    <plurals name="discover_days_ago">
+        <item quantity="one">%1$d день назад</item>
+        <item quantity="few">%1$d дня назад</item>
+        <item quantity="many">%1$d дней назад</item>
+        <item quantity="other">%1$d дня назад</item>
+    </plurals>
+    <plurals name="discover_for_days">
+        <item quantity="one">%1$d день</item>
+        <item quantity="few">%1$d дня</item>
+        <item quantity="many">%1$d дней</item>
+        <item quantity="other">%1$d дня</item>
+    </plurals>
+    <string name="discover_today">сегодня</string>
+    <string name="discover_yesterday">вчера</string>
+</resources>

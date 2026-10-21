@@ -9,6 +9,8 @@ import app.playlog.core.data.AccountStore
 import app.playlog.core.data.ActivityRepository
 import app.playlog.core.data.DefaultAccountRepository
 import app.playlog.core.data.DefaultActivityRepository
+import app.playlog.core.data.DefaultDiscoverRepository
+import app.playlog.core.data.DiscoverRepository
 import app.playlog.core.data.DefaultLibraryRepository
 import app.playlog.core.data.DefaultScreenshotRepository
 import app.playlog.core.data.LibraryRepository
@@ -92,6 +94,11 @@ object AppModule {
     @Singleton
     fun activityRepository(store: LibraryStore, library: LibraryRepository, clock: AppClock): ActivityRepository =
         DefaultActivityRepository(store, library, clock)
+
+    @Provides
+    @Singleton
+    fun discoverRepository(store: LibraryStore, library: LibraryRepository, clock: AppClock): DiscoverRepository =
+        DefaultDiscoverRepository(store, library, clock)
 
     @Provides
     @Singleton

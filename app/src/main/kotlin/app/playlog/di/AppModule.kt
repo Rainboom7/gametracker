@@ -27,6 +27,7 @@ import app.playlog.core.database.KeystoreCredentialStore
 import app.playlog.core.database.PlaylogDatabase
 import app.playlog.core.database.RoomAccountStore
 import app.playlog.core.database.RoomLibraryStore
+import app.playlog.core.network.AiaTrustManager
 import app.playlog.core.network.HttpClientFactory
 import app.playlog.platform.api.CredentialStore
 import app.playlog.platform.api.GamePlatformSource
@@ -45,6 +46,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import java.io.File
 import javax.inject.Singleton
+import javax.net.ssl.SSLContext
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -57,7 +59,16 @@ object AppModule {
     @Provides
     @Singleton
     fun httpClient(): HttpClient =
-        HttpClientFactory.create(OkHttp.create(), enableLogging = BuildConfig.DEBUG, logSink = { Log.d("Playlog/http", it) })
+        HttpClientFactory.create(
+            OkHttp.create {
+                // Nintendo's play history host sends no intermediate certificate; see AiaTrustManager.
+                config {
+                    val trustManager = AiaTrustManager()
+                    val ssl = SSLContext.getInstance("TLS").apply { init(null, arrayOf(trustManager), null) }
+                    sslSocketFactory(ssl.socketFactory, trustManager)
+                }
+            },
+            enableLogging = BuildConfig.DEBUG, logSink = { Log.d("Playlog/http", it) })
 
     @Provides
     @Singleton
@@ -84,7 +95,7 @@ object AppModule {
     @Singleton
     fun sources(client: HttpClient, credentials: CredentialStore, clock: AppClock): Set<GamePlatformSource> = setOf(
         SteamSource(client, credentials),
-        PlayStationSource.create(client, credentials, clock),
+        PlayStationSource.create(client, credentials, clock, diagnostics = { if (BuildConfig.DEBUG) Log.d("Playlog/psn", it) }),
         NintendoSource.create(client, credentials, clock),
     )
 

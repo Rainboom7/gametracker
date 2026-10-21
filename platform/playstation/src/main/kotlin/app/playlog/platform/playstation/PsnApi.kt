@@ -7,7 +7,10 @@ import app.playlog.core.network.TrackerJson
 import app.playlog.platform.api.PlatformException
 import io.ktor.client.HttpClient
 import io.ktor.client.statement.HttpResponse
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
@@ -25,6 +28,7 @@ internal class PsnApi(
     private val auth: PsnAuth,
     private val baseUrl: String = "https://m.np.playstation.com/api",
     private val language: String = "en-US",
+    private val diagnostics: (String) -> Unit = {},
     private val legacyProfileUrl: String = "https://us-prof.np.community.playstation.net/userProfile/v1/users/me/profile2",
 ) {
     /**
@@ -75,13 +79,30 @@ internal class PsnApi(
     }
 
     /** PS5 captures auto-uploaded to the cloud media gallery (kept by Sony for ~14 days). */
-    suspend fun mediaGallery(cursor: String?, limit: Int): PsnMediaGalleryPage = authorized {
-        client.get("$baseUrl/gameMediaService/v2/c2s/category/cloudMediaGallery/ugcType/all") {
+    suspend fun mediaGallery(cursor: String?, limit: Int): PsnGalleryResult = authorized {
+        val response = client.get("$baseUrl/gameMediaService/v2/c2s/category/cloudMediaGallery/ugcType/all") {
             it(this)
             parameter("includeTokenizedUrls", true)
             parameter("limit", limit)
             cursor?.let { c -> parameter("cursorMark", c) }
-        }.psnBody()
+        }
+        val json = response.psnBody<JsonObject>()
+        val setCookies = response.headers.getAll(HttpHeaders.SetCookie).orEmpty()
+        diagnostics(galleryShape(json, setCookies))
+        PsnGalleryResult(
+            page = TrackerJson.decodeFromJsonElement(json),
+            signing = CloudFrontSigning.from(setCookies, json),
+        )
+    }
+
+    /** Structure only (key and cookie names, URL query parameter names): values hold signed tokens. */
+    private fun galleryShape(json: JsonObject, setCookies: List<String>): String {
+        val first = (json["ugcDocument"] as? JsonArray)?.firstOrNull() as? JsonObject
+        val urlParams = first?.values?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
+            ?.filter { it.startsWith("http") }
+            ?.map { url -> url.substringAfter('?', "").split('&').map { p -> p.substringBefore('=') }.filter(String::isNotEmpty) }
+        return "PSN gallery: keys=${json.keys}, item keys=${first?.keys}, set-cookie=${setCookies.map { it.substringBefore('=') }}, " +
+            "url params=$urlParams"
     }
 
     /** PSN sometimes answers HTTP 200 with `{"error":{"code":…,"message":…}}`. */

@@ -93,6 +93,8 @@ internal data class PsnTrophyTitleDto(
     val progress: Int? = null,
 )
 
+internal data class PsnGalleryResult(val page: PsnMediaGalleryPage, val signing: CloudFrontSigning?)
+
 @Serializable
 internal data class PsnMediaGalleryPage(
     val ugcDocument: List<PsnUgcDto> = emptyList(),

@@ -60,8 +60,8 @@ class PlayStationSource internal constructor(
         val result = mutableListOf<Screenshot>()
         var cursor: String? = null
         repeat(MAX_GALLERY_PAGES) {
-            val page = api.mediaGallery(cursor, GALLERY_PAGE_SIZE)
-            page.ugcDocument.mapNotNullTo(result) { it.toScreenshot() }
+            val (page, signing) = api.mediaGallery(cursor, GALLERY_PAGE_SIZE)
+            page.ugcDocument.mapNotNullTo(result) { it.toScreenshot(signing) }
             cursor = page.nextCursorMark?.takeIf { it.isNotBlank() && it != cursor } ?: return result
         }
         return result
@@ -109,14 +109,15 @@ class PlayStationSource internal constructor(
         )
     }
 
-    private fun PsnUgcDto.toScreenshot(): Screenshot? {
-        val full = screenshotUrl ?: downloadUrl ?: largePreviewImage ?: return null
+    private fun PsnUgcDto.toScreenshot(signing: CloudFrontSigning?): Screenshot? {
+        fun String.signed() = signing?.sign(this) ?: this
+        val full = (screenshotUrl ?: downloadUrl ?: largePreviewImage)?.signed() ?: return null
         return Screenshot(
             id = "psn-$id",
             gameId = sceTitleId?.let { GameId(platform, it) },
             platform = platform,
             fullUrl = full,
-            thumbnailUrl = smallPreviewImage ?: thumbnailUrl ?: largePreviewImage,
+            thumbnailUrl = (smallPreviewImage ?: thumbnailUrl ?: largePreviewImage)?.signed(),
             takenAt = parseInstant(uploadDate),
             isVideo = ugcType == UGC_VIDEO,
         )
@@ -185,10 +186,15 @@ class PlayStationSource internal constructor(
         private val NPSSO = Regex("^[A-Za-z0-9]{64}$")
         private val NPSSO_IN_JSON = Regex("\"npsso\"\\s*:\\s*\"([A-Za-z0-9]{64})\"")
 
-        fun create(client: HttpClient, credentialStore: CredentialStore, clock: AppClock = SystemAppClock): PlayStationSource {
+        fun create(
+            client: HttpClient,
+            credentialStore: CredentialStore,
+            clock: AppClock = SystemAppClock,
+            diagnostics: (String) -> Unit = {},
+        ): PlayStationSource {
             val credentials = TypedCredentials(credentialStore, Platform.PLAYSTATION, PsnCredentials.serializer())
             val auth = PsnAuth(client, credentials, clock)
-            return PlayStationSource(PsnApi(client, auth), auth, credentials)
+            return PlayStationSource(PsnApi(client, auth, diagnostics = diagnostics), auth, credentials)
         }
 
         /** Accepts the bare value or the whole `{"npsso":"…"}` JSON the ssocookie page shows. */

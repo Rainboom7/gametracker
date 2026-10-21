@@ -2,6 +2,7 @@ package app.playlog.platform.deals
 
 import app.playlog.core.data.CachedDeals
 import app.playlog.core.model.DealPick
+import app.playlog.core.model.Platform
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -22,7 +23,10 @@ class DealsDiskCacheTest {
     @Test
     fun `picks and tags survive a restart`() = runTest {
         val dir = temp.newFolder()
-        val pick = DealPick(588650, "Dead Cells", "h.jpg", listOf("s.jpg"), "desc", 60, "207 руб.", "519 руб.", 96, listOf("Hades"), listOf("Roguelite"), 0.8f)
+        val pick = DealPick(
+            Platform.STEAM, "588650", "Dead Cells", "h.jpg", "https://store/588650", listOf("s.jpg"), "desc", 60, "207 руб.", "519 руб.", 96,
+            Instant.ofEpochMilli(9), listOf("Hades"), listOf("Roguelite"), 0.8f,
+        )
         cache(dir).apply {
             write(CachedDeals(listOf(pick), Instant.ofEpochMilli(5)))
             putTags(1, mapOf("Roguelite" to 10))
@@ -43,7 +47,7 @@ class DealsDiskCacheTest {
         now += 5_000
         assertNull(cache(dir).tags(1))
 
-        File(dir, "picks.json").writeText("{not json")
+        File(dir, "picks-v2.json").writeText("{not json")
         assertNull(cache(dir).read())
     }
 }

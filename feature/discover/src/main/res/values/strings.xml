@@ -78,9 +78,7 @@
     <string name="deals_loading">Подбираю по твоим играм. Первый раз это может занять минуту.</string>
     <string name="deals_failed">Не удалось обновить скидки, показаны прошлые.</string>
     <string name="deals_empty">Сейчас нет скидок на похожие игры. Загляни позже.</string>
+    <string name="deals_all">Все скидки</string>
     <string name="deals_retry">Повторить</string>
     <string name="deals_refresh">Обновить скидки</string>
-    <string name="deals_match">Совпадение со вкусом: %1$d%%</string>
-    <string name="deals_open_store">Открыть в Steam</string>
-    <string name="deals_screenshot">Скриншот %1$d, %2$s</string>
 </resources>

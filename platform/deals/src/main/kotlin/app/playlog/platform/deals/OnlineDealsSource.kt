@@ -5,6 +5,7 @@ import app.playlog.core.data.DealsSource
 import app.playlog.core.data.Ownership
 import app.playlog.core.data.TasteSeed
 import app.playlog.core.model.DealPick
+import app.playlog.core.model.Platform
 import app.playlog.core.model.TitleKey
 import io.ktor.client.HttpClient
 import java.util.Locale
@@ -84,9 +85,11 @@ class OnlineDealsSource(
         if (details.isSuccess && d?.isOnSale() != true) return null
         val price = d?.priceText ?: c.usdSalePrice ?: return null
         return DealPick(
-            steamAppId = c.appId,
+            platform = Platform.STEAM,
+            storeId = c.appId.toString(),
             title = d?.title?.ifBlank { null } ?: c.title,
             headerUrl = d?.headerUrl ?: c.headerUrl ?: steamHeader(c.appId),
+            storeUrl = DealPick.steamStoreUrl(c.appId),
             screenshots = d?.screenshots.orEmpty(),
             shortDescription = d?.shortDescription,
             discountPercent = d?.discountPercent ?: c.discountPercent,

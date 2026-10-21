@@ -8,6 +8,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object DiscoverDestination
 
-fun NavGraphBuilder.discoverScreen(onOpenGame: (GameId) -> Unit) {
-    composable<DiscoverDestination> { DiscoverRoute(onOpenGame = onOpenGame) }
+fun NavGraphBuilder.discoverScreen(onOpenGame: (GameId) -> Unit, onOpenAllDeals: () -> Unit) {
+    composable<DiscoverDestination> { DiscoverRoute(onOpenGame = onOpenGame, onOpenAllDeals = onOpenAllDeals) }
 }

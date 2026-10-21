@@ -41,6 +41,8 @@ import app.playlog.feature.activity.ActivityDestination
 import app.playlog.feature.activity.activityScreen
 import app.playlog.feature.discover.DiscoverDestination
 import app.playlog.feature.discover.discoverScreen
+import app.playlog.feature.deals.dealsScreen
+import app.playlog.feature.deals.navigateToDeals
 import app.playlog.feature.game.gameScreen
 import app.playlog.feature.game.navigateToGame
 import app.playlog.feature.home.HomeActions
@@ -110,12 +112,13 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
                 onOpenDiscover = { navController.navigateToTab(TopLevel.DISCOVER) },
                 onOpenActivity = { navController.navigateToTab(TopLevel.ACTIVITY) },
                 onOpenScreenshots = { navController.navigateToScreenshots(null) },
-                onOpenDeals = { navController.navigateToTab(TopLevel.DISCOVER) },
+                onOpenDeals = navController::navigateToDeals,
                 onConnect = { navController.navigateToTab(TopLevel.PROFILE) },
             ),
         )
         libraryScreen(onOpenGame = navController::navigateToGame, onConnect = { navController.navigateToTab(TopLevel.PROFILE) })
-        discoverScreen(onOpenGame = navController::navigateToGame)
+        discoverScreen(onOpenGame = navController::navigateToGame, onOpenAllDeals = navController::navigateToDeals)
+        dealsScreen(onBack = { navController.popBackStack() })
         activityScreen(onOpenGame = navController::navigateToGame)
         screenshotsScreen(
             onOpenGame = navController::navigateToGame,

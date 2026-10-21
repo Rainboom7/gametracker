@@ -61,6 +61,14 @@ internal class PsnApi(
         }
     }
 
+    /** The account's store country from the legacy profile's npId, or null. */
+    suspend fun storeCountry(): String? = authorized {
+        client.get(legacyProfileUrl) {
+            it(this)
+            parameter("fields", "onlineId,npId")
+        }.psnBody<PsnLegacyProfileResponse>().profile.npId
+    }?.let(::regionFromNpId)
+
     suspend fun playedTitles(offset: Int, limit: Int): PsnTitlesPage = authorized {
         client.get("$baseUrl/gamelist/v2/users/me/titles") {
             it(this)
@@ -138,7 +146,13 @@ internal class PsnApi(
         }
     }
 
-    private companion object {
+    internal companion object {
+        /** "dXNlckBhNi50cg==" → "user@a6.tr" → "TR". */
+        fun regionFromNpId(npId: String): String? {
+            val decoded = runCatching { String(java.util.Base64.getDecoder().decode(npId)) }.getOrNull() ?: return null
+            return decoded.substringAfterLast('@', "").substringAfterLast('.', "").uppercase().takeIf { it.length == 2 }
+        }
+
         // Codes seen in community clients; the message check above catches the rest.
         val PRIVACY_ERROR_CODES = setOf(2240526, 2241025)
         val AUTH_ERROR_CODES = setOf(2241037, 2240525)

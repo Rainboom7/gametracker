@@ -25,7 +25,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.playlog.core.designsystem.component.GameImage
+import app.playlog.core.designsystem.component.PlatformBadge
 import app.playlog.core.model.DealPick
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /** Store capsule with the discount, price and why it was picked; 260dp wide for horizontal rows. */
 @Composable
@@ -46,12 +51,13 @@ fun DealCard(pick: DealPick, onClick: () -> Unit, modifier: Modifier = Modifier)
                 modifier = Modifier.fillMaxWidth().aspectRatio(HeaderAspect),
             )
             DiscountBadge(pick.discountPercent, Modifier.align(Alignment.TopStart).padding(8.dp))
+            PlatformBadge(pick.platform, onImage = true, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
         }
         Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
             Text(pick.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(2.dp))
             Text(
-                dealReason(pick),
+                pick.endsAt?.takeIf { pick.match == 0f }?.let { stringResource(R.string.deal_ends, formatShortDate(it)) } ?: dealReason(pick),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -107,7 +113,12 @@ fun dealReason(pick: DealPick): String = when {
     pick.becauseOf.size >= 2 -> stringResource(R.string.deal_like_two, pick.becauseOf[0], pick.becauseOf[1])
     pick.becauseOf.size == 1 -> stringResource(R.string.deal_like_one, pick.becauseOf[0])
     pick.sharedTags.isNotEmpty() -> stringResource(R.string.deal_like_tags, pick.sharedTags.joinToString(", "))
-    else -> stringResource(R.string.deal_like_taste)
+    pick.match > 0f -> stringResource(R.string.deal_like_taste)
+    else -> stringResource(R.string.deal_on_sale)
 }
+
+/** "29 окт." in the device locale. */
+internal fun formatShortDate(instant: Instant, zone: ZoneId = ZoneId.systemDefault()): String =
+    DateTimeFormatter.ofPattern("d MMM", Locale.getDefault()).format(instant.atZone(zone))
 
 private const val HeaderAspect = 460f / 215f

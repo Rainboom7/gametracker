@@ -3,6 +3,7 @@ package app.playlog.platform.deals
 import app.playlog.core.data.CachedDeals
 import app.playlog.core.data.DealsCache
 import app.playlog.core.model.DealPick
+import app.playlog.core.model.Platform
 import app.playlog.core.network.TrackerJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -128,7 +129,7 @@ class DealsDiskCache(
 
     private companion object {
         const val TAGS_FILE = "tags.json"
-        const val PICKS_FILE = "picks.json"
+        const val PICKS_FILE = "picks-v2.json"
         const val THIRTY_DAYS = 30L * 24 * 60 * 60 * 1000
     }
 }
@@ -150,25 +151,31 @@ internal data class StoredPicks(val fetchedAt: Long, val picks: List<StoredPick>
 
 @Serializable
 internal data class StoredPick(
-    val appId: Long,
+    val platform: Platform = Platform.STEAM,
+    val storeId: String,
     val title: String,
     val header: String,
+    val storeUrl: String,
     val screenshots: List<String> = emptyList(),
     val description: String? = null,
     val discount: Int,
     val price: String,
     val originalPrice: String? = null,
     val review: Int? = null,
+    val endsAt: Long? = null,
     val becauseOf: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val match: Float = 0f,
 ) {
-    fun toModel() = DealPick(appId, title, header, screenshots, description, discount, price, originalPrice, review, becauseOf, tags, match)
+    fun toModel() = DealPick(
+        platform, storeId, title, header, storeUrl, screenshots, description, discount, price, originalPrice, review,
+        endsAt?.let(Instant::ofEpochMilli), becauseOf, tags, match,
+    )
 
     companion object {
         fun of(p: DealPick) = StoredPick(
-            p.steamAppId, p.title, p.headerUrl, p.screenshots, p.shortDescription, p.discountPercent,
-            p.priceText, p.originalPriceText, p.reviewPercent, p.becauseOf, p.sharedTags, p.match,
+            p.platform, p.storeId, p.title, p.headerUrl, p.storeUrl, p.screenshots, p.shortDescription, p.discountPercent,
+            p.priceText, p.originalPriceText, p.reviewPercent, p.endsAt?.toEpochMilli(), p.becauseOf, p.sharedTags, p.match,
         )
     }
 }

@@ -28,6 +28,12 @@ interface GamePlatformSource {
      * controls). Only called when [SourceCapability.DAILY_PLAYTIME] is declared.
      */
     suspend fun fetchDailyPlaytime(from: LocalDate): List<DailyPlaytime> = emptyList()
+
+    /**
+     * ISO 3166-1 alpha-2 country of the account's store (prices, currency), or null when the
+     * platform will not say. Never throws: the deals screen falls back to a manual region.
+     */
+    suspend fun storeCountry(): String? = null
 }
 
 enum class SourceCapability {

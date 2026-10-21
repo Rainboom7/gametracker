@@ -2,6 +2,7 @@ package app.playlog.platform.nintendo
 
 import app.playlog.core.common.AppClock
 import app.playlog.core.common.SystemAppClock
+import app.playlog.core.common.runSuspendCatching
 import app.playlog.core.model.Account
 import app.playlog.core.model.DailyPlaytime
 import app.playlog.core.model.Game
@@ -43,6 +44,11 @@ class NintendoSource internal constructor(
         SourceCapability.DAILY_PLAYTIME,
         SourceCapability.PLAY_DATES,
     )
+
+    override suspend fun storeCountry(): String? = runSuspendCatching {
+        if (credentials.read() == null) return null
+        auth.me(auth.accessToken()).country?.uppercase()
+    }.getOrNull()
 
     override suspend fun fetchLibrary(): List<Game> =
         api.playHistories().playHistories.map { h ->

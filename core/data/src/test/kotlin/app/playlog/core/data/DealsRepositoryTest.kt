@@ -23,7 +23,7 @@ class DealsRepositoryTest {
     private val clock = FixedClock(Instant.parse("2026-10-21T12:00:00Z"))
     private val store = InMemoryLibraryStore()
     private val cache = InMemoryDealsCache()
-    private val pick = DealPick(588650, "Dead Cells", "h.jpg", discountPercent = 60, priceText = "207 руб.")
+    private val pick = DealPick(Platform.STEAM, "588650", "Dead Cells", "h.jpg", "https://store/588650", discountPercent = 60, priceText = "207 руб.")
 
     private var calls = 0
     private var fail = false

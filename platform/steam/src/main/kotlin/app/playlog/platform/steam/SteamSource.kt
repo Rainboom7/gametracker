@@ -71,6 +71,11 @@ class SteamSource internal constructor(
         return result
     }
 
+    override suspend fun storeCountry(): String? = runSuspendCatching {
+        val creds = credentials.read() ?: return null
+        api.playerSummary(creds.apiKey, creds.steamId)?.loccountrycode?.uppercase()
+    }.getOrNull()
+
     override suspend fun fetchScreenshots(): List<Screenshot> {
         val creds = credentials.require()
         val result = mutableListOf<Screenshot>()

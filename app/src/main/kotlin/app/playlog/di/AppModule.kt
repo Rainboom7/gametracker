@@ -12,6 +12,7 @@ import app.playlog.core.data.DefaultAccountRepository
 import app.playlog.core.data.DefaultActivityRepository
 import app.playlog.core.data.DefaultDiscoverRepository
 import app.playlog.core.data.DiscoverRepository
+import app.playlog.core.data.AskEngine
 import app.playlog.core.data.DealsRepository
 import app.playlog.core.data.DefaultStoreDealsRepository
 import app.playlog.core.data.StoreDealsRepository
@@ -44,7 +45,9 @@ import app.playlog.platform.deals.FileWishlistStore
 import app.playlog.platform.deals.FileDealsRegionStore
 import app.playlog.platform.deals.NintendoStoreDeals
 import app.playlog.platform.deals.PlayStationStoreDeals
+import app.playlog.platform.deals.SteamSpyClient
 import app.playlog.platform.deals.SteamStoreDeals
+import app.playlog.platform.deals.SteamTagSearch
 import app.playlog.platform.deals.OnlineDealsSource
 import app.playlog.platform.metadata.FileMetadataStore
 import app.playlog.platform.metadata.OnlineMetadataSource
@@ -175,6 +178,17 @@ object AppModule {
         clock = clock,
         onError = { platform, e -> Log.w("Playlog/deals", "Wishlist $platform failed", e) },
     )
+
+    /** Free-text "Спроси" search: an offline parser plus the Steam tag search, no keys. */
+    @Provides
+    @Singleton
+    fun askEngine(client: HttpClient, library: LibraryRepository, deals: DealsRepository, stores: StoreDealsRepository): AskEngine =
+        AskEngine(
+            finder = SteamTagSearch(client, SteamStoreDeals(client, log = DealsLog), SteamSpyClient(client), log = DealsLog),
+            library = library,
+            deals = deals,
+            stores = stores,
+        )
 
     @Provides
     @Singleton

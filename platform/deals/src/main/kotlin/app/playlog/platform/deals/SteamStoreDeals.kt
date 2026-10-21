@@ -38,7 +38,7 @@ class SteamStoreDeals(
     override val platform = Platform.STEAM
     override val countries = StoreRegions.STEAM
 
-    private data class Row(val appId: Long, val name: String, val tagIds: List<Int> = emptyList(), val review: Int? = null)
+    internal data class Row(val appId: Long, val name: String, val tagIds: List<Int> = emptyList(), val review: Int? = null)
 
     private val tagLock = Mutex()
     private var tagNames: Map<Int, String>? = null
@@ -85,7 +85,7 @@ class SteamStoreDeals(
         return apps.map { row -> row.toPick(prices[row.appId], emptyList()) }
     }
 
-    private fun Row.toPick(price: StorePrice?, tags: List<String>) = DealPick(
+    internal fun Row.toPick(price: StorePrice?, tags: List<String>) = DealPick(
         platform = Platform.STEAM,
         storeId = appId.toString(),
         title = name,
@@ -131,7 +131,7 @@ class SteamStoreDeals(
         parameter("l", "english")
     }
 
-    private suspend fun tagNames(): Map<Int, String> = tagLock.withLock {
+    internal suspend fun tagNames(): Map<Int, String> = tagLock.withLock {
         tagNames ?: runSuspendCatching {
             val response = client.get("$baseUrl/tagdata/populartags/english")
             if (!response.status.isSuccess()) throw DealsException("Steam tags HTTP ${response.status.value}")
@@ -143,7 +143,7 @@ class SteamStoreDeals(
         }.onFailure { log("Steam tag names failed: ${it.message}") }.getOrNull()?.also { tagNames = it }.orEmpty()
     }
 
-    private suspend fun prices(appIds: List<Long>, country: String): Map<Long, StorePrice> {
+    internal suspend fun prices(appIds: List<Long>, country: String): Map<Long, StorePrice> {
         if (appIds.isEmpty()) return emptyMap()
         val response = client.get("$baseUrl/api/appdetails") {
             parameter("appids", appIds.joinToString(","))
@@ -197,7 +197,7 @@ class SteamStoreDeals(
     internal companion object {
         const val PAGE_SIZE = 50
         private const val QUOTE_BATCH = 100
-        private const val GAMES_CATEGORY = 998
+        const val GAMES_CATEGORY = 998
         private const val CENTS = 100.0
         private val APP_ID = Regex("/apps/(\\d+)/")
         private val ROW_APP = Regex("data-ds-appid=\"(\\d+)\"")
@@ -206,7 +206,7 @@ class SteamStoreDeals(
         private val ROW_REVIEW = Regex("data-tooltip-html=\"[^\"]*?(\\d{1,3})%")
 
         /** Search result rows; bundles and packages (several appids) are skipped. */
-        private fun parseRows(html: String): List<Row> = html.split("<a ").mapNotNull { chunk ->
+        fun parseRows(html: String): List<Row> = html.split("<a ").mapNotNull { chunk ->
             if (!chunk.contains("search_result_row")) return@mapNotNull null
             val appId = ROW_APP.find(chunk)?.groupValues?.get(1)?.toLongOrNull() ?: return@mapNotNull null
             val title = ROW_TITLE.find(chunk)?.groupValues?.get(1)?.let(::unescape)?.takeIf(String::isNotBlank) ?: return@mapNotNull null

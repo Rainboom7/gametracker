@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="game_back">Назад</string>
-    <string name="game_total_hours">всего</string>
-    <string name="game_last_played">последний запуск</string>
-    <string name="game_achievements">достижения</string>
     <string name="game_last_14_days">Последние 14 дней</string>
     <string name="game_chart_description">За 14 дней сыграно %1$s</string>
     <string name="game_split_description">Время по платформам: %1$s</string>
@@ -13,9 +10,6 @@
     <string name="game_favorite">В избранное</string>
     <string name="game_unfavorite">Убрать из избранного</string>
     <string name="game_first_played">Впервые: %1$s</string>
-    <string name="game_devices">Устройства: %1$s</string>
-    <string name="game_active_days">дней игры за 2 нед.</string>
-    <string name="game_first_launch">первый запуск</string>
     <string name="game_status_NONE">Без статуса</string>
     <string name="game_status_PLAYING">Играю</string>
     <string name="game_status_COMPLETED">Пройдено</string>
@@ -23,4 +17,29 @@
     <string name="game_status_DROPPED">Брошено</string>
     <string name="game_suggest_completed">Все достижения получены. Отметить «Пройдено»?</string>
     <string name="game_suggest_completed_action">Отметить</string>
+    <string name="game_your_time">ТВОЁ ВРЕМЯ</string>
+    <string name="game_today">сегодня %1$s</string>
+    <string name="game_last_played_at">последний запуск %1$s</string>
+    <string name="game_achievements_value">%1$d%% достижений</string>
+    <string name="game_sessions">запусков: %1$d</string>
+    <string name="game_hltb_main">сюжет</string>
+    <string name="game_hltb_extra">сюжет + доп.</string>
+    <string name="game_hltb_100" formatted="false">на 100%</string>
+    <string name="game_hltb_left">До конца сюжета примерно %1$s.</string>
+    <string name="game_hltb_stage_story">Сюжет обычно уже пройден к этому времени.</string>
+    <string name="game_hltb_stage_extra">Ты прошёл больше, чем сюжет с дополнительными заданиями.</string>
+    <string name="game_hltb_stage_100" formatted="false">Ты наиграл больше, чем нужно на 100%.</string>
+    <string name="game_hltb_source">Оценки HowLongToBeat.</string>
+    <string name="game_scores">Оценки</string>
+    <string name="game_score_metacritic">Metacritic</string>
+    <string name="game_score_steam">отзывы Steam (%1$d)</string>
+    <string name="game_score_hltb">игроки HowLongToBeat</string>
+    <string name="game_owned">Где у тебя есть</string>
+    <string name="game_last_14_days_summary">%1$s · дней: %2$d</string>
+    <string name="game_links">Ссылки</string>
+    <string name="game_link_steam">Страница в Steam</string>
+    <string name="game_link_playstation">PlayStation Store</string>
+    <string name="game_link_nintendo">Nintendo eShop</string>
+    <string name="game_link_hltb">HowLongToBeat</string>
+    <string name="game_link_metacritic">Metacritic</string>
 </resources>

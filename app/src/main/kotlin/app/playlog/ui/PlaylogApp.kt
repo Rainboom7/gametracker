@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -35,6 +36,8 @@ import app.playlog.R
 import app.playlog.StartDestination
 import app.playlog.feature.activity.ActivityDestination
 import app.playlog.feature.activity.activityScreen
+import app.playlog.feature.discover.DiscoverDestination
+import app.playlog.feature.discover.discoverScreen
 import app.playlog.feature.game.gameScreen
 import app.playlog.feature.game.navigateToGame
 import app.playlog.feature.library.LibraryDestination
@@ -52,6 +55,7 @@ import kotlin.reflect.KClass
 
 private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon: ImageVector, val label: Int) {
     LIBRARY(LibraryDestination, LibraryDestination::class, Icons.Default.GridView, R.string.tab_library),
+    DISCOVER(DiscoverDestination, DiscoverDestination::class, Icons.Default.AutoAwesome, R.string.tab_discover),
     ACTIVITY(ActivityDestination, ActivityDestination::class, Icons.Default.BarChart, R.string.tab_activity),
     SCREENSHOTS(ScreenshotsDestination(), ScreenshotsDestination::class, Icons.Default.PhotoLibrary, R.string.tab_screenshots),
     PROFILE(ProfileDestination, ProfileDestination::class, Icons.Default.AccountCircle, R.string.tab_profile),
@@ -93,6 +97,7 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
             },
         )
         libraryScreen(onOpenGame = navController::navigateToGame, onConnect = { navController.navigateToTab(TopLevel.PROFILE) })
+        discoverScreen(onOpenGame = navController::navigateToGame)
         activityScreen(onOpenGame = navController::navigateToGame)
         screenshotsScreen(
             onOpenGame = navController::navigateToGame,

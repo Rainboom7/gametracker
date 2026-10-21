@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Playlog</string>
     <string name="tab_library">Библиотека</string>
+    <string name="tab_discover">Подборки</string>
     <string name="tab_activity">Активность</string>
     <string name="tab_screenshots">Скриншоты</string>
     <string name="tab_profile">Профиль</string>

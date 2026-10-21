@@ -6,6 +6,8 @@ import app.playlog.core.model.Platform
 import app.playlog.core.model.ReleasesState
 import app.playlog.core.model.UpcomingGame
 import app.playlog.core.model.WishlistItem
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,8 +31,12 @@ interface ReleasesRepository {
     suspend fun refresh()
 }
 
+/**
+ * Merges every platform's upcoming list, each asked in that platform's store region. One store being
+ * down keeps its previous games instead of failing the whole calendar.
+ */
 class DefaultReleasesRepository(
-    private val source: UpcomingSource,
+    private val sources: Map<Platform, UpcomingSource>,
     private val stores: StoreDealsRepository,
     private val clock: AppClock,
     private val ttl: Duration = DEFAULT_TTL,
@@ -56,12 +62,19 @@ class DefaultReleasesRepository(
             is ReleasesState.Failed -> current.stale
             ReleasesState.Loading -> emptyList()
         }
-        runSuspendCatching { source.upcoming(stores.region(Platform.STEAM).country) }
-            .onSuccess { state.value = ReleasesState.Ready(it, clock.now()) }
-            .onFailure {
-                onError(it)
-                state.value = ReleasesState.Failed(stale, it.message)
-            }
+        val results = coroutineScope {
+            sources.map { (platform, source) ->
+                async { platform to runSuspendCatching { source.upcoming(stores.region(platform).country) } }
+            }.awaitAll()
+        }
+        results.forEach { (_, r) -> r.exceptionOrNull()?.let(onError) }
+        val failure = results.firstNotNullOfOrNull { it.second.exceptionOrNull() }
+        if (results.none { it.second.isSuccess }) {
+            state.value = ReleasesState.Failed(stale, failure?.message)
+            return@withLock
+        }
+        val games = results.flatMap { (platform, r) -> r.getOrElse { stale.filter { it.platform == platform } } }
+        state.value = ReleasesState.Ready(games, clock.now())
     }
 }
 

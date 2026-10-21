@@ -1,0 +1,5 @@
+{"response": {"numFound": 3, "start": 0, "docs": [
+  {"type": "GAME", "title": "Star Hollow Odyssey", "nsuid_txt": ["70010000090001"], "publisher": "Nintendo", "dates_released_dts": ["2026-11-14T00:00:00Z"], "image_url_h2x1_s": "//fs-prod-cdn.nintendo-europe.com/sho.jpg", "pretty_game_categories_txt": ["Adventure", "Action"], "url": "/Games/Nintendo-Switch-2-games/Star-Hollow-Odyssey-1000001.html"},
+  {"type": "GAME", "title": "Puzzle Cats Bundle 7", "nsuid_txt": ["70010000090002"], "publisher": "Quick Flip Media", "dates_released_dts": ["2026-11-02T00:00:00Z"], "image_url_h2x1_s": "//fs-prod-cdn.nintendo-europe.com/pc7.jpg"},
+  {"type": "GAME", "title": "Tactics Unbound", "nsuid_txt": ["70010000090003"], "publisher": "SQUARE ENIX", "dates_released_dts": ["2027-02-20T00:00:00Z"], "image_url_sq_s": "https://x/tu.jpg"}
+]}}

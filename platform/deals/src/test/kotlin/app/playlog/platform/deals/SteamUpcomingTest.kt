@@ -48,12 +48,13 @@ class SteamUpcomingTest {
         val games = upcoming.upcoming("RU").associateBy { it.storeId }
 
         assertEquals(LocalDate.of(2026, 10, 24), games.getValue("900001").date)
-        assertEquals(listOf("Roguelike", "Action"), games.getValue("900001").tags)
+        assertEquals(listOf("Roguelike", "Action", "Crafting"), games.getValue("900001").tags)
         assertEquals("Iron Tide & Co", games.getValue("900002").title)
         assertNull(games.getValue("900002").date)
         assertEquals("Q1 2027", games.getValue("900002").dateText)
         assertEquals(LocalDate.of(2026, 11, 23), games.getValue("900004").date)
         assertEquals(LocalDate.of(2026, 11, 3), games.getValue("900003").date)
+        assertEquals("barely tagged and adult rows are dropped", setOf("900001", "900002", "900003", "900004"), games.keys)
         val search = requests.first { it.url.encodedPath == "/search/results/" }
         assertEquals("popularcomingsoon", search.url.parameters["filter"])
         assertEquals("RU", search.url.parameters["cc"])

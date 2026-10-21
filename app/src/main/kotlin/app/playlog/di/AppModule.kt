@@ -5,6 +5,7 @@ import android.util.Log
 import app.playlog.BuildConfig
 import app.playlog.core.common.AppClock
 import app.playlog.core.common.SystemAppClock
+import app.playlog.core.model.Platform
 import app.playlog.core.data.AccountRepository
 import app.playlog.core.data.AccountStore
 import app.playlog.core.data.ActivityRepository
@@ -62,6 +63,7 @@ import app.playlog.platform.deals.PlayStationStoreDeals
 import app.playlog.platform.deals.SteamSpyClient
 import app.playlog.platform.deals.SteamStoreDeals
 import app.playlog.platform.deals.SteamTagSearch
+import app.playlog.platform.deals.NintendoUpcoming
 import app.playlog.platform.deals.SteamUpcoming
 import app.playlog.platform.deals.OnlineDealsSource
 import app.playlog.platform.metadata.FileMetadataStore
@@ -220,6 +222,7 @@ object AppModule {
             library = library,
             deals = deals,
             stores = stores,
+            log = { Log.i("Playlog/ask", it) },
         )
 
     @Provides
@@ -247,7 +250,10 @@ object AppModule {
     @Singleton
     fun releasesRepository(client: HttpClient, stores: StoreDealsRepository, clock: AppClock): ReleasesRepository =
         DefaultReleasesRepository(
-            source = SteamUpcoming(client, SteamStoreDeals(client, log = DealsLog), log = DealsLog),
+            sources = mapOf(
+                Platform.STEAM to SteamUpcoming(client, SteamStoreDeals(client, log = DealsLog), log = DealsLog),
+                Platform.NINTENDO to NintendoUpcoming(client, log = DealsLog),
+            ),
             stores = stores,
             clock = clock,
             onError = { e -> Log.w("Playlog/deals", "Upcoming releases failed", e) },
@@ -259,7 +265,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun dealsRepository(@ApplicationContext context: Context, client: HttpClient, library: LibraryRepository, clock: AppClock): DealsRepository {
+    fun dealsRepository(
+        @ApplicationContext context: Context,
+        client: HttpClient,
+        library: LibraryRepository,
+        stores: StoreDealsRepository,
+        clock: AppClock,
+    ): DealsRepository {
         val cache = DealsDiskCache(File(context.cacheDir, "deals"))
         return DefaultDealsRepository(
             source = OnlineDealsSource(client, cache, onError = { what, e -> Log.w("Playlog", "Deals: $what failed", e) }),
@@ -267,6 +279,7 @@ object AppModule {
             cache = cache,
             clock = clock,
             onError = { e -> Log.w("Playlog", "Deals refresh failed", e) },
+            country = { stores.region(Platform.STEAM).country },
         )
     }
 

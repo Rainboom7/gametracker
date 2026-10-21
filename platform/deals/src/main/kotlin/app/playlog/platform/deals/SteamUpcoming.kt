@@ -45,8 +45,11 @@ class SteamUpcoming(
             .onFailure { log("Upcoming dates failed: ${it.message}") }
             .getOrNull()
             .orEmpty()
-        log("Upcoming $country: ${rows.size} rows, ${undated.size} without a day")
-        return rows.map { row ->
+        // Popular-upcoming is already ranked by wishlists; what slips through is adult filler and
+        // asset flips that nobody bothered to tag.
+        val kept = rows.filter { row -> isWorthListing(row.tagIds.mapNotNull(names::get), tagged = names.isNotEmpty()) }
+        log("Upcoming $country: ${rows.size} rows, ${kept.size} kept, ${undated.size} without a day")
+        return kept.map { row ->
             val date = row.released?.let(::parseDate) ?: quoted[row.appId.toString()]?.releaseDate?.atZone(ZoneOffset.UTC)?.toLocalDate()
             UpcomingGame(
                 platform = Platform.STEAM,
@@ -99,6 +102,13 @@ class SteamUpcoming(
     }
 
     internal companion object {
+        private const val MIN_TAGS = 3
+        private val ADULT = setOf("sexual content", "nudity", "nsfw", "hentai")
+
+        /** Without tag names (the JSON fallback) there is nothing to judge by, so everything stays. */
+        fun isWorthListing(tags: List<String>, tagged: Boolean): Boolean =
+            !tagged || tags.size >= MIN_TAGS && tags.none { it.lowercase() in ADULT }
+
         private val LOGO_APP = Regex("/apps/(\\d+)/")
         private val SEPT = Regex("\\bSept\\b")
         private val DAY_FORMATS = listOf("d MMM, yyyy", "MMM d, yyyy", "d MMM yyyy", "MMM d yyyy", "d MMMM, yyyy", "MMMM d, yyyy")

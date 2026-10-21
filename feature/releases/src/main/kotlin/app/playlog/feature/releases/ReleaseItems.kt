@@ -170,7 +170,7 @@ internal fun ReleaseRow(card: ReleaseCard, onClick: () -> Unit, onToggleWishlist
                 placeholderText = game.title,
                 modifier = Modifier.width(ThumbWidth).aspectRatio(ThumbAspect).clip(MaterialTheme.shapes.small),
             )
-            if (game.platform != Platform.STEAM) PlatformBadge(game.platform, onImage = true, modifier = Modifier.align(Alignment.TopStart).padding(4.dp))
+            PlatformBadge(game.platform, onImage = true, modifier = Modifier.align(Alignment.TopStart).padding(4.dp))
         }
         Spacer(Modifier.width(Spacing.sm))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {

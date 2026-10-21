@@ -33,4 +33,8 @@
     <string name="activity_weekdays_description">Среднее игровое время по дням недели</string>
     <string name="activity_taste">Твой вкус</string>
     <string name="activity_taste_caption">Теги Steam, которые чаще всего встречаются в играх, где у тебя больше всего часов</string>
+    <string name="activity_story_WEEK">История недели</string>
+    <string name="activity_story_MONTH">История месяца</string>
+    <string name="activity_story_YEAR">История года</string>
+    <string name="activity_story_hint">Карточки как в сторис, последнюю можно отправить друзьям</string>
 </resources>

@@ -55,6 +55,7 @@ if (!jvmOnly) {
         ":core:ui",
         ":feature:home",
         ":feature:ask",
+        ":feature:recap",
         ":feature:library",
         ":feature:game",
         ":feature:activity",

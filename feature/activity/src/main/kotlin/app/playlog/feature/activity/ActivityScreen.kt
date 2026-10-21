@@ -66,10 +66,10 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 @Composable
-fun ActivityRoute(onOpenGame: (GameId) -> Unit, viewModel: ActivityViewModel = hiltViewModel()) {
+fun ActivityRoute(onOpenGame: (GameId) -> Unit, onOpenRecap: (ActivityPeriod) -> Unit = {}, viewModel: ActivityViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val extras by viewModel.extras.collectAsStateWithLifecycle()
-    ActivityScreen(state, viewModel::selectPeriod, viewModel::previous, viewModel::next, onOpenGame, extras)
+    ActivityScreen(state, viewModel::selectPeriod, viewModel::previous, viewModel::next, onOpenGame, extras, onOpenRecap)
 }
 
 @Composable
@@ -80,6 +80,7 @@ fun ActivityScreen(
     onNext: () -> Unit,
     onOpenGame: (GameId) -> Unit,
     extras: ActivityExtras = ActivityExtras(),
+    onOpenRecap: (ActivityPeriod) -> Unit = {},
 ) {
     val content = state as? ActivityUiState.Content
     Column(
@@ -94,6 +95,7 @@ fun ActivityScreen(
         }
         val summary = content.summary
         SummaryHero(content, onPrevious, onNext)
+        if (!summary.total.isZero) StoryButton(summary.period, onClick = { onOpenRecap(summary.period) })
         SectionCard(stringResource(bucketTitle(summary.period))) {
             StackedPlatformChart(
                 buckets = summary.buckets.map { b -> b.perPlatform.mapValues { it.value.toMinutes().toFloat() } },

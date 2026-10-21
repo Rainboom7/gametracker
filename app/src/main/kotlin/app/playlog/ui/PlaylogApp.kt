@@ -58,6 +58,8 @@ import app.playlog.feature.profile.connectScreen
 import app.playlog.feature.profile.linkAccountScreen
 import app.playlog.feature.profile.navigateToLink
 import app.playlog.feature.profile.profileScreen
+import app.playlog.feature.recap.navigateToRecap
+import app.playlog.feature.recap.recapScreen
 import app.playlog.feature.screenshots.ScreenshotsDestination
 import app.playlog.feature.screenshots.navigateToScreenshots
 import app.playlog.feature.screenshots.screenshotsScreen
@@ -117,13 +119,15 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
                 onOpenDeals = navController::navigateToDeals,
                 onConnect = { navController.navigateToTab(TopLevel.PROFILE) },
                 onAsk = { navController.navigateToAsk() },
+                onOpenRecap = { navController.navigateToRecap() },
             ),
         )
         askScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         libraryScreen(onOpenGame = navController::navigateToGame, onConnect = { navController.navigateToTab(TopLevel.PROFILE) })
         discoverScreen(onOpenGame = navController::navigateToGame, onOpenAllDeals = navController::navigateToDeals)
         dealsScreen(onBack = { navController.popBackStack() })
-        activityScreen(onOpenGame = navController::navigateToGame)
+        activityScreen(onOpenGame = navController::navigateToGame, onOpenRecap = { navController.navigateToRecap(it.name) })
+        recapScreen(onClose = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         screenshotsScreen(
             onOpenGame = navController::navigateToGame,
             onClearFilter = {

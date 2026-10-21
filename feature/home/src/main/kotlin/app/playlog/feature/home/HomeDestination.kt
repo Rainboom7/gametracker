@@ -20,6 +20,8 @@ data class HomeActions(
     val onConnect: () -> Unit,
     /** Free-text "Спроси" search. */
     val onAsk: () -> Unit = {},
+    /** This week's story recap. */
+    val onOpenRecap: () -> Unit = {},
 )
 
 fun NavGraphBuilder.homeScreen(actions: HomeActions) {

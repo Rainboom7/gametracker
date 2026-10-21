@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recap_close">Закрыть</string>
+    <string name="recap_intro_WEEK">Твоя неделя\nв играх</string>
+    <string name="recap_intro_MONTH">Твой месяц\nв играх</string>
+    <string name="recap_intro_YEAR">Твой год\nв играх</string>
+    <string name="recap_intro_hint">Листай вправо</string>
+    <string name="recap_total_title">Ты наиграл</string>
+    <string name="recap_total_more">На %1$s больше, чем в прошлый раз</string>
+    <string name="recap_total_less">На %1$s меньше, чем в прошлый раз</string>
+    <string name="recap_total_same">Ровно как в прошлый раз</string>
+    <string name="recap_total_days">Играл %1$d из %2$d дней</string>
+    <string name="recap_total_films">Это примерно %1$d фильмов подряд</string>
+    <string name="recap_top_title">Главная игра</string>
+    <string name="recap_top_share">%1$s · %2$d%% всего времени</string>
+    <string name="recap_ranking_title">Топ периода</string>
+    <string name="recap_platforms_title">Ты игрок</string>
+    <string name="recap_platforms_share">%1$d%% времени здесь</string>
+    <string name="recap_rhythm_title">Рекорды</string>
+    <string name="recap_rhythm_best_day">Лучший день</string>
+    <string name="recap_rhythm_games">Разных игр</string>
+    <string name="recap_rhythm_streak">Лучшая серия за год, дней</string>
+    <string name="recap_vibe_title">Твой вайб</string>
+    <string name="recap_vibe_hint">Теги игр, в которые ты играешь больше всего</string>
+    <string name="recap_outro_title">Итог</string>
+    <string name="recap_outro_top">Главная игра</string>
+    <string name="recap_outro_games">игр</string>
+    <string name="recap_outro_days">дней в игре</string>
+    <string name="recap_share">Поделиться картинкой</string>
+    <string name="recap_empty">Пока тихо. Сыграй во что-нибудь, и здесь появится история.</string>
+    <string name="recap_brand">Playlog</string>
+</resources>

@@ -72,6 +72,7 @@ dependencies {
     implementation(projects.platform.deals)
     implementation(projects.feature.home)
     implementation(projects.feature.ask)
+    implementation(projects.feature.recap)
     implementation(projects.feature.library)
     implementation(projects.feature.game)
     implementation(projects.feature.activity)

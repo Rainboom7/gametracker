@@ -20,6 +20,7 @@
     <string name="home_pick_RETURN_TO">Много часов, но давно не запускалась</string>
     <string name="home_pick_BACKLOG">Есть в библиотеке, но почти не сыграно</string>
     <string name="home_more_picks">Все подборки</string>
+    <string name="home_deals">На скидке для тебя</string>
     <string name="home_recent">Недавно в игре</string>
     <string name="home_all_games">Все игры</string>
     <string name="home_screenshots">Свежие скриншоты</string>

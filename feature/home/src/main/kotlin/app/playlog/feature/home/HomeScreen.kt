@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +55,7 @@ import app.playlog.core.designsystem.theme.Spacing
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
+import app.playlog.core.ui.DealCard
 import app.playlog.core.ui.GameCoverCard
 import app.playlog.core.ui.ScreenshotTile
 import app.playlog.core.ui.entryPlaytimeText
@@ -97,6 +99,18 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
         item { WeekCard(state, onClick = actions.onOpenActivity) }
         state.topPick?.let { pick ->
             item { PickCard(pick, onClick = { actions.onOpenGame(pick.entry.primary.id) }, onMore = actions.onOpenDiscover) }
+        }
+        if (state.deals.isNotEmpty()) {
+            item {
+                Section(stringResource(R.string.home_deals), stringResource(R.string.home_all), actions.onOpenDeals) {
+                    val uriHandler = LocalUriHandler.current
+                    LazyRow(contentPadding = PaddingValues(horizontal = Spacing.lg), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                        items(state.deals, key = { it.steamAppId }) { pick ->
+                            DealCard(pick, onClick = { runCatching { uriHandler.openUri(pick.storeUrl) } })
+                        }
+                    }
+                }
+            }
         }
         if (state.recent.isNotEmpty()) {
             item {

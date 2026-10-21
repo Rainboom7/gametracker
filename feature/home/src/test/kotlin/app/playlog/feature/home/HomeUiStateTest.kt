@@ -2,6 +2,8 @@ package app.playlog.feature.home
 
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
+import app.playlog.core.model.DealPick
+import app.playlog.core.model.DealsState
 import app.playlog.core.model.DiscoverShelf
 import app.playlog.core.model.DiscoverSummary
 import app.playlog.core.model.Game
@@ -74,6 +76,16 @@ class HomeUiStateTest {
         val shots = (build(shots = listOf(old, fresh, orphan)) as HomeUiState.Content).screenshots
 
         assertEquals(listOf(HomeShot(fresh, "Hades"), HomeShot(orphan, null), HomeShot(old, "Zelda")), shots)
+    }
+
+    @Test
+    fun `deals come from fresh picks or the stale ones after a failure`() {
+        val deal = DealPick(1, "Hollow Knight", "https://x/h.jpg", discountPercent = 50, priceText = "250 ₽")
+        fun deals(state: DealsState) = (HomeUiState.build(library, week, 3, discover(null), emptyList(), DayPart.EVENING, state) as HomeUiState.Content).deals
+
+        assertEquals(listOf(deal), deals(DealsState.Ready(listOf(deal), now)))
+        assertEquals(listOf(deal), deals(DealsState.Failed(listOf(deal))))
+        assertEquals(emptyList<DealPick>(), deals(DealsState.NoTaste))
     }
 
     @Test

@@ -15,6 +15,8 @@ data class HomeActions(
     val onOpenDiscover: () -> Unit,
     val onOpenActivity: () -> Unit,
     val onOpenScreenshots: () -> Unit,
+    /** All deals; Discover until a dedicated deals screen exists. */
+    val onOpenDeals: () -> Unit,
     val onConnect: () -> Unit,
 )
 

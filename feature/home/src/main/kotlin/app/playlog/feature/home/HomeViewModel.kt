@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.playlog.core.common.AppClock
 import app.playlog.core.data.ActivityRepository
+import app.playlog.core.data.DealsRepository
 import app.playlog.core.data.DiscoverRepository
 import app.playlog.core.data.LibraryRepository
 import app.playlog.core.data.ScreenshotRepository
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
+import app.playlog.core.model.DealPick
+import app.playlog.core.model.DealsState
 import app.playlog.core.model.DiscoverSummary
 import app.playlog.core.model.GameId
 import app.playlog.core.model.LibraryEntry
@@ -45,11 +48,14 @@ sealed interface HomeUiState {
         val backlogCount: Int,
         val topPick: Pick?,
         val screenshots: List<HomeShot>,
+        /** Games on sale that match what the user plays; empty until the stores answer. */
+        val deals: List<DealPick> = emptyList(),
     ) : HomeUiState
 
     companion object {
         const val RECENT_LIMIT = 10
         const val SHOTS_LIMIT = 8
+        const val DEALS_LIMIT = 8
 
         fun build(
             library: List<LibraryEntry>,
@@ -58,6 +64,7 @@ sealed interface HomeUiState {
             discover: DiscoverSummary,
             screenshots: List<Screenshot>,
             dayPart: DayPart,
+            deals: DealsState = DealsState.Loading,
         ): HomeUiState {
             if (library.isEmpty()) return Empty(dayPart)
             val played = library.filter { it.lastPlayedAt != null }.sortedByDescending { it.lastPlayedAt }
@@ -79,6 +86,11 @@ sealed interface HomeUiState {
                     .sortedByDescending { it.takenAt }
                     .take(SHOTS_LIMIT)
                     .map { HomeShot(it, it.gameId?.let(titles::get)) },
+                deals = when (deals) {
+                    is DealsState.Ready -> deals.picks
+                    is DealsState.Failed -> deals.stale
+                    DealsState.Loading, DealsState.NoTaste -> emptyList()
+                }.take(DEALS_LIMIT),
             )
         }
 
@@ -102,17 +114,29 @@ class HomeViewModel @Inject constructor(
     activity: ActivityRepository,
     discover: DiscoverRepository,
     screenshots: ScreenshotRepository,
+    deals: DealsRepository,
     private val clock: AppClock,
 ) : ViewModel() {
     private val today: LocalDate get() = LocalDate.ofInstant(clock.now(), clock.zone())
 
-    val uiState: StateFlow<HomeUiState> = combine(
+    private val sources = combine(
         library.observeLibrary(),
         activity.observeSummary(ActivityPeriod.WEEK, today),
         activity.observeStreak(),
         discover.observeSummary(),
         screenshots.observeScreenshots(),
-    ) { entries, week, streak, summary, shots ->
-        HomeUiState.build(entries, week, streak, summary, shots, HomeUiState.dayPart(clock.now().atZone(clock.zone()).toLocalTime()))
+    ) { entries, week, streak, summary, shots -> Sources(entries, week, streak, summary, shots) }
+
+    val uiState: StateFlow<HomeUiState> = combine(sources, deals.observe()) { s, dealsState ->
+        val dayPart = HomeUiState.dayPart(clock.now().atZone(clock.zone()).toLocalTime())
+        HomeUiState.build(s.library, s.week, s.streak, s.discover, s.screenshots, dayPart, dealsState)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState.Loading)
 }
+
+private data class Sources(
+    val library: List<LibraryEntry>,
+    val week: ActivitySummary,
+    val streak: Int,
+    val discover: DiscoverSummary,
+    val screenshots: List<Screenshot>,
+)

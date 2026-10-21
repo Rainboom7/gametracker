@@ -110,6 +110,7 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
                 onOpenDiscover = { navController.navigateToTab(TopLevel.DISCOVER) },
                 onOpenActivity = { navController.navigateToTab(TopLevel.ACTIVITY) },
                 onOpenScreenshots = { navController.navigateToScreenshots(null) },
+                onOpenDeals = { navController.navigateToTab(TopLevel.DISCOVER) },
                 onConnect = { navController.navigateToTab(TopLevel.PROFILE) },
             ),
         )

@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.hilt.navigationCompose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.palette)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
     implementation(platform(libs.androidx.compose.bom))

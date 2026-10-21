@@ -45,6 +45,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -153,40 +155,48 @@ private fun GameDetailContent(
     val uriHandler = LocalUriHandler.current
     // No browser installed throws on Android; a dead tap beats a crash.
     val open: (String) -> Unit = { url -> runCatching { uriHandler.openUri(url) } }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        Hero(entry, metadata, onBack, onToggleFavorite)
-        Column(
-            Modifier.padding(horizontal = Spacing.lg).padding(top = Spacing.xs, bottom = Spacing.xxl),
-            verticalArrangement = Arrangement.spacedBy(Spacing.xl),
-        ) {
-            StatusRow(entry.status, onSetStatus)
-            PlaytimeCard(entry, state.lastDays, state.metadata)
-            if (metadata != null) Scores(metadata, open)
-            Owned(entry, open)
-            SimilarCard(entry.title, metadata?.genres.orEmpty(), onFindSimilar = { onFindSimilar(entry.title) })
-            LastDays(state)
-            if (state.screenshots.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                    SectionHeader(stringResource(R.string.game_screenshots)) {
-                        TextButton(onClick = { onOpenAllScreenshots(entry.primary.id) }) {
-                            Text(stringResource(R.string.game_screenshots_all, state.screenshots.size))
+    val accent = rememberCoverAccent(entry.coverUrl ?: entry.heroUrl)
+    val background = MaterialTheme.colorScheme.background
+    val wash by animateColorAsState(coverWash(background, accent), tween(WashMillis), label = "wash")
+    CoverTint(accent) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            Hero(entry, metadata, wash, onBack, onToggleFavorite)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(wash, background), endY = WashFadePx))
+                    .padding(horizontal = Spacing.lg)
+                    .padding(top = Spacing.xs, bottom = Spacing.xxl),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xl),
+            ) {
+                StatusRow(entry.status, onSetStatus)
+                PlaytimeCard(entry, state.lastDays, state.metadata)
+                if (metadata != null) Scores(metadata, open)
+                Owned(entry, open)
+                SimilarCard(entry.title, metadata?.genres.orEmpty(), onFindSimilar = { onFindSimilar(entry.title) })
+                LastDays(state)
+                if (state.screenshots.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                        SectionHeader(stringResource(R.string.game_screenshots)) {
+                            TextButton(onClick = { onOpenAllScreenshots(entry.primary.id) }) {
+                                Text(stringResource(R.string.game_screenshots_all, state.screenshots.size))
+                            }
                         }
-                    }
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), contentPadding = PaddingValues(end = Spacing.lg)) {
-                        items(state.screenshots.take(MaxScreenshotsInRow), key = { it.id }) { shot ->
-                            ScreenshotTile(shot, onClick = { onOpenAllScreenshots(entry.primary.id) }, modifier = Modifier.width(240.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), contentPadding = PaddingValues(end = Spacing.lg)) {
+                            items(state.screenshots.take(MaxScreenshotsInRow), key = { it.id }) { shot ->
+                                ScreenshotTile(shot, onClick = { onOpenAllScreenshots(entry.primary.id) }, modifier = Modifier.width(240.dp))
+                            }
                         }
                     }
                 }
+                Links(entry.externalLinks(metadata), open)
             }
-            Links(entry.externalLinks(metadata), open)
         }
     }
 }
 
 @Composable
-private fun Hero(entry: LibraryEntry, metadata: GameMetadata?, onBack: () -> Unit, onToggleFavorite: () -> Unit) {
-    val background = MaterialTheme.colorScheme.background
+private fun Hero(entry: LibraryEntry, metadata: GameMetadata?, background: Color, onBack: () -> Unit, onToggleFavorite: () -> Unit) {
     Box(Modifier.fillMaxWidth().height(HeroHeight)) {
         GameImage(
             urls = listOf(entry.heroUrl, entry.coverUrl),
@@ -603,6 +613,8 @@ private fun RoundIconButton(onClick: () -> Unit, content: @Composable () -> Unit
 private val StatusChoices = listOf(GameStatus.PLAYING, GameStatus.COMPLETED, GameStatus.SHELVED, GameStatus.DROPPED)
 private val FavoriteRed = Color(0xFFFF6B6B)
 private val HeroHeight = 320.dp
+private const val WashMillis = 600
+private const val WashFadePx = 2400f
 private val HeroScrimHeight = 220.dp
 private const val MaxScreenshotsInRow = 10
 private const val MetacriticGoodFrom = 75

@@ -14,6 +14,8 @@ coroutines = "1.11.0"
 serialization = "1.11.0"
 ktor = "3.6.0"
 coil = "3.3.0"
+palette = "1.0.0"
+glance = "1.1.1"
 # Pinned strictly: Ktor 3.6 pulls OkHttp 5.5, whose Android AAR needs compileSdk 37 (AGP 8.13 tops out at 36).
 okhttp = "5.4.0"
 # 2.59+ calls ScopedArtifact.POST_COMPILATION_CLASSES, which only exists in AGP 9; 2.58 needs AGP >= 8.4.
@@ -77,6 +79,8 @@ hilt-navigationCompose = { module = "androidx.hilt:hilt-navigation-compose", ver
 hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltAndroidx" }
 hilt-androidxCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltAndroidx" }
 
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+androidx-palette = { module = "androidx.palette:palette-ktx", version.ref = "palette" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }

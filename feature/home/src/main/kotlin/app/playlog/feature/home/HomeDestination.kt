@@ -18,6 +18,8 @@ data class HomeActions(
     /** All deals; Discover until a dedicated deals screen exists. */
     val onOpenDeals: () -> Unit,
     val onConnect: () -> Unit,
+    /** Free-text "Спроси" search. */
+    val onAsk: () -> Unit = {},
 )
 
 fun NavGraphBuilder.homeScreen(actions: HomeActions) {

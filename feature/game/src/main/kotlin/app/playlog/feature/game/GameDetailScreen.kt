@@ -98,10 +98,11 @@ import java.util.Locale
 fun GameDetailRoute(
     onBack: () -> Unit,
     onOpenAllScreenshots: (GameId) -> Unit,
+    onFindSimilar: (String) -> Unit = {},
     viewModel: GameDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    GameDetailScreen(state, onBack, onOpenAllScreenshots, viewModel::toggleFavorite, viewModel::setStatus)
+    GameDetailScreen(state, onBack, onOpenAllScreenshots, viewModel::toggleFavorite, viewModel::setStatus, onFindSimilar)
 }
 
 @Composable
@@ -111,6 +112,7 @@ fun GameDetailScreen(
     onOpenAllScreenshots: (GameId) -> Unit,
     onToggleFavorite: () -> Unit,
     onSetStatus: (GameStatus) -> Unit,
+    onFindSimilar: (String) -> Unit = {},
 ) {
     when (state) {
         GameDetailUiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -130,7 +132,7 @@ fun GameDetailScreen(
                 }
             }
             Box(Modifier.fillMaxSize()) {
-                GameDetailContent(state, onBack, onOpenAllScreenshots, onToggleFavorite, onSetStatus)
+                GameDetailContent(state, onBack, onOpenAllScreenshots, onToggleFavorite, onSetStatus, onFindSimilar)
                 SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
             }
         }
@@ -144,6 +146,7 @@ private fun GameDetailContent(
     onOpenAllScreenshots: (GameId) -> Unit,
     onToggleFavorite: () -> Unit,
     onSetStatus: (GameStatus) -> Unit,
+    onFindSimilar: (String) -> Unit,
 ) {
     val entry = state.entry
     val metadata = state.metadata.metadata
@@ -160,6 +163,7 @@ private fun GameDetailContent(
             PlaytimeCard(entry, state.lastDays, state.metadata)
             if (metadata != null) Scores(metadata, open)
             Owned(entry, open)
+            SimilarCard(entry.title, metadata?.genres.orEmpty(), onFindSimilar = { onFindSimilar(entry.title) })
             LastDays(state)
             if (state.screenshots.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {

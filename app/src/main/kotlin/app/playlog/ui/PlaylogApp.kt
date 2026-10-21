@@ -43,6 +43,8 @@ import app.playlog.feature.discover.DiscoverDestination
 import app.playlog.feature.discover.discoverScreen
 import app.playlog.feature.deals.dealsScreen
 import app.playlog.feature.deals.navigateToDeals
+import app.playlog.feature.ask.askScreen
+import app.playlog.feature.ask.navigateToAsk
 import app.playlog.feature.game.gameScreen
 import app.playlog.feature.game.navigateToGame
 import app.playlog.feature.home.HomeActions
@@ -114,8 +116,10 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
                 onOpenScreenshots = { navController.navigateToScreenshots(null) },
                 onOpenDeals = navController::navigateToDeals,
                 onConnect = { navController.navigateToTab(TopLevel.PROFILE) },
+                onAsk = { navController.navigateToAsk() },
             ),
         )
+        askScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         libraryScreen(onOpenGame = navController::navigateToGame, onConnect = { navController.navigateToTab(TopLevel.PROFILE) })
         discoverScreen(onOpenGame = navController::navigateToGame, onOpenAllDeals = navController::navigateToDeals)
         dealsScreen(onBack = { navController.popBackStack() })
@@ -132,6 +136,7 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
         gameScreen(
             onBack = { navController.popBackStack() },
             onOpenAllScreenshots = { navController.navigateToScreenshots(it) },
+            onFindSimilar = { title -> navController.navigateToAsk("как $title") },
         )
         linkAccountScreen(onDone = { navController.popBackStack() })
     }

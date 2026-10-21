@@ -54,6 +54,7 @@ if (!jvmOnly) {
         ":core:designsystem",
         ":core:ui",
         ":feature:home",
+        ":feature:ask",
         ":feature:library",
         ":feature:game",
         ":feature:activity",

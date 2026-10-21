@@ -28,4 +28,6 @@
     <string name="home_empty_title">Пока пусто</string>
     <string name="home_empty_body">Подключи Steam, PlayStation или Nintendo, и здесь появятся твои игры, активность и подборки.</string>
     <string name="home_empty_action">Подключить</string>
+    <string name="home_ask">Во что поиграть?</string>
+    <string name="home_ask_hint">Например: на двоих на одном экране</string>
 </resources>

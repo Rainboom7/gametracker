@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ask_title">Спроси</string>
+    <string name="ask_subtitle">Опиши, во что хочется поиграть, своими словами</string>
+    <string name="ask_hint">Например: на двоих на одном экране</string>
+    <string name="ask_send">Найти</string>
+    <string name="ask_clear">Очистить</string>
+    <string name="ask_back">Назад</string>
+    <string name="ask_examples">Попробуй так</string>
+    <string name="ask_thinking">Ищу в библиотеке и в Steam…</string>
+    <string name="ask_understood">Понял так</string>
+    <string name="ask_not_understood">Не нашёл знакомых слов, ищу по названию</string>
+    <string name="ask_owned">Уже есть у тебя</string>
+    <string name="ask_store">Можно купить в Steam</string>
+    <string name="ask_store_hint">Сначала то, что ближе к твоему вкусу и с лучшими отзывами</string>
+    <string name="ask_nothing">Ничего не нашлось. Попробуй проще: «кооператив», «рогалик», «на вечер».</string>
+    <string name="ask_failed">Steam не ответил. Проверь сеть и попробуй ещё раз.</string>
+    <string name="ask_retry">Повторить</string>
+    <string name="ask_players">%1$d игрока</string>
+    <string name="ask_like">похоже на %1$s</string>
+    <string name="ask_like_tags">похоже на %1$s: %2$s</string>
+    <string name="ask_owned_only">из твоей библиотеки</string>
+    <string name="ask_unplayed">ещё не начатые</string>
+    <string name="ask_free">бесплатно</string>
+    <string name="ask_on_sale">со скидкой</string>
+    <string name="ask_feature_SPLIT_SCREEN_COOP">кооператив на одном экране</string>
+    <string name="ask_feature_SHARED_SCREEN">на одном экране</string>
+    <string name="ask_feature_LOCAL_PVP">друг против друга на одном экране</string>
+    <string name="ask_feature_ONLINE_COOP">кооператив по сети</string>
+    <string name="ask_feature_COOP">кооператив</string>
+    <string name="ask_feature_PVP">друг против друга</string>
+    <string name="ask_feature_SINGLE_PLAYER">одиночная</string>
+    <string name="ask_feature_REMOTE_PLAY_TOGETHER">Remote Play Together</string>
+    <string name="ask_feature_CONTROLLER">с геймпадом</string>
+    <string name="ask_match">Совпадает с твоим вкусом: %1$s</string>
+    <string-array name="ask_example_queries">
+        <item>на двоих на одном экране</item>
+        <item>уютное на вечер</item>
+        <item>рогалик как Hades</item>
+        <item>хоррор с другом по сети</item>
+        <item>из моих не начатых</item>
+        <item>бесплатный шутер</item>
+        <item>стратегия со скидкой</item>
+        <item>файтинг 1 на 1</item>
+        <item>сюжетная с открытым миром</item>
+        <item>вечеринка для компании</item>
+    </string-array>
+</resources>

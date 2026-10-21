@@ -14,8 +14,9 @@ fun NavController.navigateToGame(id: GameId) = navigate(GameDestination(id.encod
 fun NavGraphBuilder.gameScreen(
     onBack: () -> Unit,
     onOpenAllScreenshots: (GameId) -> Unit,
+    onFindSimilar: (String) -> Unit = {},
 ) {
     composable<GameDestination> {
-        GameDetailRoute(onBack = onBack, onOpenAllScreenshots = onOpenAllScreenshots)
+        GameDetailRoute(onBack = onBack, onOpenAllScreenshots = onOpenAllScreenshots, onFindSimilar = onFindSimilar)
     }
 }

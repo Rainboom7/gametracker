@@ -92,6 +92,7 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
                 stringResource(R.string.home_subtitle, state.gameCount, formatPlaytime(state.totalPlaytime)),
             )
         }
+        item { AskPill(onClick = actions.onAsk) }
         state.continuePlaying?.let { entry ->
             item { ContinueHero(entry, onClick = { actions.onOpenGame(entry.primary.id) }) }
         }

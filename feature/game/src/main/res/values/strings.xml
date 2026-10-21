@@ -42,4 +42,6 @@
     <string name="game_link_nintendo">Nintendo eShop</string>
     <string name="game_link_hltb">HowLongToBeat</string>
     <string name="game_link_metacritic">Metacritic</string>
+    <string name="game_similar">Найти похожие на %1$s</string>
+    <string name="game_similar_hint">Подберу игры с теми же тегами из твоей библиотеки и из Steam</string>
 </resources>

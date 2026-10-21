@@ -9,6 +9,7 @@ import app.playlog.core.model.Milestone
 import app.playlog.core.model.MilestoneKind
 import app.playlog.core.model.PickReason
 import app.playlog.core.model.Platform
+import app.playlog.core.model.RouletteMood
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
@@ -102,20 +103,31 @@ class DiscoverCalculatorTest {
     @Test
     fun rouletteDrawsOnlyFromBacklogAndForgottenOnThePlatform() {
         val drawn = (0 until 50).mapNotNull {
-            DiscoverCalculator.roulette(library, today, zone, null, null, Random(it))?.title
+            DiscoverCalculator.roulette(library, today, zone, RouletteQuery(), emptySet(), Random(it))?.title
         }.toSet()
         assertEquals(setOf("The Witcher 3", "Disco Elysium", "Outer Wilds"), drawn)
 
-        assertNull(DiscoverCalculator.roulette(library, today, zone, Platform.PLAYSTATION, null, Random(1)))
+        assertNull(DiscoverCalculator.roulette(library, today, zone, RouletteQuery(Platform.PLAYSTATION), emptySet(), Random(1)))
     }
 
     @Test
     fun rouletteAvoidsRepeatingTheLastResult() {
         val witcherKey = library.first { it.title == "The Witcher 3" }.key
         repeat(20) { seed ->
-            val pick = DiscoverCalculator.roulette(library, today, zone, null, witcherKey, Random(seed))
+            val pick = DiscoverCalculator.roulette(library, today, zone, RouletteQuery(recent = listOf(witcherKey)), emptySet(), Random(seed))
             assertNotEquals("The Witcher 3", pick?.title)
         }
+    }
+
+    @Test
+    fun rouletteMoodsNarrowThePool() {
+        val liked = library.first { it.title == "Disco Elysium" }.key
+        val comfort = (0 until 30).mapNotNull {
+            DiscoverCalculator.roulette(library, today, zone, RouletteQuery(mood = RouletteMood.COMFORT), setOf(liked), Random(it))?.title
+        }.toSet()
+        // Outer Wilds is a favourite, Disco Elysium is rated 8+.
+        assertEquals(setOf("Outer Wilds", "Disco Elysium"), comfort)
+        assertNull(DiscoverCalculator.roulette(library, today, zone, RouletteQuery(Platform.PLAYSTATION, RouletteMood.COMFORT), setOf(liked), Random(1)))
     }
 
     @Test

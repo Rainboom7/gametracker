@@ -97,6 +97,9 @@ data class StoreQuote(
     val headerUrl: String? = null,
     val storeUrl: String? = null,
     val price: StorePrice? = null,
+    /** True before release, false once out, null when the store does not say. */
+    val comingSoon: Boolean? = null,
+    val releaseDate: Instant? = null,
 )
 
 /** A game the user wants, with the last price seen in their region. */
@@ -111,6 +114,9 @@ data class WishlistItem(
     val checkedAt: Instant? = null,
     /** Deepest discount already notified, so one sale alerts once; reset when the sale ends. */
     val notifiedDiscount: Int = 0,
+    /** Not out yet as of the last check; flips to false on release, which is announced once. */
+    val comingSoon: Boolean = false,
+    val releaseDate: Instant? = null,
 ) {
     val key: String get() = "${platform.name}:$storeId"
 
@@ -119,6 +125,9 @@ data class WishlistItem(
 
 /** A wishlisted game that went on sale or got cheaper since the last check. */
 data class PriceDrop(val item: WishlistItem, val price: StorePrice)
+
+/** One wishlist check: new sales and games that came out since the last check. */
+data class WishlistCheck(val drops: List<PriceDrop>, val released: List<WishlistItem>)
 
 /** Lowest price ever recorded for a game, from a price history service. */
 data class PriceLow(val priceText: String, val at: Instant?, val source: String)

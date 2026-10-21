@@ -14,13 +14,14 @@ import org.junit.Test
 
 class WishlistRepositoryTest {
     private val prices = mutableMapOf<String, StorePrice>()
+    private val upcoming = mutableMapOf<String, Boolean>()
     private val store = object : StoreDealsSource {
         override val platform = Platform.STEAM
         override val countries = listOf("TR")
         override suspend fun page(country: String, page: Int) = StoreDealsPage(emptyList(), hasMore = false)
         override suspend fun quotes(country: String, ids: List<String>) = ids.associateWith { id ->
-            StoreQuote(title = "Game $id", headerUrl = "h$id", storeUrl = "u$id", price = prices[id])
-        }.filterValues { it.price != null || it.title == "Game 9" }
+            StoreQuote(title = "Game $id", headerUrl = "h$id", storeUrl = "u$id", price = prices[id], comingSoon = upcoming[id])
+        }.filterValues { it.price != null || it.comingSoon != null || it.title == "Game 9" }
     }
     private val account = FakeSource(Platform.STEAM, storeCountry = { "TR" }, wishlist = { listOf("1", "9") })
     private val stores = DefaultStoreDealsRepository(
@@ -59,6 +60,18 @@ class WishlistRepositoryTest {
 
         prices["1"] = StorePrice("5 TL", "10 TL", 50)
         assertEquals(1, repository.checkPrices().size)
+    }
+
+    @Test
+    fun `a wished game coming out is announced once, even before it has a price`() = runTest {
+        repository.toggle(pick("3", 0))
+        upcoming["3"] = true
+        assertTrue(repository.check().released.isEmpty())
+        assertTrue(repository.observe().first().single().comingSoon)
+
+        upcoming["3"] = false
+        assertEquals(listOf("STEAM:3"), repository.check().released.map { it.key })
+        assertTrue(repository.check().released.isEmpty())
     }
 
     @Test

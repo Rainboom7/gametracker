@@ -65,8 +65,19 @@ class AlertsWorker @AssistedInject constructor(
     }
 
     private suspend fun wishlistSales() {
-        val drops = wishlist.checkPrices()
-        Log.i(TAG, "Wishlist check: ${drops.size} new sales")
+        val check = wishlist.check()
+        val drops = check.drops
+        Log.i(TAG, "Wishlist check: ${drops.size} new sales, ${check.released.size} released")
+        check.released.forEach { item ->
+            notifier.post(
+                Notifier.Channel.DEALS,
+                "release:${item.key}".hashCode(),
+                applicationContext.getString(R.string.wishlist_released_title, item.title),
+                item.price?.let { applicationContext.getString(R.string.wishlist_released_price, it.priceText) }
+                    ?: applicationContext.getString(R.string.wishlist_released_text),
+                notifier.browser(item.storeUrl),
+            )
+        }
         drops.forEach { drop ->
             val item = drop.item
             val store = applicationContext.getString(platformNameRes(item.platform))

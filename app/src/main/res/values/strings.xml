@@ -51,4 +51,7 @@
     <string name="digest_more">На %1$s больше, чем неделей раньше.</string>
     <string name="digest_less">На %1$s меньше, чем неделей раньше.</string>
     <string name="digest_cta">Открой историю недели.</string>
+    <string name="wishlist_released_title">Вышла: %1$s</string>
+    <string name="wishlist_released_price">Игра из твоего вишлиста уже в продаже, %1$s.</string>
+    <string name="wishlist_released_text">Игра из твоего вишлиста уже вышла.</string>
 </resources>

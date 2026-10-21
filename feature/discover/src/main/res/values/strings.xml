@@ -29,7 +29,7 @@
     <string name="discover_roulette_hint">Не можешь выбрать? Пусть выберет случай. В бэклоге: %1$d</string>
     <string name="discover_roulette_spin">Выбери за меня</string>
     <string name="discover_roulette_again">Ещё раз</string>
-    <string name="discover_roulette_empty">На этой платформе бэклог пуст. Красота!</string>
+    <string name="discover_roulette_empty">Под эти условия ничего не нашлось. Попробуй другое настроение или платформу.</string>
 
     <string name="discover_anniversaries">В эти дни</string>
 
@@ -63,4 +63,10 @@
     <string name="deals_all">Все скидки</string>
     <string name="deals_retry">Повторить</string>
     <string name="deals_refresh">Обновить скидки</string>
+    <string name="roulette_mood_ANY">Что угодно</string>
+    <string name="roulette_mood_FORGOTTEN">Заброшенные</string>
+    <string name="roulette_mood_UNTOUCHED">Не начатые</string>
+    <string name="roulette_mood_COMFORT">Любимые</string>
+    <string name="roulette_screen_title">Случайная игра</string>
+    <string name="roulette_back">Назад</string>
 </resources>

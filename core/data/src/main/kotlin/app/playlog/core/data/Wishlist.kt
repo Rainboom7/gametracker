@@ -8,6 +8,7 @@ import app.playlog.core.model.PriceLow
 import app.playlog.core.model.PriceDrop
 import app.playlog.core.model.StorePrice
 import app.playlog.core.model.StoreQuote
+import app.playlog.core.model.WishlistCheck
 import app.playlog.core.model.WishlistItem
 import app.playlog.platform.api.GamePlatformSource
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +47,10 @@ interface WishlistRepository {
     suspend fun importFromAccounts(): Int
 
     /** Re-prices every item in its platform's region; returns the sales not notified yet. */
-    suspend fun checkPrices(): List<PriceDrop>
+    suspend fun checkPrices(): List<PriceDrop> = check().drops
+
+    /** [checkPrices] plus release tracking: games that were coming soon and are out now. */
+    suspend fun check(): WishlistCheck
 }
 
 class DefaultWishlistRepository(
@@ -84,8 +88,9 @@ class DefaultWishlistRepository(
         return added
     }
 
-    override suspend fun checkPrices(): List<PriceDrop> {
+    override suspend fun check(): WishlistCheck {
         val drops = ArrayList<PriceDrop>()
+        val released = ArrayList<WishlistItem>()
         val snapshot = lock.withLock { load() }
         val quotes = snapshot.groupBy { it.platform }.mapValues { (platform, items) ->
             runSuspendCatching { stores.quotes(platform, items.map { it.storeId }) }.onFailure { onError(platform, it) }.getOrNull().orEmpty()
@@ -93,9 +98,14 @@ class DefaultWishlistRepository(
         update { items ->
             items.map { item ->
                 val quote = quotes[item.platform]?.get(item.storeId) ?: return@map item
-                val price = quote.price ?: return@map item.copy(checkedAt = clock.now())
+                val dated = item.copy(
+                    comingSoon = quote.comingSoon ?: item.comingSoon,
+                    releaseDate = quote.releaseDate ?: item.releaseDate,
+                )
+                if (item.comingSoon && quote.comingSoon == false) released += dated
+                val price = quote.price ?: return@map dated.copy(checkedAt = clock.now())
                 val discount = price.discountPercent
-                val checked = item.copy(
+                val checked = dated.copy(
                     title = item.title.ifBlank { quote.title.orEmpty() },
                     headerUrl = item.headerUrl.ifBlank { quote.headerUrl.orEmpty() },
                     price = price,
@@ -106,7 +116,7 @@ class DefaultWishlistRepository(
                 checked
             }
         }
-        return drops
+        return WishlistCheck(drops, released)
     }
 
     private suspend fun load(): List<WishlistItem> = state.value ?: store.read().also { state.value = it }
@@ -140,6 +150,8 @@ class DefaultWishlistRepository(
         price = price,
         checkedAt = clock.now(),
         notifiedDiscount = price?.discountPercent ?: 0,
+        comingSoon = comingSoon == true,
+        releaseDate = releaseDate,
     )
 }
 

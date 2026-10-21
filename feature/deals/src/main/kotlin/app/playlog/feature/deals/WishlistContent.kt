@@ -114,6 +114,10 @@ private fun WishRow(item: WishlistItem, onClick: () -> Unit, onRemove: () -> Uni
             val price = item.price
             Row(verticalAlignment = Alignment.CenterVertically) {
                 when {
+                    item.comingSoon -> Hint(
+                        item.releaseDate?.let { stringResource(R.string.deals_wish_coming_on, formatShortDate(it, withYear = true)) }
+                            ?: stringResource(R.string.deals_wish_coming),
+                    )
                     price == null -> Hint(stringResource(R.string.deals_wish_unknown))
                     price.discountPercent > 0 -> {
                         DiscountBadge(price.discountPercent)

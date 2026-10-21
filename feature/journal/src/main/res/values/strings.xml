@@ -67,4 +67,31 @@
         <item>шедевр</item>
         <item>любимая</item>
     </string-array>
+
+    <string name="today_title">Сегодня</string>
+    <string name="today_sale_ending">Скидка скоро закончится</string>
+    <string name="today_giveaway_ending">Раздача заканчивается</string>
+    <string name="today_shots_unknown">Скриншоты</string>
+    <string name="today_played">В этот день ты играл %1$s</string>
+    <string name="today_first_played">В этот день ты впервые запустил игру</string>
+    <string name="today_sale_price">−%1$d%% · %2$s, из твоего вишлиста</string>
+    <string name="today_giveaway_free">Бесплатно навсегда · %1$s</string>
+    <plurals name="today_years_ago">
+        <item quantity="one">%1$d год назад</item>
+        <item quantity="few">%1$d года назад</item>
+        <item quantity="many">%1$d лет назад</item>
+        <item quantity="other">%1$d года назад</item>
+    </plurals>
+    <plurals name="today_anniversary">
+        <item quantity="one">%1$d год вместе</item>
+        <item quantity="few">%1$d года вместе</item>
+        <item quantity="many">%1$d лет вместе</item>
+        <item quantity="other">%1$d года вместе</item>
+    </plurals>
+    <plurals name="today_shots">
+        <item quantity="one">%1$d снимок в этот день</item>
+        <item quantity="few">%1$d снимка в этот день</item>
+        <item quantity="many">%1$d снимков в этот день</item>
+        <item quantity="other">%1$d снимка в этот день</item>
+    </plurals>
 </resources>

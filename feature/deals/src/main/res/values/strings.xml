@@ -85,4 +85,6 @@
     <string name="giveaway_store_ITCH">itch.io</string>
     <string name="giveaway_store_OTHER">Другое</string>
     <string name="deals_open_giveaways">Раздачи</string>
+    <string name="deals_wish_coming">Ещё не вышла, напомню о релизе</string>
+    <string name="deals_wish_coming_on">Выходит %1$s, напомню о релизе</string>
 </resources>

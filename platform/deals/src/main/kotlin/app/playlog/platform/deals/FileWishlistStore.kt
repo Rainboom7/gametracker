@@ -48,16 +48,18 @@ internal data class StoredWish(
     val price: StoredPrice? = null,
     val checkedAt: Long? = null,
     val notifiedDiscount: Int = 0,
+    val comingSoon: Boolean = false,
+    val releaseDate: Long? = null,
 ) {
     fun toModel() = WishlistItem(
         platform, storeId, title, header, storeUrl, Instant.ofEpochMilli(addedAt), price?.toModel(),
-        checkedAt?.let(Instant::ofEpochMilli), notifiedDiscount,
+        checkedAt?.let(Instant::ofEpochMilli), notifiedDiscount, comingSoon, releaseDate?.let(Instant::ofEpochMilli),
     )
 
     companion object {
         fun of(w: WishlistItem) = StoredWish(
             w.platform, w.storeId, w.title, w.headerUrl, w.storeUrl, w.addedAt.toEpochMilli(), w.price?.let(StoredPrice::of),
-            w.checkedAt?.toEpochMilli(), w.notifiedDiscount,
+            w.checkedAt?.toEpochMilli(), w.notifiedDiscount, w.comingSoon, w.releaseDate?.toEpochMilli(),
         )
     }
 }

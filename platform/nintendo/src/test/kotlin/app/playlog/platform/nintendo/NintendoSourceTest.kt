@@ -174,6 +174,19 @@ class NintendoSourceTest {
     }
 
     @Test
+    fun `404 from fetchOwnedDevices means no paired console`() = runTest {
+        link()
+        overrides["/v2/actions/user/fetchOwnedDevices"] = HttpStatusCode.NotFound to
+            """{"errorCode":"resource_is_not_found","status":404,"title":"ResourceNotFoundException"}"""
+        try {
+            source.fetchLibrary()
+            fail("expected Protocol")
+        } catch (e: PlatformException.Protocol) {
+            assertTrue(e.message!!.contains("Parental Controls"))
+        }
+    }
+
+    @Test
     fun `account linked with the old Nintendo Store client must sign in again`() = runTest {
         TypedCredentials(store, Platform.NINTENDO, NintendoCredentials.serializer())
             .write(NintendoCredentials(sessionToken = "old", userId = "abc123", nickname = "Link"))

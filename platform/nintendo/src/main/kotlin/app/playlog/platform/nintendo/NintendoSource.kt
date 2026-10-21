@@ -73,13 +73,22 @@ class NintendoSource internal constructor(
             }
         }
 
+    private suspend fun pairedConsoles(): List<OwnedDeviceDto> {
+        val devices = try {
+            api.ownedDevices()
+        } catch (e: PlatformException.Protocol) {
+            // The API answers 404 resource_is_not_found when the account has no paired console (as pynintendoparental notes).
+            if (e.message?.contains("HTTP 404") == true) throw PlatformException.Protocol(platform, NO_CONSOLE, e) else throw e
+        }
+        return devices.ifEmpty { throw PlatformException.Protocol(platform, NO_CONSOLE) }
+    }
+
     /**
      * Merges the API's window into the stored history. Every date the API reports replaces the stored
      * day entirely (today's `CALCULATING` total grows); older days are kept as they were.
      */
     private suspend fun refreshHistory(): Map<String, NintendoTitleHistory> {
-        val devices = api.ownedDevices()
-        if (devices.isEmpty()) throw PlatformException.Protocol(platform, NO_CONSOLE)
+        val devices = pairedConsoles()
         val coveredDates = mutableSetOf<String>()
         val window = mutableMapOf<String, MutableMap<String, Long>>()
         val meta = mutableMapOf<String, NintendoTitleHistory>()
@@ -181,7 +190,7 @@ class NintendoSource internal constructor(
     companion object {
         private const val STATE = "state"
         private const val VERIFIER = "verifier"
-        private const val NO_CONSOLE = "No console is paired with the Nintendo Switch Parental Controls app"
+        private const val NO_CONSOLE = "No console is paired with this account in the Nintendo Switch Parental Controls app"
 
         fun create(client: HttpClient, credentialStore: CredentialStore, clock: AppClock = SystemAppClock): NintendoSource {
             val credentials = TypedCredentials(credentialStore, Platform.NINTENDO, NintendoCredentials.serializer())

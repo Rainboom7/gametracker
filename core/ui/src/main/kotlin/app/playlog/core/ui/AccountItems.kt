@@ -45,11 +45,15 @@ private fun failedStatusText(state: SyncState.Failed): String {
             SyncFailure.UNKNOWN -> R.string.account_unknown_error
         },
     )
+    if (state.message?.contains(InterceptedMarker) == true) return stringResource(R.string.account_network_intercepted)
     val detail = state.message?.takeIf { state.reason == SyncFailure.NETWORK || state.reason == SyncFailure.UNKNOWN }
     return if (detail.isNullOrBlank()) base else "$base (${detail.take(MaxDetailLength)})"
 }
 
 private const val MaxDetailLength = 120
+
+// Same text as AiaTrustManager.INTERCEPTED_MARKER; core:ui does not depend on core:network.
+private const val InterceptedMarker = "TLS intercepted"
 
 @Composable
 fun AccountRow(platform: Platform, account: Account?, onClick: () -> Unit, modifier: Modifier = Modifier) {

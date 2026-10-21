@@ -37,6 +37,7 @@
     <string name="account_syncing">Синхронизация…</string>
     <string name="account_auth_expired">Токен истёк · войти заново</string>
     <string name="account_network_error">Нет сети, повторим позже</string>
+    <string name="account_network_intercepted">Провайдер или сеть блокирует сервер. Включи VPN или смени сеть</string>
     <string name="account_rate_limited">Слишком много запросов, повторим позже</string>
     <string name="account_private_profile">Профиль или данные об играх скрыты настройками приватности</string>
     <string name="account_unknown_error">Ошибка синхронизации</string>

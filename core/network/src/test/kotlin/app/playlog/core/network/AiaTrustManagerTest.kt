@@ -74,6 +74,20 @@ class AiaTrustManagerTest {
     }
 
     @Test
+    fun `a lone self-signed certificate is reported as interception`() {
+        val e = try {
+            AiaTrustManager(rootOnly, extraRoots = null) { null }.checkServerTrusted(arrayOf(mitm), "ECDHE_ECDSA")
+            null
+        } catch (e: CertificateException) {
+            e
+        }
+        assertTrue(e?.message, e!!.message!!.startsWith(AiaTrustManager.INTERCEPTED_MARKER))
+    }
+
+    /** Stands in for an ISP filter's self-signed certificate: a self-signed cert the trust store does not know. */
+    private val mitm = AiaTrustManager.mozillaTrustManager()!!.acceptedIssuers.first()
+
+    @Test
     fun `mozilla root store is bundled`() {
         val mozilla = AiaTrustManager.mozillaTrustManager()!!
         assertTrue(mozilla.acceptedIssuers.size > 100)

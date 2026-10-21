@@ -37,6 +37,10 @@ class AiaTrustManager(
             for (verifier in verifiers) {
                 if (runCatching { verifier.checkServerTrusted(completed, authType) }.isSuccess) return
             }
+            if (completed.size == 1 && completed[0].subjectX500Principal == completed[0].issuerX500Principal) {
+                // A lone self-signed certificate for a public host is a middlebox (ISP filter, captive portal), not the server.
+                throw CertificateException("$INTERCEPTED_MARKER by ${describe(completed)}", e)
+            }
             // The message ends up in the sync error on screen: name the chain so a report says what is missing.
             throw CertificateException("${e.message}; chain: ${describe(completed)}; aia: ${chain.lastOrNull()?.let(::caIssuersUrl)}", e)
         }
@@ -72,6 +76,8 @@ class AiaTrustManager(
     }.getOrNull()
 
     companion object {
+        /** Appears in the error message when the network served its own certificate instead of the server's. */
+        const val INTERCEPTED_MARKER = "TLS intercepted"
         private const val MAX_FETCHED = 3
         private const val AIA_OID = "1.3.6.1.5.5.7.1.1"
 

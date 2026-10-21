@@ -100,6 +100,11 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    constraints {
+        // OkHttp 5.5+ needs compileSdk 37; see libs.versions.toml.
+        implementation(libs.okhttp) { version { strictly(libs.versions.okhttp.get()) } }
+        implementation("com.squareup.okhttp3:okhttp-android") { version { strictly(libs.versions.okhttp.get()) } }
+    }
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotlinx.coroutines.test)

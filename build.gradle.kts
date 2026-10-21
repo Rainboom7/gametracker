@@ -64,4 +64,22 @@ subprojects {
     tasks.withType<Test>().configureEach {
         if (name.endsWith("UnitTest")) exclude("**/*LiveTest*")
     }
+
+    // Experimental Compose APIs are fine for a personal app: opt in module-wide instead of per call
+    // site, so a newly used experimental API does not break the build. Unknown markers only warn.
+    pluginManager.withPlugin("org.jetbrains.kotlin.plugin.compose") {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+            compilerOptions.optIn.addAll(
+                "androidx.compose.material3.ExperimentalMaterial3Api",
+                "androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+                "androidx.compose.foundation.ExperimentalFoundationApi",
+                "androidx.compose.foundation.layout.ExperimentalLayoutApi",
+                "androidx.compose.animation.ExperimentalAnimationApi",
+                "androidx.compose.animation.ExperimentalSharedTransitionApi",
+                "androidx.compose.ui.ExperimentalComposeUiApi",
+                "androidx.compose.ui.text.ExperimentalTextApi",
+                "kotlinx.coroutines.ExperimentalCoroutinesApi",
+            )
+        }
+    }
 }

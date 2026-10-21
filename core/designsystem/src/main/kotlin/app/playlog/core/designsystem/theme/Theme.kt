@@ -13,6 +13,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -99,12 +100,14 @@ private val LightScheme = lightColorScheme(
 
 // ---- Typography ----
 // Manrope (headings, numbers) + Inter (text), bundled as variable TTFs: both cover Cyrillic.
+@OptIn(ExperimentalTextApi::class) // Font(resId, …, variationSettings)
 private fun manrope(weight: Int) = Font(
     R.font.manrope_variable,
     FontWeight(weight),
     variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
 )
 
+@OptIn(ExperimentalTextApi::class)
 private fun inter(weight: Int) = Font(
     R.font.inter_variable,
     FontWeight(weight),

@@ -69,6 +69,7 @@ fun LinkAccountRoute(onDone: () -> Unit, viewModel: LinkAccountViewModel = hiltV
         onInput = viewModel::onInput,
         onCaptured = viewModel::onCaptured,
         onSubmit = viewModel::submit,
+        onRetry = { viewModel.restart() },
     )
 }
 
@@ -79,6 +80,7 @@ fun LinkAccountScreen(
     onInput: (LinkFieldType, String) -> Unit,
     onCaptured: (LinkFieldType, String) -> Unit,
     onSubmit: () -> Unit,
+    onRetry: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var webStep by remember { mutableStateOf<LinkStep?>(null) }
@@ -94,7 +96,10 @@ fun LinkAccountScreen(
             Spacer(Modifier.padding(start = Spacing.sm))
             Text(stringResource(R.string.link_title, platformName(state.platform)), style = MaterialTheme.typography.headlineMedium)
         }
-        if (flow == null) {
+        if (flow == null && state.error != null) {
+            ErrorText(state.error)
+            SecondaryButton(stringResource(R.string.link_retry), onClick = onRetry)
+        } else if (flow == null) {
             Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         } else {
             flow.steps.forEachIndexed { i, step ->
@@ -125,9 +130,7 @@ fun LinkAccountScreen(
                     enabled = flow.fields.all { !state.input[it].isNullOrBlank() },
                 )
             }
-            (state.error as? LinkError.General)?.let {
-                Text(stringResource(R.string.link_error_generic, it.message), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-            }
+            (state.error as? LinkError.General)?.let { ErrorText(it) }
         }
     }
 
@@ -150,6 +153,15 @@ fun LinkAccountScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ErrorText(error: LinkError) {
+    val message = when (error) {
+        is LinkError.General -> error.message
+        is LinkError.Field -> error.message
+    }
+    Text(stringResource(R.string.link_error_generic, message), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
 }
 
 @Composable

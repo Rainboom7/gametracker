@@ -1,5 +1,6 @@
 package app.playlog.feature.profile
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,11 +49,16 @@ class LinkAccountViewModel @Inject constructor(
         restart()
     }
 
-    fun restart() {
+    /** Starts a fresh link flow; [keepError] leaves the previous failure visible after an automatic restart. */
+    fun restart(keepError: Boolean = false) {
+        if (!keepError) state.update { it.copy(error = null) }
         viewModelScope.launch {
             runSuspendCatching { accounts.startLink(platform) }
-                .onSuccess { flow -> state.update { it.copy(flow = flow, error = null) } }
-                .onFailure { e -> state.update { it.copy(error = LinkError.General(e.message ?: e.javaClass.simpleName)) } }
+                .onSuccess { flow -> state.update { it.copy(flow = flow) } }
+                .onFailure { e ->
+                    Log.w(TAG, "startLink($platform) failed", e)
+                    state.update { it.copy(error = LinkError.General(e.message ?: e.javaClass.simpleName)) }
+                }
         }
     }
 
@@ -70,10 +76,12 @@ class LinkAccountViewModel @Inject constructor(
         viewModelScope.launch {
             runSuspendCatching { accounts.completeLink(platform, flow, input) }
                 .onSuccess { account ->
+                    Log.i(TAG, "Linked $platform as ${account.displayName}")
                     state.update { it.copy(isSubmitting = false, linked = account) }
                     syncScheduler.requestSync(platform)
                 }
                 .onFailure { e ->
+                    Log.w(TAG, "completeLink($platform) failed", e)
                     val error = when (e) {
                         is PlatformException.InvalidInput -> e.field?.let { LinkError.Field(it, e.message.orEmpty()) }
                             ?: LinkError.General(e.message.orEmpty())
@@ -81,8 +89,10 @@ class LinkAccountViewModel @Inject constructor(
                     }
                     state.update { it.copy(isSubmitting = false, error = error) }
                     // PKCE / OAuth state is single-use: start a fresh flow for the next attempt.
-                    if (e !is PlatformException.InvalidInput || e.field != LinkFieldType.STEAM_API_KEY) restart()
+                    if (e !is PlatformException.InvalidInput || e.field != LinkFieldType.STEAM_API_KEY) restart(keepError = true)
                 }
         }
     }
 }
+
+private const val TAG = "Playlog"

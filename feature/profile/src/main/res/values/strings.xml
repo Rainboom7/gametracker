@@ -36,6 +36,7 @@
     <string name="link_submit">Подключить</string>
     <string name="link_success">%1$s подключён</string>
     <string name="link_error_generic">Не получилось подключить: %1$s</string>
+    <string name="link_retry">Попробовать снова</string>
     <string name="link_error_field">Проверьте поле «%1$s»: %2$s</string>
     <string name="link_or_manual">или вручную</string>
     <string name="link_webview_title">Вход</string>

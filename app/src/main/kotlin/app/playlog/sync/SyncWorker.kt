@@ -1,6 +1,7 @@
 package app.playlog.sync
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -22,6 +23,14 @@ class SyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val platform = inputData.getString(KEY_PLATFORM)?.let(Platform::valueOf)
         val results = if (platform != null) listOfNotNull(engine.sync(platform)) else engine.syncAll().results
+        results.forEach { r ->
+            if (r.isSuccess) {
+                val warnings = r.warnings.map { it.message }
+                Log.i(TAG, "Synced ${r.platform}: ${r.gameCount} games, ${r.screenshotCount} screenshots, warnings=$warnings")
+            } else {
+                Log.w(TAG, "Sync ${r.platform} failed", r.error)
+            }
+        }
         // Network hiccups and rate limits are worth a retry with backoff; auth problems are not.
         val retryable = results.any { it.error is PlatformException.Network || it.error is PlatformException.RateLimited }
         if (retryable && runAttemptCount < MAX_ATTEMPTS) return Result.retry()
@@ -32,5 +41,6 @@ class SyncWorker @AssistedInject constructor(
         const val KEY_PLATFORM = "platform"
         const val KEY_FAILED = "failed"
         private const val MAX_ATTEMPTS = 3
+        private const val TAG = "Playlog"
     }
 }

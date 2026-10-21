@@ -69,6 +69,7 @@ dependencies {
     implementation(projects.platform.playstation)
     implementation(projects.platform.nintendo)
     implementation(projects.platform.metadata)
+    implementation(projects.platform.deals)
     implementation(projects.feature.home)
     implementation(projects.feature.library)
     implementation(projects.feature.game)

@@ -1,0 +1,7 @@
+[
+  {"internalName":"DEADCELLS","title":"Dead Cells","dealID":"a","storeID":"1","gameID":"1","salePrice":"9.99","normalPrice":"24.99","isOnSale":"1","savings":"60.024010","metacriticScore":"89","steamRatingText":"Overwhelmingly Positive","steamRatingPercent":"96","steamRatingCount":"120000","steamAppID":"588650","releaseDate":1533600000,"lastChange":1,"dealRating":"9.6","thumb":"https://example.test/dc.jpg"},
+  {"internalName":"FIFA","title":"Football Manager","dealID":"b","storeID":"1","gameID":"2","salePrice":"14.99","normalPrice":"59.99","isOnSale":"1","savings":"75.0","metacriticScore":"80","steamRatingText":"Very Positive","steamRatingPercent":"85","steamRatingCount":"20000","steamAppID":"2000","releaseDate":1,"lastChange":1,"dealRating":"9.9","thumb":""},
+  {"internalName":"HADES","title":"Hades","dealID":"c","storeID":"1","gameID":"3","salePrice":"12.49","normalPrice":"24.99","isOnSale":"1","savings":"50.0","steamRatingPercent":"98","steamAppID":"1145360","dealRating":"9.0"},
+  {"internalName":"BUNDLE","title":"Some Bundle","dealID":"d","storeID":"1","gameID":"4","salePrice":"1.00","normalPrice":"2.00","isOnSale":"1","savings":"50.0","steamRatingPercent":"0","steamAppID":null,"dealRating":"8.0"},
+  {"internalName":"BADGAME","title":"Bad Roguelike","dealID":"e","storeID":"1","gameID":"5","salePrice":"1.00","normalPrice":"10.00","isOnSale":"1","savings":"90.0","steamRatingPercent":"40","steamAppID":"3000","dealRating":"7.0"}
+]

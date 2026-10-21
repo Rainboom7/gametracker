@@ -57,4 +57,9 @@
     <string name="link_field_PSN_NPSSO">npsso</string>
     <string name="link_field_PSN_REDIRECT_URL">Ссылка после входа</string>
     <string name="link_field_NINTENDO_REDIRECT_URL">Ссылка npf…://auth</string>
+    <string name="deal_like_one">Похоже на %1$s</string>
+    <string name="deal_like_two">Похоже на %1$s и %2$s</string>
+    <string name="deal_like_tags">Тебе нравится: %1$s</string>
+    <string name="deal_like_taste">Во вкусе твоей библиотеки</string>
+    <string name="deal_reviews">👍 %1$d%%</string>
 </resources>

@@ -69,4 +69,10 @@ class OnlineGiveawaysSourceTest {
         assertEquals("Celeste", OnlineGiveawaysSource.cleanTitle("Celeste Giveaway"))
         assertEquals("Giveaway", OnlineGiveawaysSource.cleanTitle("Giveaway"))
     }
+
+    @Test
+    fun `cleartext image links are upgraded to https`() {
+        assertEquals("https://img.test/a.jpg", OnlineGiveawaysSource.secure("http://img.test/a.jpg"))
+        assertEquals("https://img.test/b.jpg", OnlineGiveawaysSource.secure("https://img.test/b.jpg"))
+    }
 }

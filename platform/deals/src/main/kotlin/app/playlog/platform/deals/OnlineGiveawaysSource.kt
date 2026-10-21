@@ -62,7 +62,7 @@ class OnlineGiveawaysSource(
             Giveaway(
                 id = "gp:" + (g.string("id") ?: title),
                 title = title,
-                imageUrl = g.string("image") ?: g.string("thumbnail"),
+                imageUrl = (g.string("image") ?: g.string("thumbnail"))?.let(::secure),
                 url = g.string("open_giveaway_url") ?: g.string("gamerpower_url") ?: return@mapNotNull null,
                 store = storeOf(platforms),
                 platformsText = platforms,
@@ -99,7 +99,7 @@ class OnlineGiveawaysSource(
         return Giveaway(
             id = "epic:" + (string("id") ?: slug),
             title = title,
-            imageUrl = image,
+            imageUrl = image?.let(::secure),
             url = "https://store.epicgames.com/p/$slug",
             store = GiveawayStore.EPIC,
             platformsText = "PC, Epic Games Store",
@@ -126,6 +126,9 @@ class OnlineGiveawaysSource(
     }
 
     internal companion object {
+        /** Android refuses cleartext image loads; both feeds also serve their images over https. */
+        fun secure(url: String): String = if (url.startsWith("http://")) "https://" + url.removePrefix("http://") else url
+
         private val EPIC_IMAGE_TYPES = listOf("OfferImageWide", "DieselStoreFrontWide", "featuredMedia", "Thumbnail", "OfferImageTall")
         private val GAMERPOWER_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         private val GIVEAWAY_SUFFIX = Regex(

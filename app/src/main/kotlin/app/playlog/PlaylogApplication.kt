@@ -6,6 +6,7 @@ import coil3.EventListener
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import androidx.hilt.work.HiltWorkerFactory
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -45,9 +47,21 @@ class PlaylogApplication : Application(), Configuration.Provider, SingletonImage
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(context)
+        .components { add(OkHttpNetworkFetcherFactory(callFactory = { imageHttpClient() })) }
         .apply { if (BuildConfig.DEBUG) eventListener(ImageErrorLogger) }
         .build()
 }
+
+/**
+ * Image hosts behind bot protection (GamerPower's giveaway art) can refuse OkHttp's default agent
+ * while the same URL opens in a browser, so images go out with a browser agent.
+ */
+private fun imageHttpClient(): OkHttpClient = OkHttpClient.Builder()
+    .addInterceptor { chain -> chain.proceed(chain.request().newBuilder().header("User-Agent", BrowserUserAgent).build()) }
+    .build()
+
+private const val BrowserUserAgent =
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36"
 
 /** Debug only: say which image failed and why (the query string holds signed tokens, so it is cut). */
 private object ImageErrorLogger : EventListener() {

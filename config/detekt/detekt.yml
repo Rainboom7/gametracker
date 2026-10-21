@@ -14,7 +14,8 @@ complexity:
     # Store interfaces and their fakes mirror DAO-style CRUD surfaces.
     allowedFunctionsPerClass: 15
     allowedFunctionsPerInterface: 15
-    ignoreAnnotatedFunctions: ['Preview']
+    # Hilt modules are a flat list of @Provides functions.
+    ignoreAnnotatedFunctions: ['Preview', 'Provides']
     ignorePrivate: true
   CyclomaticComplexMethod:
     ignoreSimpleWhenEntries: true

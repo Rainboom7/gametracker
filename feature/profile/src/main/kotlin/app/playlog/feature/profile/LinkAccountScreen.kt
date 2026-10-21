@@ -108,7 +108,11 @@ fun LinkAccountScreen(
                     val url = step.url
                     when {
                         url != null && step.captureRedirectPrefix != null ->
-                            PrimaryButton(stringResource(app.playlog.core.ui.R.string.link_step_sign_in), onClick = { webStep = step }, loading = state.isSubmitting)
+                            PrimaryButton(
+                                stringResource(app.playlog.core.ui.R.string.link_step_sign_in),
+                                onClick = { webStep = step },
+                                loading = state.isSubmitting,
+                            )
                         url != null ->
                             SecondaryButton(
                                 stringResource(app.playlog.core.ui.R.string.link_step_open),
@@ -120,7 +124,11 @@ fun LinkAccountScreen(
             }
             if (flow.fields.isNotEmpty()) {
                 if (flow.steps.any { it.captureRedirectPrefix != null }) {
-                    Text(stringResource(R.string.link_or_manual), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        stringResource(R.string.link_or_manual),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 flow.fields.forEach { field -> LinkField(field, state, onInput) }
                 PrimaryButton(

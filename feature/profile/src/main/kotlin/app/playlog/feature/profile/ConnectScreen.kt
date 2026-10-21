@@ -77,7 +77,7 @@ private fun PlatformCard(platform: Platform, account: Account?, onLink: () -> Un
     Surface(
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, if (done) Color(0xFF3A4A22) else MaterialTheme.colorScheme.outlineVariant),
+        border = BorderStroke(1.dp, if (done) ConnectedBorder else MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
@@ -115,3 +115,5 @@ private fun howItConnects(platform: Platform): String = stringResource(
         Platform.NINTENDO -> R.string.connect_how_NINTENDO
     },
 )
+
+private val ConnectedBorder = Color(0xFF3A4A22)

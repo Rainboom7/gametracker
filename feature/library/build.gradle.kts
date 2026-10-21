@@ -51,7 +51,8 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.testJunit4)
-    debugImplementation(libs.androidx.compose.ui.testManifest)
+    // test*, not debug*: testReleaseUnitTest needs the ComponentActivity manifest entry too.
+    testImplementation(libs.androidx.compose.ui.testManifest)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
     implementation(platform(libs.androidx.compose.bom))

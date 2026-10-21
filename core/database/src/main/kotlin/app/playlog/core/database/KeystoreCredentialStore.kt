@@ -32,11 +32,11 @@ class KeystoreCredentialStore(context: Context) : CredentialStore {
         val stored = dataStore.data.first()[key(platform)] ?: return null
         return try {
             decrypt(stored)
-        } catch (e: GeneralSecurityException) {
+        } catch (_: GeneralSecurityException) {
             // Key invalidated (device restore, lock screen reset): drop the secret, the user relinks.
             write(platform, null)
             null
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             write(platform, null)
             null
         }
@@ -73,7 +73,7 @@ class KeystoreCredentialStore(context: Context) : CredentialStore {
             KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
+                .setKeySize(KeySizeBits)
                 .build(),
         )
         return generator.generateKey()
@@ -87,3 +87,5 @@ class KeystoreCredentialStore(context: Context) : CredentialStore {
         const val TAG_BITS = 128
     }
 }
+
+private const val KeySizeBits = 256

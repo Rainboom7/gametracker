@@ -15,6 +15,7 @@ import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
+import io.ktor.http.content.TextContent
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -92,6 +93,12 @@ class NintendoSourceTest {
         val sessionRequest = requests.first { it.url.encodedPath.endsWith("/session_token") }
         assertEquals("com.nintendo.znej/1.13.0 (Android/7.1.2)", sessionRequest.headers[HttpHeaders.UserAgent])
         assertTrue(flow.state.containsKey("verifier"))
+
+        // Regression: grant_type has to be in the JSON, or Nintendo answers 400 "request doesn't match schema".
+        val tokenRequest = requests.first { it.url.encodedPath.endsWith("/api/token") }
+        val body = (tokenRequest.body as TextContent).text
+        assertTrue(body, body.contains("\"grant_type\":\"urn:ietf:params:oauth:grant-type:jwt-bearer-session-token\""))
+        assertTrue(body, body.contains("\"session_token\""))
     }
 
     @Test

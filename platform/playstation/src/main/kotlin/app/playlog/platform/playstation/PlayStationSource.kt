@@ -157,10 +157,11 @@ class PlayStationSource internal constructor(
                     throw PlatformException.InvalidInput(platform, LinkFieldType.PSN_NPSSO, e.message ?: "npsso rejected")
                 }
             }
+            // Tokens are what matters; a missing profile only costs the display name and avatar.
             val profile = api.profile(minted.accessToken!!)
             val creds = minted.copy(
-                onlineId = profile.onlineId,
-                avatarUrl = profile.avatars.maxByOrNull { avatarRank(it.size) }?.url,
+                onlineId = profile?.onlineId ?: FALLBACK_ONLINE_ID,
+                avatarUrl = profile?.avatars?.maxByOrNull { avatarRank(it.size) }?.url,
             )
             credentials.write(creds)
             return creds.toAccount()!!
@@ -175,6 +176,7 @@ class PlayStationSource internal constructor(
         onlineId?.let { Account(platform = platform, userId = it, displayName = it, avatarUrl = avatarUrl) }
 
     companion object {
+        private const val FALLBACK_ONLINE_ID = "PlayStation"
         private const val UGC_VIDEO = 2
         private const val GALLERY_PAGE_SIZE = 100
         private const val MAX_GALLERY_PAGES = 10

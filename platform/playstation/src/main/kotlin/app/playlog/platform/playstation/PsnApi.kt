@@ -25,12 +25,36 @@ internal class PsnApi(
     private val auth: PsnAuth,
     private val baseUrl: String = "https://m.np.playstation.com/api",
     private val language: String = "en-US",
+    private val legacyProfileUrl: String = "https://us-prof.np.community.playstation.net/userProfile/v1/users/me/profile2",
 ) {
-    suspend fun profile(accessToken: String): PsnProfileDto = platformCall(Platform.PLAYSTATION) {
-        client.get("$baseUrl/userProfile/v1/internal/users/me/profiles") {
-            bearerAuth(accessToken)
-            header(HttpHeaders.AcceptLanguage, language)
-        }.psnBody()
+    /**
+     * The signed-in user's profile, or null when PSN will not tell us. `internal/users/{id}/profiles`
+     * rejects `me` (400 "path accountId"), so it is called with the account id from the JWT; the
+     * legacy profile2 endpoint, which does accept `me`, is the fallback.
+     */
+    suspend fun profile(accessToken: String): PsnProfileDto? {
+        PsnAuth.accountIdFromJwt(accessToken)?.let { accountId ->
+            try {
+                return platformCall(Platform.PLAYSTATION) {
+                    client.get("$baseUrl/userProfile/v1/internal/users/$accountId/profiles") {
+                        bearerAuth(accessToken)
+                        header(HttpHeaders.AcceptLanguage, language)
+                    }.psnBody<PsnProfileDto>()
+                }
+            } catch (_: PlatformException) {
+                // fall through to the legacy endpoint
+            }
+        }
+        return try {
+            platformCall(Platform.PLAYSTATION) {
+                client.get(legacyProfileUrl) {
+                    bearerAuth(accessToken)
+                    parameter("fields", "onlineId,accountId,avatarUrls")
+                }.psnBody<PsnLegacyProfileResponse>().profile.toProfile()
+            }
+        } catch (_: PlatformException) {
+            null
+        }
     }
 
     suspend fun playedTitles(offset: Int, limit: Int): PsnTitlesPage = authorized {

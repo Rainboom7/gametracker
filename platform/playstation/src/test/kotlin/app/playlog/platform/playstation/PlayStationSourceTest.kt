@@ -54,8 +54,17 @@ class PlayStationSourceTest {
                         respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "com.scee.psxandroid.scecompcall://redirect/?error=login_required"))
                     }
                 path.endsWith("/oauth/token") -> respond(fixture("token.json"), HttpStatusCode.OK, json)
-                path.endsWith("/users/me/profiles") ->
-                    respond("""{"onlineId":"kratos","avatars":[{"size":"s","url":"https://a/s.png"},{"size":"xl","url":"https://a/xl.png"}]}""", HttpStatusCode.OK, json)
+                // The real API refuses `me` here: 400 "Bad request: path accountId".
+                path.endsWith("/internal/users/me/profiles") ->
+                    respond("""{"error":{"code":2240513,"message":"Bad request: path accountId"}}""", HttpStatusCode.BadRequest, json)
+                path.endsWith("/internal/users/$ACCOUNT_ID/profiles") ->
+                    respond("""{"onlineId":"atreus","avatars":[{"size":"xl","url":"https://a/atreus.png"}]}""", HttpStatusCode.OK, json)
+                path.endsWith("/users/me/profile2") ->
+                    respond(
+                        """{"profile":{"onlineId":"kratos","accountId":"$ACCOUNT_ID","avatarUrls":[{"size":"s","avatarUrl":"https://a/s.png"},{"size":"xl","avatarUrl":"https://a/xl.png"}]}}""",
+                        HttpStatusCode.OK,
+                        json,
+                    )
                 path.endsWith("/gamelist/v2/users/me/titles") ->
                     respond(fixture(if (request.url.parameters["offset"] == "0") "played_titles_page1.json" else "played_titles_page2.json"), HttpStatusCode.OK, json)
                 path.endsWith("/trophyTitles") ->
@@ -81,6 +90,38 @@ class PlayStationSourceTest {
         assertTrue(form.contains("grant_type=authorization_code"))
         assertTrue(tokenRequest.headers[HttpHeaders.Authorization]!!.startsWith("Basic "))
         assertNotNull(store.read(Platform.PLAYSTATION))
+    }
+
+    @Test
+    fun `profile is fetched by the account id from the JWT access token`() = runTest {
+        val jwt = jwtWith("""{"sub":"$ACCOUNT_ID","scopes":"psn:mobile.v2.core"}""")
+        overrides["/api/authz/v3/oauth/token"] = HttpStatusCode.OK to
+            """{"access_token":"$jwt","token_type":"bearer","expires_in":3599,"refresh_token":"r","refresh_token_expires_in":5183999}"""
+
+        val account = linkWithNpsso()
+        assertEquals("atreus", account.displayName)
+        assertTrue(requests.none { it.url.encodedPath.endsWith("/users/me/profiles") })
+    }
+
+    @Test
+    fun `link still succeeds when no profile endpoint answers`() = runTest {
+        overrides["/userProfile/v1/users/me/profile2"] = HttpStatusCode.BadRequest to "{}"
+        val account = linkWithNpsso()
+        assertEquals("PlayStation", account.displayName)
+        assertNotNull(store.read(Platform.PLAYSTATION))
+    }
+
+    @Test
+    fun `account id is read from sub or account_id and must be numeric`() {
+        assertEquals(ACCOUNT_ID, PsnAuth.accountIdFromJwt(jwtWith("""{"sub":"$ACCOUNT_ID"}""")))
+        assertEquals(ACCOUNT_ID, PsnAuth.accountIdFromJwt(jwtWith("""{"sub":"x","account_id":"$ACCOUNT_ID"}""")))
+        assertNull(PsnAuth.accountIdFromJwt(jwtWith("""{"sub":"not-a-number"}""")))
+        assertNull(PsnAuth.accountIdFromJwt("opaque-token"))
+    }
+
+    private fun jwtWith(payload: String): String {
+        val enc = java.util.Base64.getUrlEncoder().withoutPadding()
+        return "${enc.encodeToString("{\"alg\":\"none\"}".toByteArray())}.${enc.encodeToString(payload.toByteArray())}.sig"
     }
 
     @Test
@@ -171,3 +212,5 @@ class PlayStationSourceTest {
         }
     }
 }
+
+private const val ACCOUNT_ID = "1234567890123456789"

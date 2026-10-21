@@ -3,6 +3,7 @@ package app.playlog.platform.playstation
 import app.playlog.core.common.AppClock
 import app.playlog.core.model.Platform
 import app.playlog.core.network.bodySnippet
+import app.playlog.core.network.TrackerJson
 import app.playlog.core.network.platformCall
 import app.playlog.core.network.successBody
 import app.playlog.platform.api.PlatformException
@@ -19,6 +20,10 @@ import io.ktor.http.parameters
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import java.util.Base64
 
 @Serializable
 internal data class PsnCredentials(
@@ -145,6 +150,18 @@ internal class PsnAuth(
     }
 
     companion object {
+        private val ACCOUNT_ID = Regex("^\\d{6,25}$")
+
+        /** PSN account id from a JWT access token: `sub`, or `account_id` on some token versions. */
+        fun accountIdFromJwt(token: String): String? {
+            val payload = token.split('.').getOrNull(1) ?: return null
+            val claims = runCatching {
+                TrackerJson.parseToJsonElement(String(Base64.getUrlDecoder().decode(payload.trimEnd('=')))).jsonObject
+            }.getOrNull() ?: return null
+            return listOf("sub", "account_id", "accountId")
+                .firstNotNullOfOrNull { key -> claims[key]?.jsonPrimitive?.contentOrNull?.takeIf(ACCOUNT_ID::matches) }
+        }
+
         /** Extracts `code` from a captured `com.scee.psxandroid.scecompcall://redirect/?code=…` URL. */
         fun codeFromRedirect(url: String): String? =
             url.trim().takeIf { it.startsWith(REDIRECT_SCHEME) }?.let { runCatching { Url(it).parameters["code"] }.getOrNull() }

@@ -101,7 +101,7 @@ internal class NintendoAuth(
         client.post("$accountsBaseUrl/api/token") {
             contentType(ContentType.Application.Json)
             header(HttpHeaders.UserAgent, config.userAgent)
-            setBody(AccessTokenRequest(config.clientId, sessionToken))
+            setBody(AccessTokenRequest(config.clientId, sessionToken, AccessTokenRequest.SESSION_TOKEN_GRANT))
         }.successBody(Platform.NINTENDO)
     }
 

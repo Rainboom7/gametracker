@@ -21,6 +21,22 @@ internal data class PsnProfileDto(
 @Serializable
 internal data class PsnAvatarDto(val size: String? = null, val url: String)
 
+/** `us-prof.np.community.playstation.net/userProfile/v1/users/me/profile2`. */
+@Serializable
+internal data class PsnLegacyProfileResponse(val profile: PsnLegacyProfile)
+
+@Serializable
+internal data class PsnLegacyProfile(
+    val onlineId: String,
+    val accountId: String? = null,
+    val avatarUrls: List<PsnLegacyAvatar> = emptyList(),
+) {
+    fun toProfile() = PsnProfileDto(onlineId, avatarUrls.map { PsnAvatarDto(it.size, it.avatarUrl) })
+}
+
+@Serializable
+internal data class PsnLegacyAvatar(val size: String? = null, val avatarUrl: String)
+
 @Serializable
 internal data class PsnTitlesPage(
     val titles: List<PsnTitleDto> = emptyList(),

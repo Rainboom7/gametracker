@@ -12,8 +12,14 @@ internal data class SessionTokenResponse(
 internal data class AccessTokenRequest(
     @SerialName("client_id") val clientId: String,
     @SerialName("session_token") val sessionToken: String,
-    @SerialName("grant_type") val grantType: String = "urn:ietf:params:oauth:grant-type:jwt-bearer-session-token",
-)
+    // No default value: TrackerJson does not encode defaults, and without grant_type Nintendo answers
+    // 400 "request doesn't match schema".
+    @SerialName("grant_type") val grantType: String,
+) {
+    companion object {
+        const val SESSION_TOKEN_GRANT = "urn:ietf:params:oauth:grant-type:jwt-bearer-session-token"
+    }
+}
 
 @Serializable
 internal data class AccessTokenResponse(

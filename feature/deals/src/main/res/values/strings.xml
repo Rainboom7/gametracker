@@ -62,4 +62,27 @@
     <string name="deals_wish_remove">Убрать</string>
     <string name="deals_wish_add">В вишлист</string>
     <string name="deals_wish_checked_at">проверено %1$s</string>
+    <string name="giveaways_title">Раздачи</string>
+    <string name="giveaways_home_title">Бесплатно сейчас</string>
+    <string name="giveaways_all">Все</string>
+    <string name="giveaways_now">Сейчас бесплатно</string>
+    <string name="giveaways_upcoming">Скоро бесплатно</string>
+    <string name="giveaways_free">Бесплатно</string>
+    <string name="giveaways_until">до %1$s</string>
+    <string name="giveaways_from">с %1$s</string>
+    <string name="giveaways_owned">уже есть</string>
+    <string name="giveaways_empty">Сейчас раздач нет. Заглядывай в четверг: Epic меняет бесплатные игры каждую неделю.</string>
+    <string name="giveaways_failed">Не удалось загрузить раздачи: %1$s</string>
+    <string name="giveaways_hint">Игры, которые можно забрать навсегда. Новые раздачи придут уведомлением.</string>
+    <string name="giveaways_open">Забрать</string>
+    <string name="giveaways_store_all">Все магазины</string>
+    <string name="giveaway_store_EPIC">Epic Games</string>
+    <string name="giveaway_store_STEAM">Steam</string>
+    <string name="giveaway_store_GOG">GOG</string>
+    <string name="giveaway_store_PLAYSTATION">PlayStation</string>
+    <string name="giveaway_store_XBOX">Xbox</string>
+    <string name="giveaway_store_NINTENDO">Nintendo</string>
+    <string name="giveaway_store_ITCH">itch.io</string>
+    <string name="giveaway_store_OTHER">Другое</string>
+    <string name="deals_open_giveaways">Раздачи</string>
 </resources>

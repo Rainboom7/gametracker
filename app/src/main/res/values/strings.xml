@@ -10,6 +10,17 @@
     <string name="sync_failed_snackbar">%1$s: синхронизация не удалась</string>
     <string name="sync_channel_name">Синхронизация</string>
     <string name="deals_channel_name">Скидки из вишлиста</string>
+    <string name="giveaways_channel_name">Раздачи игр</string>
+    <string name="digest_channel_name">Итоги недели</string>
+    <string name="badges_channel_name">Значки</string>
+    <string name="giveaway_new_title">Бесплатно: %1$s</string>
+    <string name="giveaway_new_text">Забери навсегда, пока раздают (%1$s). Нажми, чтобы открыть.</string>
+    <plurals name="giveaways_new_many_title">
+        <item quantity="one">%1$d новая бесплатная игра</item>
+        <item quantity="few">%1$d новые бесплатные игры</item>
+        <item quantity="many">%1$d новых бесплатных игр</item>
+        <item quantity="other">%1$d новых бесплатных игр</item>
+    </plurals>
     <string name="deals_drop_title">%1$s: −%2$d%%</string>
     <string name="deals_drop_text">%1$s в %2$s. Нажми, чтобы открыть магазин.</string>
     <string name="deals_drop_text_was">%1$s вместо %2$s в %3$s. Нажми, чтобы открыть магазин.</string>

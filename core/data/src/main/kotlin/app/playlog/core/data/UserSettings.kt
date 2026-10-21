@@ -9,7 +9,12 @@ data class UserSettings(
     val backgroundSync: Boolean = true,
     /** Load full-size screenshots only on unmetered networks. */
     val wifiOnlyMedia: Boolean = true,
-    val weeklySummary: Boolean = false,
+    /** Sunday evening "your week" notification. */
+    val weeklySummary: Boolean = true,
+    /** Wishlist sales, new giveaways and wishlist releases. */
+    val dealAlerts: Boolean = true,
+    /** A notification when a badge levels up. */
+    val badgeAlerts: Boolean = true,
     val onboardingFinished: Boolean = false,
     val nintendoImportBannerDismissed: Boolean = false,
     /** Library shows a cover grid instead of the list with per-platform sources. */

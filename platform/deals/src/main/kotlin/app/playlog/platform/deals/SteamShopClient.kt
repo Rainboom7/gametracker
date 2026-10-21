@@ -31,9 +31,9 @@ class SteamShopClient(
     )
 
     /** The front page "Specials" row. */
-    suspend fun specials(): List<DealCandidate> {
+    suspend fun specials(country: String = countryCode): List<DealCandidate> {
         val response = client.get("$baseUrl/api/featuredcategories") {
-            parameter("cc", countryCode)
+            parameter("cc", country)
             parameter("l", language)
         }
         if (!response.status.isSuccess()) throw DealsException("Steam featured HTTP ${response.status.value}")
@@ -56,10 +56,10 @@ class SteamShopClient(
             .map { it.id to it.name }
     }
 
-    suspend fun details(appId: Long): ShopDetails? {
+    suspend fun details(appId: Long, country: String = countryCode): ShopDetails? {
         val response = client.get("$baseUrl/api/appdetails") {
             parameter("appids", appId)
-            parameter("cc", countryCode)
+            parameter("cc", country)
             parameter("l", language)
         }
         if (!response.status.isSuccess()) throw DealsException("Steam appdetails HTTP ${response.status.value}")

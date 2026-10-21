@@ -33,10 +33,10 @@ class OnlineDealsSource(
         SteamSpyClient(client),
         tagStore,
         onError,
-        SteamTasteSpecials(client, SteamStoreDeals(client), country = locale.country.ifEmpty { "US" }),
+        SteamTasteSpecials(client, SteamStoreDeals(client)),
     )
 
-    override suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): Recommendation {
+    override suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership, country: String): Recommendation {
         try {
             val tagged = seeds.mapNotNull { seed ->
                 val appId = seed.steamAppId ?: resolve(seed.title) ?: return@mapNotNull null
@@ -45,12 +45,12 @@ class OnlineDealsSource(
             if (tagged.isEmpty()) throw DealsException("No tags for any played title")
 
             val taste = DealRecommender.profile(tagged)
-            val targeted = runSuspendCatching { tasteSpecials?.candidates(taste).orEmpty() }
+            val targeted = runSuspendCatching { tasteSpecials?.candidates(taste, country).orEmpty() }
                 .onFailure { onError("taste specials", it) }
                 .getOrDefault(emptyList())
                 .filter { (c, _) -> c.isWorthShowing(owned) }
             val targetedIds = targeted.mapTo(HashSet()) { it.first.appId }
-            val general = candidates(owned, required = targeted.isEmpty())
+            val general = candidates(owned, country, required = targeted.isEmpty())
                 .filter { it.appId !in targetedIds }
                 .sortedByDescending(::promise)
                 .take(MAX_TAGGED)
@@ -59,7 +59,7 @@ class OnlineDealsSource(
             val picks = ArrayList<DealPick>(MAX_PICKS)
             for (scored in ranked) {
                 if (picks.size == MAX_PICKS) break
-                toPick(scored)?.let(picks::add)
+                toPick(scored, country)?.let(picks::add)
             }
             return Recommendation(picks, taste)
         } finally {
@@ -68,11 +68,11 @@ class OnlineDealsSource(
     }
 
     /** With [required] false a dead feed is tolerated: the taste search already found candidates. */
-    private suspend fun candidates(owned: Ownership, required: Boolean = true): List<DealCandidate> {
+    private suspend fun candidates(owned: Ownership, country: String, required: Boolean = true): List<DealCandidate> {
         val feeds = listOf(
             runSuspendCatching { cheapShark.steamDeals(page = 0) },
             runSuspendCatching { cheapShark.steamDeals(page = 1) },
-            runSuspendCatching { shop.specials() },
+            runSuspendCatching { shop.specials(country) },
         )
         feeds.forEach { r -> r.exceptionOrNull()?.let { onError("deals feed", it) } }
         if (required && feeds.all { it.isFailure }) throw DealsException("No deals feed reachable", feeds.first().exceptionOrNull())
@@ -88,9 +88,9 @@ class OnlineDealsSource(
         return discountPercent >= MIN_DISCOUNT && review >= MIN_REVIEW
     }
 
-    private suspend fun toPick(scored: DealRecommender.Scored): DealPick? {
+    private suspend fun toPick(scored: DealRecommender.Scored, country: String): DealPick? {
         val c = scored.candidate
-        val details = runSuspendCatching { shop.details(c.appId) }
+        val details = runSuspendCatching { shop.details(c.appId, country) }
         details.exceptionOrNull()?.let { onError("details ${c.appId}", it) }
         val d = details.getOrNull()
         // Not sold in the region, or the regional sale is over: the promise is "on sale now".

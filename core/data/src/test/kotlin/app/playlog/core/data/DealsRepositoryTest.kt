@@ -29,14 +29,17 @@ class DealsRepositoryTest {
     private var fail = false
     private var lastSeeds: List<TasteSeed> = emptyList()
     private var lastOwned: Ownership? = null
-    private val source = DealsSource { seeds, owned ->
+    private var lastCountry: String? = null
+    private var region = "US"
+    private val source = DealsSource { seeds, owned, country ->
         calls++
+        lastCountry = country
         lastSeeds = seeds
         lastOwned = owned
         if (fail) throw IOException("offline")
         Recommendation(listOf(pick))
     }
-    private val repository = DefaultDealsRepository(source, DefaultLibraryRepository(store), cache, clock)
+    private val repository = DefaultDealsRepository(source, DefaultLibraryRepository(store), cache, clock, country = { region })
 
     private suspend fun seedLibrary() = store.upsertGames(
         Platform.STEAM,
@@ -58,10 +61,22 @@ class DealsRepositoryTest {
     @Test
     fun `fresh cache is shown without recomputing`() = runTest {
         seedLibrary()
-        cache.write(CachedDeals(listOf(pick), clock.instant.minus(Duration.ofHours(1))))
+        cache.write(CachedDeals(listOf(pick), clock.instant.minus(Duration.ofHours(1)), country = "US"))
 
         assertEquals(DealsState.Ready(listOf(pick), clock.instant.minus(Duration.ofHours(1))), ready())
         assertEquals(0, calls)
+    }
+
+    @Test
+    fun `picks priced in another region are refetched in the store region`() = runTest {
+        seedLibrary()
+        cache.write(CachedDeals(listOf(pick), clock.instant.minus(Duration.ofHours(1)), country = "RU"))
+        region = "TR"
+
+        repository.observe().first { it is DealsState.Ready && calls == 1 }
+
+        assertEquals("TR", lastCountry)
+        assertEquals("TR", cache.read()?.country)
     }
 
     @Test

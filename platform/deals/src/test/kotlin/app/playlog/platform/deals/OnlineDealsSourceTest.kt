@@ -49,7 +49,7 @@ class OnlineDealsSourceTest {
             SteamShopClient(client, countryCode = "RU", language = "russian", baseUrl = "https://store.test"),
             SteamSpyClient(client, baseUrl = "https://spy.test", minIntervalMillis = 0),
             tagStore,
-            tasteSpecials = SteamTasteSpecials(client, SteamStoreDeals(client, baseUrl = "https://store.test"), "RU", baseUrl = "https://store.test")
+            tasteSpecials = SteamTasteSpecials(client, SteamStoreDeals(client, baseUrl = "https://store.test"), baseUrl = "https://store.test")
                 .takeIf { tasteSearch },
         )
     }
@@ -63,7 +63,7 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `recommends similar unowned games on sale with regional prices and screenshots`() = runTest {
-        val picks = source().recommend(seeds, owned).picks
+        val picks = source().recommend(seeds, owned, "RU").picks
 
         assertEquals(listOf("Dead Cells", "Hollow Knight"), picks.map { it.title })
         val deadCells = picks.first()
@@ -80,7 +80,7 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `never spends requests on owned, badly reviewed or full price games`() = runTest {
-        source().recommend(seeds, owned).picks
+        source().recommend(seeds, owned, "RU").picks
 
         val spied = requests.filter { it.startsWith("spy.test") }.map { it.substringAfter('?') }.toSet()
         assertEquals(setOf("1145360", "504230", "588650", "367520", "2000"), spied)
@@ -88,19 +88,19 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `console titles are matched to Steam by exact name and cached`() = runTest {
-        source().recommend(seeds, owned).picks
+        source().recommend(seeds, owned, "RU").picks
         assertEquals(504230L, tagStore.appId("celeste"))
         assertEquals(TagStore.NOT_ON_STEAM, tagStore.appId("the legend of zelda tears of the kingdom"))
 
         requests.clear()
-        source().recommend(seeds, owned).picks
+        source().recommend(seeds, owned, "RU").picks
         assertTrue("cached lookups repeat", requests.none { it.contains("storesearch") || it.startsWith("spy.test") })
     }
 
     @Test
     fun `throws when no deals feed is reachable`() = runTest {
         try {
-            source(dealsUp = false).recommend(seeds, owned).picks
+            source(dealsUp = false).recommend(seeds, owned, "RU").picks
             fail("expected DealsException")
         } catch (e: DealsException) {
             assertTrue(e.message!!.contains("feed"))
@@ -109,7 +109,7 @@ class OnlineDealsSourceTest {
 
     @Test
     fun `specials searched by the strongest taste tags join the ranking without SteamSpy calls`() = runTest {
-        val picks = source(tasteSearch = true).recommend(seeds, owned).picks
+        val picks = source(tasteSearch = true).recommend(seeds, owned, "RU").picks
 
         assertEquals("Cult Rogue", picks.first().title)
         assertEquals("600 руб.", picks.first().priceText)

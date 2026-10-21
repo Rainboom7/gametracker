@@ -18,12 +18,11 @@ import kotlinx.serialization.json.JsonObject
 class SteamTasteSpecials(
     private val client: HttpClient,
     private val store: SteamStoreDeals,
-    private val country: String,
     private val baseUrl: String = "https://store.steampowered.com",
     private val tagsPerSearch: Int = TAGS,
 ) {
     /** Candidates with synthetic tag votes (first tag strongest), for [DealRecommender.rank]. */
-    suspend fun candidates(taste: Map<String, Double>): List<Pair<DealCandidate, Map<String, Int>>> {
+    suspend fun candidates(taste: Map<String, Double>, country: String): List<Pair<DealCandidate, Map<String, Int>>> {
         val names = store.tagNames()
         if (names.isEmpty()) return emptyList()
         val ids = names.entries.associate { (id, name) -> name.lowercase() to id }
@@ -33,7 +32,7 @@ class SteamTasteSpecials(
             .mapNotNull { ids[it.key.lowercase()] }
             .take(tagsPerSearch)
         return strongest.flatMap { tagId ->
-            runSuspendCatching { search(tagId) }.getOrDefault(emptyList())
+            runSuspendCatching { search(tagId, country) }.getOrDefault(emptyList())
         }
             .distinctBy { it.appId }
             .map { row ->
@@ -50,7 +49,7 @@ class SteamTasteSpecials(
             .filter { it.second.isNotEmpty() }
     }
 
-    private suspend fun search(tagId: Int): List<SteamStoreDeals.Row> {
+    private suspend fun search(tagId: Int, country: String): List<SteamStoreDeals.Row> {
         val response = client.get("$baseUrl/search/results/") {
             parameter("specials", 1)
             parameter("tags", tagId)

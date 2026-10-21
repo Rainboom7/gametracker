@@ -39,7 +39,8 @@ data class Ownership(val steamAppIds: Set<Long>, val titleKeys: Set<String>)
  * repository keeps showing the last good result instead of an empty list.
  */
 fun interface DealsSource {
-    suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership): Recommendation
+    /** [country] is the store region prices are shown in, as on the Deals screen. */
+    suspend fun recommend(seeds: List<TasteSeed>, owned: Ownership, country: String): Recommendation
 }
 
 /** Picks plus the tag profile they were matched against. */
@@ -52,7 +53,13 @@ interface DealsCache {
     suspend fun write(deals: CachedDeals)
 }
 
-data class CachedDeals(val picks: List<DealPick>, val fetchedAt: Instant, val taste: Map<String, Double> = emptyMap())
+data class CachedDeals(
+    val picks: List<DealPick>,
+    val fetchedAt: Instant,
+    val taste: Map<String, Double> = emptyMap(),
+    /** Region the prices are in; picks from another region are refetched. */
+    val country: String? = null,
+)
 
 class InMemoryDealsCache : DealsCache {
     @Volatile private var value: CachedDeals? = null
@@ -79,10 +86,13 @@ class DefaultDealsRepository(
     private val clock: AppClock,
     private val ttl: Duration = DEFAULT_TTL,
     private val onError: (Throwable) -> Unit = {},
+    /** The Steam store region, from the account or the user's choice on the Deals screen. */
+    private val country: suspend () -> String = { DEFAULT_COUNTRY },
 ) : DealsRepository {
     private val state = MutableStateFlow<DealsState>(DealsState.Loading)
     private val lock = Mutex()
     private var cacheLoaded = false
+    private var stateCountry: String? = null
 
     override fun observe(): Flow<DealsState> = flow {
         coroutineScope {
@@ -96,10 +106,15 @@ class DefaultDealsRepository(
     private suspend fun update(force: Boolean) = lock.withLock {
         if (!cacheLoaded) {
             cacheLoaded = true
-            cache.read()?.let { state.value = DealsState.Ready(it.picks, it.fetchedAt, it.taste) }
+            cache.read()?.let {
+                state.value = DealsState.Ready(it.picks, it.fetchedAt, it.taste)
+                stateCountry = it.country
+            }
         }
         val current = state.value
-        if (!force && current is DealsState.Ready && current.fetchedAt.plus(ttl).isAfter(clock.now())) return@withLock
+        val region = runSuspendCatching { country() }.getOrDefault(DEFAULT_COUNTRY)
+        val fresh = current is DealsState.Ready && current.fetchedAt.plus(ttl).isAfter(clock.now()) && stateCountry == region
+        if (!force && fresh) return@withLock
 
         val entries = library.observeLibrary().first()
         val seeds = TasteProfile.seeds(entries, LocalDate.ofInstant(clock.now(), clock.zone()), clock.zone())
@@ -107,10 +122,11 @@ class DefaultDealsRepository(
             state.value = DealsState.NoTaste
             return@withLock
         }
-        runSuspendCatching { source.recommend(seeds, TasteProfile.ownership(entries)) }
+        runSuspendCatching { source.recommend(seeds, TasteProfile.ownership(entries), region) }
             .onSuccess { recommendation ->
-                val result = CachedDeals(recommendation.picks, clock.now(), recommendation.taste)
+                val result = CachedDeals(recommendation.picks, clock.now(), recommendation.taste, region)
                 cache.write(result)
+                stateCountry = region
                 state.value = DealsState.Ready(result.picks, result.fetchedAt, result.taste)
             }
             .onFailure { e ->
@@ -123,6 +139,7 @@ class DefaultDealsRepository(
     companion object {
         /** Steam sales change daily at most; twice a day keeps the shelf fresh without hammering the stores. */
         val DEFAULT_TTL: Duration = Duration.ofHours(12)
+        private const val DEFAULT_COUNTRY = "US"
     }
 }
 

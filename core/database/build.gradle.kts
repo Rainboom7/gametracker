@@ -38,7 +38,8 @@ kotlin {
 
 dependencies {
     api(projects.core.data)
-    implementation(libs.androidx.room.runtime)
+    // api: PlaylogDatabase extends RoomDatabase and :app provides it through Hilt.
+    api(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)

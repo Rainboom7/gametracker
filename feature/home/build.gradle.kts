@@ -42,6 +42,7 @@ dependencies {
     implementation(projects.core.data)
     implementation(projects.feature.deals)
     implementation(projects.feature.journal)
+    implementation(projects.feature.releases)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.lifecycle.viewmodelCompose)
     implementation(libs.androidx.navigation.compose)

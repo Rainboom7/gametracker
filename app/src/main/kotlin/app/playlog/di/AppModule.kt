@@ -22,6 +22,8 @@ import app.playlog.core.database.FileGameNotesStore
 import app.playlog.core.data.DiscoverRepository
 import app.playlog.core.data.AskEngine
 import app.playlog.core.data.DealsRepository
+import app.playlog.core.data.DefaultReleasesRepository
+import app.playlog.core.data.ReleasesRepository
 import app.playlog.core.data.DefaultStoreDealsRepository
 import app.playlog.core.data.StoreDealsRepository
 import app.playlog.core.data.DefaultDealsRepository
@@ -60,6 +62,7 @@ import app.playlog.platform.deals.PlayStationStoreDeals
 import app.playlog.platform.deals.SteamSpyClient
 import app.playlog.platform.deals.SteamStoreDeals
 import app.playlog.platform.deals.SteamTagSearch
+import app.playlog.platform.deals.SteamUpcoming
 import app.playlog.platform.deals.OnlineDealsSource
 import app.playlog.platform.metadata.FileMetadataStore
 import app.playlog.platform.metadata.OnlineMetadataSource
@@ -239,6 +242,16 @@ object AppModule {
         giveaways: GiveawaysRepository,
         clock: AppClock,
     ): TodayRepository = DefaultTodayRepository(store, library, wishlist, giveaways, clock)
+
+    @Provides
+    @Singleton
+    fun releasesRepository(client: HttpClient, stores: StoreDealsRepository, clock: AppClock): ReleasesRepository =
+        DefaultReleasesRepository(
+            source = SteamUpcoming(client, SteamStoreDeals(client, log = DealsLog), log = DealsLog),
+            stores = stores,
+            clock = clock,
+            onError = { e -> Log.w("Playlog/deals", "Upcoming releases failed", e) },
+        )
 
     @Provides
     @Singleton

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="releases_title">Скоро выйдет</string>
+    <string name="releases_subtitle">Ожидаемые игры Steam и твой вишлист</string>
+    <string name="releases_back">Назад</string>
+    <string name="releases_refresh">Обновить</string>
+    <string name="releases_filter_ALL">Все</string>
+    <string name="releases_filter_FOR_YOU">Для тебя</string>
+    <string name="releases_filter_WISHLIST">Вишлист</string>
+    <string name="releases_today">Сегодня</string>
+    <string name="releases_tomorrow">Завтра</string>
+    <string name="releases_in_days">Через %1$d дн.</string>
+    <string name="releases_undated">Без точной даты</string>
+    <string name="releases_soon">Скоро</string>
+    <string name="releases_tba">Дата не объявлена</string>
+    <string name="releases_highlight">Главное на неделе для тебя</string>
+    <string name="releases_match">Совпадение %1$d%%</string>
+    <string name="releases_wish_add">Добавить в вишлист</string>
+    <string name="releases_wish_remove">Убрать из вишлиста</string>
+    <string name="releases_empty_ALL">Steam пока ничего не показал. Потяни обновить чуть позже.</string>
+    <string name="releases_empty_FOR_YOU">Среди ближайших релизов нет ничего похожего на то, во что ты играешь. Загляни во «Все».</string>
+    <string name="releases_empty_WISHLIST">В вишлисте нет игр, которые ещё не вышли. Отмечай релизы закладкой.</string>
+    <string name="releases_failed">Steam не ответил. Проверь сеть и попробуй ещё раз.</string>
+    <string name="releases_stale">Показан прошлый список: Steam сейчас не отвечает</string>
+    <string name="releases_retry">Повторить</string>
+    <string name="releases_calendar">Календарь</string>
+</resources>

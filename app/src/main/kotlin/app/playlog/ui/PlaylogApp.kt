@@ -67,6 +67,8 @@ import app.playlog.feature.profile.navigateToLink
 import app.playlog.feature.profile.profileScreen
 import app.playlog.feature.recap.navigateToRecap
 import app.playlog.feature.recap.recapScreen
+import app.playlog.feature.releases.navigateToReleases
+import app.playlog.feature.releases.releasesScreen
 import app.playlog.feature.screenshots.ScreenshotsDestination
 import app.playlog.feature.screenshots.navigateToScreenshots
 import app.playlog.feature.screenshots.screenshotsScreen
@@ -144,6 +146,7 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
                 onOpenGiveaways = navController::navigateToGiveaways,
                 onOpenBadges = navController::navigateToBadges,
                 onOpenScreenshotsOf = navController::navigateToScreenshots,
+                onOpenReleases = navController::navigateToReleases,
             ),
         )
         askScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
@@ -153,7 +156,9 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
             onOpenAllDeals = navController::navigateToDeals,
             onOpenGiveaways = navController::navigateToGiveaways,
             onOpenBadges = navController::navigateToBadges,
+            onOpenReleases = navController::navigateToReleases,
         )
+        releasesScreen(onBack = { navController.popBackStack() })
         dealsScreen(onBack = { navController.popBackStack() }, onOpenGiveaways = navController::navigateToGiveaways)
         badgesScreen(onBack = { navController.popBackStack() })
         rouletteScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)

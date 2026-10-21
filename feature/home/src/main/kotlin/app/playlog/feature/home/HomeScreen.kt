@@ -61,6 +61,7 @@ import app.playlog.core.ui.DealCard
 import app.playlog.feature.deals.GiveawaysHomeCard
 import app.playlog.feature.journal.BadgesStrip
 import app.playlog.feature.journal.TodayHomeCard
+import app.playlog.feature.releases.ReleasesTeaser
 import app.playlog.core.ui.GameCoverCard
 import app.playlog.core.ui.ScreenshotTile
 import app.playlog.core.ui.entryPlaytimeText
@@ -133,6 +134,7 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
                 }
             }
         }
+        item { ReleasesTeaser(onOpenAll = actions.onOpenReleases) }
         // Renders nothing while no store gives anything away.
         item { GiveawaysHomeCard(onOpenAll = actions.onOpenGiveaways) }
         if (state.recent.isNotEmpty()) {

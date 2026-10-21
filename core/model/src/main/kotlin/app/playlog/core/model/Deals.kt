@@ -42,6 +42,9 @@ data class DealPick(
 
     companion object {
         fun steamStoreUrl(appId: Long) = "https://store.steampowered.com/app/$appId"
+
+        /** 616×353 store capsule: sharper than header.jpg on wide cards; some old apps lack it. */
+        fun steamCapsuleUrl(appId: String) = "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/$appId/capsule_616x353.jpg"
     }
 }
 

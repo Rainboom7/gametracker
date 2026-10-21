@@ -40,6 +40,7 @@ kotlin {
 dependencies {
     implementation(projects.core.ui)
     implementation(projects.core.data)
+    implementation(projects.feature.releases)
     implementation(projects.feature.deals)
     implementation(projects.feature.journal)
     implementation(libs.androidx.lifecycle.runtimeCompose)

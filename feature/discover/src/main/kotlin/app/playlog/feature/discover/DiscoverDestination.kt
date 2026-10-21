@@ -23,8 +23,15 @@ fun NavGraphBuilder.discoverScreen(
     onOpenAllDeals: () -> Unit,
     onOpenGiveaways: () -> Unit = {},
     onOpenBadges: () -> Unit = {},
+    onOpenReleases: () -> Unit = {},
 ) {
     composable<DiscoverDestination> {
-        DiscoverRoute(onOpenGame = onOpenGame, onOpenAllDeals = onOpenAllDeals, onOpenGiveaways = onOpenGiveaways, onOpenBadges = onOpenBadges)
+        DiscoverRoute(
+            onOpenGame = onOpenGame,
+            onOpenAllDeals = onOpenAllDeals,
+            onOpenGiveaways = onOpenGiveaways,
+            onOpenBadges = onOpenBadges,
+            onOpenReleases = onOpenReleases,
+        )
     }
 }

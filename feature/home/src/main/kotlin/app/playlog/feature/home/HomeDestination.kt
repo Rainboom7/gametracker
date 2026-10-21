@@ -24,6 +24,7 @@ data class HomeActions(
     val onOpenRecap: () -> Unit = {},
     val onOpenGiveaways: () -> Unit = {},
     val onOpenBadges: () -> Unit = {},
+    val onOpenReleases: () -> Unit = {},
     /** Screenshots of one game, or all of them for null. */
     val onOpenScreenshotsOf: (GameId?) -> Unit = {},
 )

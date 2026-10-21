@@ -39,7 +39,16 @@ class SteamStoreDeals(
     override val platform = Platform.STEAM
     override val countries = StoreRegions.STEAM
 
-    internal data class Row(val appId: Long, val name: String, val tagIds: List<Int> = emptyList(), val review: Int? = null)
+    internal data class Row(
+        val appId: Long,
+        val name: String,
+        val tagIds: List<Int> = emptyList(),
+        val review: Int? = null,
+        /** The row's discount badge, when the markup has one. */
+        val discount: Int? = null,
+        /** Release column as shown: "24 Oct, 2026", "Q1 2027", "Coming soon". */
+        val released: String? = null,
+    )
 
     private val tagLock = Mutex()
     private var tagNames: Map<Int, String>? = null
@@ -213,6 +222,8 @@ class SteamStoreDeals(
         private val ROW_APP = Regex("data-ds-appid=\"(\\d+)\"")
         private val ROW_TAGS = Regex("data-ds-tagids=\"\\[([\\d,]*)]\"")
         private val ROW_TITLE = Regex("<span class=\"title\">([^<]*)</span>")
+        private val ROW_DISCOUNT = Regex("data-discount=\"(\\d{1,3})\"")
+        private val ROW_RELEASED = Regex("search_released[^\"]*\">([^<]*)<")
         private val ROW_REVIEW = Regex("data-tooltip-html=\"[^\"]*?(\\d{1,3})%")
 
         /** Search result rows; bundles and packages (several appids) are skipped. */
@@ -221,7 +232,14 @@ class SteamStoreDeals(
             val appId = ROW_APP.find(chunk)?.groupValues?.get(1)?.toLongOrNull() ?: return@mapNotNull null
             val title = ROW_TITLE.find(chunk)?.groupValues?.get(1)?.let(::unescape)?.takeIf(String::isNotBlank) ?: return@mapNotNull null
             val tags = ROW_TAGS.find(chunk)?.groupValues?.get(1).orEmpty().split(',').mapNotNull(String::toIntOrNull)
-            Row(appId, title, tags, ROW_REVIEW.find(chunk)?.groupValues?.get(1)?.toIntOrNull())
+            Row(
+                appId = appId,
+                name = title,
+                tagIds = tags,
+                review = ROW_REVIEW.find(chunk)?.groupValues?.get(1)?.toIntOrNull(),
+                discount = ROW_DISCOUNT.find(chunk)?.groupValues?.get(1)?.toIntOrNull(),
+                released = ROW_RELEASED.find(chunk)?.groupValues?.get(1)?.let(::unescape)?.takeIf(String::isNotBlank),
+            )
         }
 
         private fun unescape(s: String) = s.replace("&amp;", "&").replace("&quot;", "\"").replace("&#39;", "'")

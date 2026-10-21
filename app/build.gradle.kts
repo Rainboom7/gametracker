@@ -73,6 +73,7 @@ dependencies {
     implementation(projects.feature.home)
     implementation(projects.feature.ask)
     implementation(projects.feature.recap)
+    implementation(projects.feature.releases)
     implementation(projects.feature.library)
     implementation(projects.feature.game)
     implementation(projects.feature.activity)

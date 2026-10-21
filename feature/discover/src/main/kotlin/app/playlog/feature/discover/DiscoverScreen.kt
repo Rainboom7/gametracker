@@ -86,6 +86,7 @@ import app.playlog.core.ui.formatPlaytime
 import app.playlog.core.ui.platformName
 import app.playlog.feature.deals.GiveawaysHomeCard
 import app.playlog.feature.journal.BadgesStrip
+import app.playlog.feature.releases.ReleasesTeaser
 import java.time.Duration
 
 @Composable
@@ -94,6 +95,7 @@ fun DiscoverRoute(
     onOpenAllDeals: () -> Unit,
     onOpenGiveaways: () -> Unit = {},
     onOpenBadges: () -> Unit = {},
+    onOpenReleases: () -> Unit = {},
     viewModel: DiscoverViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -111,6 +113,7 @@ fun DiscoverRoute(
         onOpenAllDeals = onOpenAllDeals,
         giveaways = { GiveawaysHomeCard(onOpenAll = onOpenGiveaways) },
         badges = { BadgesStrip(onOpenAll = onOpenBadges) },
+        upcoming = { ReleasesTeaser(onOpenAll = onOpenReleases) },
     )
     openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
@@ -128,6 +131,7 @@ fun DiscoverScreen(
     onOpenAllDeals: () -> Unit = {},
     giveaways: @Composable () -> Unit = {},
     badges: @Composable () -> Unit = {},
+    upcoming: @Composable () -> Unit = {},
 ) {
     val content = state as? DiscoverUiState.Content
     val summary = content?.summary
@@ -163,6 +167,7 @@ fun DiscoverScreen(
                     item(key = "top") { TopPickCard(pick, onClick = { onOpenGame(pick.entry.primary.id) }, Modifier.padding(horizontal = Spacing.lg)) }
                 }
                 item(key = "deals") { DealsShelf(deals, onOpen = onOpenDeal, onRefresh = onRefreshDeals, onOpenAll = onOpenAllDeals) }
+                item(key = "upcoming") { upcoming() }
                 item(key = "giveaways") { giveaways() }
                 item(key = "roulette") {
                     RouletteCard(

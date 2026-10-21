@@ -56,6 +56,7 @@ if (!jvmOnly) {
         ":feature:home",
         ":feature:ask",
         ":feature:recap",
+        ":feature:releases",
         ":feature:library",
         ":feature:game",
         ":feature:activity",

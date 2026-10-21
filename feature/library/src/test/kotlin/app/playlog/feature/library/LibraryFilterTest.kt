@@ -2,6 +2,7 @@ package app.playlog.feature.library
 
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameId
+import app.playlog.core.model.GameStatus
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
 import org.junit.Assert.assertEquals
@@ -91,6 +92,45 @@ class LibraryFilterTest {
         assertEquals(
             "Hades",
             LibraryFilter.nowPlaying(entries, now.plus(Duration.ofDays(2)), window = Duration.ofDays(7))?.title,
+        )
+    }
+
+    @Test
+    fun `multi-platform filter and sort put cross-platform titles first`() {
+        assertEquals(listOf("Hades"), LibraryFilter.apply(entries, "", null, LibrarySort.TITLE, LibraryFilters(multiPlatformOnly = true)).map { it.title })
+        assertEquals("Hades", titles(sort = LibrarySort.PLATFORM_COUNT).first())
+    }
+
+    @Test
+    fun `status and favorite filters combine`() {
+        val marked = LibraryEntry.group(
+            listOf(hadesSteam.copy(status = GameStatus.COMPLETED, isFavorite = true), zelda.copy(status = GameStatus.COMPLETED), astro),
+        )
+        val completed = LibraryFilters(status = GameStatus.COMPLETED)
+
+        assertEquals(listOf("Hades", "The Legend of Zelda: Tears of the Kingdom"), LibraryFilter.apply(marked, "", null, LibrarySort.TITLE, completed).map { it.title })
+        assertEquals(listOf("Hades"), LibraryFilter.apply(marked, "", null, LibrarySort.TITLE, completed.copy(favoritesOnly = true)).map { it.title })
+        assertEquals(2, completed.copy(favoritesOnly = true).activeCount)
+    }
+
+    @Test
+    fun `achievements sort puts unknown progress last`() {
+        val withProgress = LibraryEntry.group(listOf(zelda, astro.copy(achievementProgress = 40), alanWake.copy(achievementProgress = 90)))
+        assertEquals(
+            listOf("alan wake 2", "ASTRO BOT", "The Legend of Zelda: Tears of the Kingdom"),
+            LibraryFilter.apply(withProgress, "", null, LibrarySort.ACHIEVEMENTS).map { it.title },
+        )
+    }
+
+    @Test
+    fun `platform summaries count merged titles and per-platform hours`() {
+        assertEquals(
+            listOf(
+                PlatformSummary(Platform.STEAM, 1, Duration.ofHours(40)),
+                PlatformSummary(Platform.PLAYSTATION, 2, Duration.ofHours(28)),
+                PlatformSummary(Platform.NINTENDO, 3, Duration.ofHours(135)),
+            ),
+            LibraryFilter.platformSummaries(entries),
         )
     }
 

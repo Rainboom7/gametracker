@@ -12,6 +12,8 @@ data class UserSettings(
     val weeklySummary: Boolean = false,
     val onboardingFinished: Boolean = false,
     val nintendoImportBannerDismissed: Boolean = false,
+    /** Library shows a cover grid instead of the list with per-platform sources. */
+    val libraryGrid: Boolean = false,
 )
 
 interface UserSettingsRepository {

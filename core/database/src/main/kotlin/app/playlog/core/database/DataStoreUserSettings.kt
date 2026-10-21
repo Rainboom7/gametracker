@@ -26,6 +26,7 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
             prefs[WEEKLY_SUMMARY] = next.weeklySummary
             prefs[ONBOARDING_FINISHED] = next.onboardingFinished
             prefs[NINTENDO_BANNER_DISMISSED] = next.nintendoImportBannerDismissed
+            prefs[LIBRARY_GRID] = next.libraryGrid
         }
     }
 
@@ -37,6 +38,7 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
             weeklySummary = this[WEEKLY_SUMMARY] ?: defaults.weeklySummary,
             onboardingFinished = this[ONBOARDING_FINISHED] ?: defaults.onboardingFinished,
             nintendoImportBannerDismissed = this[NINTENDO_BANNER_DISMISSED] ?: defaults.nintendoImportBannerDismissed,
+            libraryGrid = this[LIBRARY_GRID] ?: defaults.libraryGrid,
         )
     }
 
@@ -46,5 +48,6 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
         val WEEKLY_SUMMARY = booleanPreferencesKey("weekly_summary")
         val ONBOARDING_FINISHED = booleanPreferencesKey("onboarding_finished")
         val NINTENDO_BANNER_DISMISSED = booleanPreferencesKey("nintendo_banner_dismissed")
+        val LIBRARY_GRID = booleanPreferencesKey("library_grid")
     }
 }

@@ -4,6 +4,7 @@ import app.playlog.core.data.DefaultAccountRepository
 import app.playlog.core.data.DefaultLibraryRepository
 import app.playlog.core.data.InMemoryAccountStore
 import app.playlog.core.data.InMemoryLibraryStore
+import app.playlog.core.data.InMemoryUserSettingsRepository
 import app.playlog.core.model.Account
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameId
@@ -34,6 +35,7 @@ class LibraryViewModelTest {
             accounts = DefaultAccountRepository(emptySet(), accountStore, libraryStore),
             syncScheduler = scheduler,
             clock = clock,
+            settings = InMemoryUserSettingsRepository(),
         )
     }
 

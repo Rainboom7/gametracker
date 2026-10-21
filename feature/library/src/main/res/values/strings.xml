@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library_title">Библиотека</string>
-    <string name="library_subtitle">%1$d игр · %2$s всего</string>
+    <string name="library_subtitle">%1$d игр со всех платформ · %2$s</string>
     <string name="library_search_hint">Поиск по названию</string>
     <string name="library_sort">Сортировка</string>
     <string name="library_sort_last_played">По последней игре</string>
@@ -13,4 +13,15 @@
     <string name="library_empty_syncing">Идёт первая синхронизация…</string>
     <string name="library_connect">Подключить платформу</string>
     <string name="library_no_results">Ничего не найдено</string>
+    <string name="library_sort_achievements">По достижениям</string>
+    <string name="library_sort_platforms">Сначала на нескольких платформах</string>
+    <string name="library_sort_current">Сортировка: %1$s</string>
+    <string name="library_filter_status">Статус</string>
+    <string name="library_filter_status_any">Любой статус</string>
+    <string name="library_filter_favorites">Избранное</string>
+    <string name="library_filter_multi">На 2+ платформах</string>
+    <string name="library_layout_list">Списком</string>
+    <string name="library_layout_grid">Сеткой</string>
+    <string name="library_search_clear">Очистить поиск</string>
+    <string name="library_results">Показано %1$d из %2$d</string>
 </resources>

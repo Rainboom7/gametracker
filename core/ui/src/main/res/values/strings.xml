@@ -23,6 +23,13 @@
     <string name="achievements_progress">Достижения %1$d%%</string>
     <string name="video_capture">Видео</string>
 
+    <!-- Game status (also used by the library filter) -->
+    <string name="status_NONE">Без статуса</string>
+    <string name="status_PLAYING">Играю</string>
+    <string name="status_COMPLETED">Пройдено</string>
+    <string name="status_SHELVED">Отложено</string>
+    <string name="status_DROPPED">Брошено</string>
+
     <!-- Account rows -->
     <string name="account_not_connected">Не подключено</string>
     <string name="account_synced_at">Синхронизировано %1$s</string>

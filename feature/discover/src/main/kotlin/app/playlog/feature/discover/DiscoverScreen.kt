@@ -79,6 +79,7 @@ import app.playlog.core.model.MilestoneKind
 import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
 import app.playlog.core.model.Platform
+import app.playlog.core.model.RouletteMood
 import app.playlog.core.ui.DealDetailSheet
 import app.playlog.core.ui.entryPlaytimeText
 import app.playlog.core.ui.formatPlaytime
@@ -103,6 +104,7 @@ fun DiscoverRoute(
         onOpenGame,
         viewModel::spin,
         viewModel::selectRoulettePlatform,
+        onSelectRouletteMood = viewModel::selectRouletteMood,
         deals = deals,
         onOpenDeal = viewModel::openDeal,
         onRefreshDeals = viewModel::refreshDeals,
@@ -119,6 +121,7 @@ fun DiscoverScreen(
     onOpenGame: (GameId) -> Unit,
     onSpin: () -> Unit,
     onSelectRoulettePlatform: (Platform?) -> Unit,
+    onSelectRouletteMood: (RouletteMood) -> Unit = {},
     deals: DealsState = DealsState.NoTaste,
     onOpenDeal: (DealPick) -> Unit = {},
     onRefreshDeals: () -> Unit = {},
@@ -165,8 +168,10 @@ fun DiscoverScreen(
                     RouletteCard(
                         state = content?.roulette ?: RouletteState(),
                         backlogCount = summary.backlogCount,
+                        reel = summary.reel(),
                         onSpin = onSpin,
                         onSelectPlatform = onSelectRoulettePlatform,
+                        onSelectMood = onSelectRouletteMood,
                         onOpen = onOpenGame,
                         modifier = Modifier.padding(horizontal = Spacing.lg),
                     )
@@ -216,85 +221,6 @@ private fun TopPickCard(pick: Pick, onClick: () -> Unit, modifier: Modifier = Mo
             Spacer(Modifier.height(2.dp))
             Text(reasonText(pick), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f), maxLines = 2)
         }
-    }
-}
-
-@Composable
-private fun RouletteCard(
-    state: RouletteState,
-    backlogCount: Int,
-    onSpin: () -> Unit,
-    onSelectPlatform: (Platform?) -> Unit,
-    onOpen: (GameId) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(Spacing.md), verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Casino, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.width(Spacing.xs))
-                Text(stringResource(R.string.discover_roulette_title), style = MaterialTheme.typography.titleLarge)
-            }
-            Text(
-                stringResource(R.string.discover_roulette_hint, backlogCount),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                PlatformFilterChip(platformName(null), selected = state.platform == null, onClick = { onSelectPlatform(null) })
-                Platform.entries.forEach { p ->
-                    PlatformFilterChip(platformName(p), selected = state.platform == p, onClick = { onSelectPlatform(p) }, platform = p)
-                }
-            }
-            AnimatedContent(
-                targetState = state,
-                contentKey = { it.spins },
-                transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.92f)) togetherWith fadeOut() },
-                label = "roulette",
-            ) { s ->
-                when {
-                    s.result != null -> RouletteResult(s.result, onClick = { onOpen(s.result.primary.id) })
-                    s.empty -> Text(stringResource(R.string.discover_roulette_empty), style = MaterialTheme.typography.bodyMedium)
-                    else -> Spacer(Modifier.height(0.dp))
-                }
-            }
-            Button(onClick = onSpin, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(if (state.result == null) R.string.discover_roulette_spin else R.string.discover_roulette_again))
-            }
-        }
-    }
-}
-
-@Composable
-private fun RouletteResult(entry: LibraryEntry, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(Spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        GameImage(
-            urls = listOf(entry.coverUrl, entry.fallbackCoverUrl),
-            contentDescription = null,
-            placeholderText = entry.title,
-            modifier = Modifier.size(width = 60.dp, height = 80.dp).clip(MaterialTheme.shapes.small),
-        )
-        Spacer(Modifier.width(Spacing.sm))
-        Column(Modifier.weight(1f)) {
-            Text(entry.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(entryPlaytimeText(entry), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(4.dp))
-            PlatformBadgeRow(entry.platforms)
-        }
-        FilledTonalButton(onClick = onClick) { Text(stringResource(R.string.discover_open)) }
     }
 }
 

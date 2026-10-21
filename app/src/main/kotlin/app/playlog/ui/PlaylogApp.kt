@@ -42,6 +42,8 @@ import app.playlog.feature.activity.ActivityDestination
 import app.playlog.feature.activity.activityScreen
 import app.playlog.feature.discover.DiscoverDestination
 import app.playlog.feature.discover.discoverScreen
+import app.playlog.feature.discover.navigateToRoulette
+import app.playlog.feature.discover.rouletteScreen
 import app.playlog.feature.deals.dealsScreen
 import app.playlog.feature.deals.navigateToDeals
 import app.playlog.sync.MainActivityTargets
@@ -100,7 +102,7 @@ fun PlaylogApp(open: String? = null, onOpened: () -> Unit = {}, mainViewModel: M
             MainActivityTargets.RECAP -> navController.navigateToRecap("WEEK")
             MainActivityTargets.ASK -> navController.navigateToAsk()
             MainActivityTargets.BADGES -> navController.navigateToBadges()
-            MainActivityTargets.ROULETTE -> navController.navigateToTab(TopLevel.DISCOVER)
+            MainActivityTargets.ROULETTE -> navController.navigateToRoulette()
         }
         onOpened()
     }
@@ -153,6 +155,7 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
         )
         dealsScreen(onBack = { navController.popBackStack() }, onOpenGiveaways = navController::navigateToGiveaways)
         badgesScreen(onBack = { navController.popBackStack() })
+        rouletteScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         activityScreen(onOpenGame = navController::navigateToGame, onOpenRecap = { navController.navigateToRecap(it.name) })
         recapScreen(onClose = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         screenshotsScreen(

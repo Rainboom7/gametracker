@@ -12,6 +12,7 @@ import app.playlog.core.model.MilestoneKind
 import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
 import app.playlog.core.model.Platform
+import app.playlog.core.model.RouletteMood
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -25,14 +26,27 @@ interface DiscoverRepository {
     fun observeSummary(): Flow<DiscoverSummary>
 
     /** A random title from the backlog and forgotten games, optionally on one platform. */
-    suspend fun roulette(platform: Platform?, exclude: LibraryEntry? = null): LibraryEntry?
+    suspend fun roulette(platform: Platform?, exclude: LibraryEntry? = null): LibraryEntry? =
+        roulette(RouletteQuery(platform, recent = listOfNotNull(exclude?.key)))
+
+    /** A weighted draw: favourites and well-rated titles come up more often, recent draws less. */
+    suspend fun roulette(query: RouletteQuery): LibraryEntry?
 }
+
+data class RouletteQuery(
+    val platform: Platform? = null,
+    val mood: RouletteMood = RouletteMood.ANY,
+    /** Keys of the last draws, newest first; skipped while anything else is left. */
+    val recent: List<String> = emptyList(),
+)
 
 class DefaultDiscoverRepository(
     private val store: LibraryStore,
     private val library: LibraryRepository,
     private val clock: AppClock,
     private val random: Random = Random.Default,
+    /** Entry keys the user rated 8+; boosts them in the roulette. */
+    private val liked: suspend () -> Set<String> = { emptySet() },
 ) : DiscoverRepository {
 
     override fun observeSummary(): Flow<DiscoverSummary> {
@@ -42,9 +56,9 @@ class DefaultDiscoverRepository(
         }
     }
 
-    override suspend fun roulette(platform: Platform?, exclude: LibraryEntry?): LibraryEntry? {
+    override suspend fun roulette(query: RouletteQuery): LibraryEntry? {
         val entries = library.observeLibrary().first()
-        return DiscoverCalculator.roulette(entries, today(), clock.zone(), platform, exclude?.key, random)
+        return DiscoverCalculator.roulette(entries, today(), clock.zone(), query, liked(), random)
     }
 
     private fun today() = LocalDate.ofInstant(clock.now(), clock.zone())
@@ -63,6 +77,9 @@ object DiscoverCalculator {
     val ALMOST_DONE_RANGE = 60..99
     const val ANNIVERSARY_WINDOW_DAYS = 3L
     private const val DAYS_PER_YEAR = 365L
+    private const val FAVORITE_WEIGHT = 2.0
+    private const val LIKED_WEIGHT = 1.5
+    private val UNTOUCHED_MAX_PLAYTIME: Duration = Duration.ofMinutes(30)
     const val SHELF_SIZE = 10
 
     val THRESHOLDS: Map<MilestoneKind, List<Long>> = mapOf(
@@ -106,21 +123,33 @@ object DiscoverCalculator {
         Pick(entry, reason, score(reason, entry, days), days)
     }
 
-    /** Uniform pick from backlog and forgotten titles; null when the pool is empty. */
+    /** Weighted pick from the [RouletteQuery.mood]'s pool; null when the pool is empty. */
     fun roulette(
         entries: List<LibraryEntry>,
         today: LocalDate,
         zone: ZoneId,
-        platform: Platform?,
-        excludeKey: String?,
+        query: RouletteQuery,
+        liked: Set<String>,
         random: Random,
     ): LibraryEntry? {
-        val pool = picks(entries, today, zone)
-            .filter { it.reason == PickReason.BACKLOG || it.reason == PickReason.RETURN_TO }
-            .map { it.entry }
-            .filter { platform == null || platform in it.platforms }
-        val candidates = pool.filter { it.key != excludeKey }.ifEmpty { pool }
-        return if (candidates.isEmpty()) null else candidates[random.nextInt(candidates.size)]
+        val reasons = picks(entries, today, zone).associate { it.entry.key to it.reason }
+        val pool = entries.filter { e -> inMood(query.mood, e, reasons[e.key], liked) && (query.platform == null || query.platform in e.platforms) }
+        val candidates = pool.filter { it.key !in query.recent }.ifEmpty { pool.filter { it.key != query.recent.firstOrNull() } }.ifEmpty { pool }
+        if (candidates.isEmpty()) return null
+        val weights = candidates.map { e -> 1.0 + (if (e.isFavorite) FAVORITE_WEIGHT else 0.0) + (if (e.key in liked) LIKED_WEIGHT else 0.0) }
+        var ticket = random.nextDouble() * weights.sum()
+        candidates.forEachIndexed { i, e ->
+            ticket -= weights[i]
+            if (ticket < 0) return e
+        }
+        return candidates.last()
+    }
+
+    private fun inMood(mood: RouletteMood, entry: LibraryEntry, reason: PickReason?, liked: Set<String>): Boolean = when (mood) {
+        RouletteMood.ANY -> reason == PickReason.BACKLOG || reason == PickReason.RETURN_TO
+        RouletteMood.FORGOTTEN -> reason == PickReason.RETURN_TO
+        RouletteMood.UNTOUCHED -> reason == PickReason.BACKLOG && entry.totalPlaytime < UNTOUCHED_MAX_PLAYTIME
+        RouletteMood.COMFORT -> (entry.isFavorite || entry.key in liked) && entry.status != GameStatus.DROPPED
     }
 
     /** Library-derived badges; [extra] adds the ones counted elsewhere (screenshots, ratings). */

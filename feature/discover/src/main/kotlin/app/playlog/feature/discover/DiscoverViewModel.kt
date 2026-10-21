@@ -9,6 +9,11 @@ import app.playlog.core.model.DealsState
 import app.playlog.core.model.DiscoverSummary
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
+import app.playlog.core.model.RouletteMood
+import app.playlog.core.data.RouletteQuery
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,10 +24,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Backlog roulette: the last drawn title and the platform filter. */
+/** Backlog roulette: the last drawn title, the filters and the recent draws it avoids. */
 data class RouletteState(
     val platform: Platform? = null,
+    val mood: RouletteMood = RouletteMood.ANY,
     val result: LibraryEntry? = null,
+    /** True while the reel is turning, before the result is revealed. */
+    val spinning: Boolean = false,
+    val recent: List<String> = emptyList(),
     /** True after a spin found nothing on the selected platform. */
     val empty: Boolean = false,
     /** Bumped on every spin so the card can animate even when the same title comes up. */
@@ -51,7 +60,9 @@ class DiscoverViewModel @Inject constructor(
         DiscoverUiState.Content(summary, r)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DiscoverUiState.Loading)
 
-    fun selectRoulettePlatform(platform: Platform?) = roulette.update { RouletteState(platform = platform) }
+    fun selectRoulettePlatform(platform: Platform?) = roulette.update { RouletteState(platform = platform, mood = it.mood) }
+
+    fun selectRouletteMood(mood: RouletteMood) = roulette.update { RouletteState(platform = it.platform, mood = mood) }
 
     fun refreshDeals() {
         viewModelScope.launch { dealsRepository.refresh() }
@@ -62,10 +73,29 @@ class DiscoverViewModel @Inject constructor(
     }
 
     fun spin() {
+        if (roulette.value.spinning) return
         viewModelScope.launch {
+            roulette.update { it.copy(spinning = true) }
             val current = roulette.value
-            val result = discover.roulette(current.platform, exclude = current.result)
-            roulette.update { it.copy(result = result, empty = result == null, spins = it.spins + 1) }
+            // The short wait is the reel turning: an instant answer feels like no draw happened.
+            val result = coroutineScope {
+                val reel = async { delay(SPIN_MILLIS) }
+                discover.roulette(RouletteQuery(current.platform, current.mood, current.recent)).also { reel.await() }
+            }
+            roulette.update {
+                it.copy(
+                    result = result,
+                    empty = result == null,
+                    spinning = false,
+                    spins = it.spins + 1,
+                    recent = (listOfNotNull(result?.key) + it.recent).distinct().take(RECENT_DRAWS),
+                )
+            }
         }
+    }
+
+    private companion object {
+        const val SPIN_MILLIS = 900L
+        const val RECENT_DRAWS = 5
     }
 }

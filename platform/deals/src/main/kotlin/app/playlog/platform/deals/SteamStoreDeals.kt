@@ -19,6 +19,7 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
@@ -169,7 +170,8 @@ class SteamStoreDeals(
         val response = client.get("$apiUrl/IStoreBrowseService/GetItems/v1/") {
             parameter(
                 "input_json",
-                """{"ids":[$ids],"context":{"language":"english","country_code":"$country","steam_realm":1},"data_request":{"include_assets":true}}""",
+                """{"ids":[$ids],"context":{"language":"english","country_code":"$country","steam_realm":1},""" +
+                    """"data_request":{"include_assets":true,"include_release":true}}""",
             )
         }
         if (!response.status.isSuccess()) throw DealsException("Steam GetItems HTTP ${response.status.value}")
@@ -190,7 +192,15 @@ class SteamStoreDeals(
                         ?.string("discount_end_date")?.toLongOrNull()?.let(Instant::ofEpochSecond),
                 )
             }
-            appId.toString() to StoreQuote(item.string("name"), steamHeader(appId), DealPick.steamStoreUrl(appId), price)
+            val release = item.obj("release")
+            appId.toString() to StoreQuote(
+                title = item.string("name"),
+                headerUrl = steamHeader(appId),
+                storeUrl = DealPick.steamStoreUrl(appId),
+                price = price,
+                comingSoon = release?.let { it["is_coming_soon"]?.jsonPrimitive?.booleanOrNull ?: false },
+                releaseDate = release?.string("steam_release_date")?.toLongOrNull()?.takeIf { it > 0 }?.let(Instant::ofEpochSecond),
+            )
         }
     }
 

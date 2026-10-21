@@ -20,6 +20,7 @@ object AppShortcuts {
         Shortcut(MainActivityTargets.ASK, R.string.shortcut_ask, R.string.shortcut_ask_long, R.drawable.ic_shortcut_ask),
         Shortcut(MainActivityTargets.DEALS, R.string.shortcut_deals, R.string.shortcut_deals_long, R.drawable.ic_shortcut_deals),
         Shortcut(MainActivityTargets.ACTIVITY, R.string.shortcut_activity, R.string.shortcut_activity_long, R.drawable.ic_shortcut_activity),
+        Shortcut(MainActivityTargets.ROULETTE, R.string.shortcut_roulette, R.string.shortcut_roulette_long, R.drawable.ic_shortcut_roulette),
     )
 
     fun publish(context: Context) {

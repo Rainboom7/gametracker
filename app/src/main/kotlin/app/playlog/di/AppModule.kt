@@ -14,6 +14,8 @@ import app.playlog.core.data.DefaultDiscoverRepository
 import app.playlog.core.data.BadgesRepository
 import app.playlog.core.data.DefaultBadgesRepository
 import app.playlog.core.data.DefaultGameNotesRepository
+import app.playlog.core.data.DefaultTodayRepository
+import app.playlog.core.data.TodayRepository
 import app.playlog.core.data.GameNotesRepository
 import app.playlog.core.database.FileBadgeStore
 import app.playlog.core.database.FileGameNotesStore
@@ -72,6 +74,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import kotlinx.coroutines.flow.first
 import java.io.File
 import javax.inject.Singleton
 import javax.net.ssl.SSLContext
@@ -82,6 +85,7 @@ private val DealsLog: (String) -> Unit = { Log.i("Playlog/deals", it) }
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+    private const val LIKED_RATING = 8
 
     @Provides
     @Singleton
@@ -146,8 +150,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun discoverRepository(store: LibraryStore, library: LibraryRepository, clock: AppClock): DiscoverRepository =
-        DefaultDiscoverRepository(store, library, clock)
+    fun discoverRepository(store: LibraryStore, library: LibraryRepository, clock: AppClock, notes: GameNotesRepository): DiscoverRepository =
+        DefaultDiscoverRepository(store, library, clock, liked = { notes.observeAll().first().filterValues { (it.rating ?: 0) >= LIKED_RATING }.keys })
 
     @Provides
     @Singleton
@@ -225,6 +229,16 @@ object AppModule {
             clock = clock,
             onError = { Log.w("Playlog/deals", "Giveaways refresh failed", it) },
         )
+
+    @Provides
+    @Singleton
+    fun todayRepository(
+        store: LibraryStore,
+        library: LibraryRepository,
+        wishlist: WishlistRepository,
+        giveaways: GiveawaysRepository,
+        clock: AppClock,
+    ): TodayRepository = DefaultTodayRepository(store, library, wishlist, giveaways, clock)
 
     @Provides
     @Singleton

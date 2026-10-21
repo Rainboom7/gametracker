@@ -158,6 +158,10 @@ class StoreDealsClientsTest {
         assertEquals(0, quotes.getValue("1000").price?.discountPercent)
         assertEquals("Coming Soon", quotes.getValue("2000").title)
         assertEquals(null, quotes.getValue("2000").price)
+        assertEquals(true, quotes.getValue("2000").comingSoon)
+        assertEquals(Instant.ofEpochSecond(1798761600), quotes.getValue("2000").releaseDate)
+        assertEquals(false, quotes.getValue("1000").comingSoon)
+        assertEquals(null, quotes.getValue("588650").comingSoon)
         assertTrue(requests.single().url.parameters["input_json"]!!.contains("\"country_code\":\"TR\""))
     }
 

@@ -98,3 +98,18 @@ data class DiscoverSummary(
     /** Titles in the backlog pool (owned, barely played, not completed or dropped). */
     val backlogCount: Int,
 )
+
+/** What the roulette draws from. */
+enum class RouletteMood {
+    /** Backlog and forgotten titles. */
+    ANY,
+
+    /** Many hours in, untouched for months. */
+    FORGOTTEN,
+
+    /** Owned but never really started. */
+    UNTOUCHED,
+
+    /** Favourites and games rated 8+ that are not finished: a comfort pick. */
+    COMFORT,
+}

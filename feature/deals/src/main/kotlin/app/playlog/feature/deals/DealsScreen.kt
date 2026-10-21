@@ -73,6 +73,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -202,10 +203,14 @@ fun DealsScreen(
 ) {
     var pickingRegion by rememberSaveable { mutableStateOf(false) }
     var editingFilters by rememberSaveable { mutableStateOf(false) }
+    // The title bar slides away while scrolling down and returns on the first scroll up, so the grid gets the room.
+    val scroll = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scroll.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                scrollBehavior = scroll,
                 title = { Text(stringResource(R.string.deals_screen_title)) },
                 navigationIcon = {
                     IconButton(onClick = actions.onBack) {
@@ -220,18 +225,22 @@ fun DealsScreen(
                         Icon(Icons.Default.Refresh, contentDescription = null)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
+                ),
             )
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
             Tabs(platforms, tab, wishlist.size, actions.onSelect)
             when (tab) {
-                is DealsTab.Store -> {
-                    SearchField(query, actions.onQuery, actions.onSearchStore)
-                    regionOf(store.state)?.let { region -> RegionRow(region, onClick = { pickingRegion = true }) }
-                    Controls(filter, store.hasTaste, actions.onFilter, onOpenFilters = { editingFilters = true })
-                    StoreContent(store, personal, query, search, wished, actions, onPickRegion = { pickingRegion = true })
+                // Only the store tabs stay pinned; search, region and filters scroll away with the grid.
+                is DealsTab.Store -> StoreContent(store, personal, query, search, wished, actions, onPickRegion = { pickingRegion = true }) {
+                    Column {
+                        SearchField(query, actions.onQuery, actions.onSearchStore)
+                        Controls(filter, store.hasTaste, regionOf(store.state), actions.onFilter, { editingFilters = true }, { pickingRegion = true })
+                    }
                 }
                 DealsTab.Wishlist -> WishlistContent(wishlist, wishlistAction, actions)
             }
@@ -253,7 +262,7 @@ fun DealsScreen(
 @Composable
 private fun Tabs(platforms: List<Platform>, tab: DealsTab, wishCount: Int, onSelect: (DealsTab) -> Unit) {
     Row(
-        Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Spacing.lg),
+        Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Spacing.lg).padding(bottom = Spacing.xxs),
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
     ) {
         platforms.forEach { p ->
@@ -290,18 +299,26 @@ private fun SearchField(query: String, onQuery: (String) -> Unit, onSearchStore:
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { onSearchStore() }),
         shape = CircleShape,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.lg, vertical = Spacing.xs),
+        modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.xxs),
     )
 }
 
 @Composable
-private fun Controls(filter: DealsFilter, hasTaste: Boolean, onFilter: (DealsFilter) -> Unit, onOpenFilters: () -> Unit) {
+private fun Controls(
+    filter: DealsFilter,
+    hasTaste: Boolean,
+    region: StoreRegion?,
+    onFilter: (DealsFilter) -> Unit,
+    onOpenFilters: () -> Unit,
+    onPickRegion: () -> Unit,
+) {
     var sorting by remember { mutableStateOf(false) }
     Row(
-        Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Spacing.lg),
+        Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (region != null) RegionChip(region, onPickRegion)
         FilterChip(
             selected = filter.activeCount > 0,
             onClick = onOpenFilters,
@@ -352,24 +369,15 @@ private fun regionOf(state: StoreDealsState): StoreRegion? = when (state) {
     StoreDealsState.Loading -> null
 }
 
+/** The store's country as the first chip; the source (account, device, manual) goes in the dialog. */
 @Composable
-private fun RegionRow(region: StoreRegion, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = Spacing.lg, vertical = Spacing.xs),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(Icons.Default.Public, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(Spacing.xs))
-        Text(
-            stringResource(R.string.deals_region, countryName(region.country)) + " · " + stringResource(regionSourceLabel(region.source)),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f),
-        )
-        Text(stringResource(R.string.deals_change_region), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-    }
+private fun RegionChip(region: StoreRegion, onClick: () -> Unit) {
+    FilterChip(
+        selected = false,
+        onClick = onClick,
+        leadingIcon = { Icon(Icons.Default.Public, contentDescription = null, modifier = Modifier.size(16.dp)) },
+        label = { Text(countryName(region.country)) },
+    )
 }
 
 @Composable
@@ -381,6 +389,7 @@ private fun StoreContent(
     wished: Set<String>,
     actions: DealsActions,
     onPickRegion: () -> Unit,
+    header: @Composable () -> Unit,
 ) {
     val grid = rememberLazyGridState()
     val ready = store.state as? StoreDealsState.Ready
@@ -398,11 +407,12 @@ private fun StoreContent(
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         state = grid,
-        contentPadding = PaddingValues(start = Spacing.lg, end = Spacing.lg, top = Spacing.sm, bottom = Spacing.xl),
+        contentPadding = PaddingValues(start = Spacing.lg, end = Spacing.lg, top = Spacing.xs, bottom = Spacing.xl),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.md),
         modifier = Modifier.fillMaxSize(),
     ) {
+        item(span = { GridItemSpan(maxLineSpan) }, key = "controls") { header() }
         if (query.isNotBlank()) searchSection(query, search, wished, actions)
         val picks = (personal as? DealsState.Ready)?.picks ?: (personal as? DealsState.Failed)?.stale.orEmpty()
         if (picks.isNotEmpty()) {
@@ -554,6 +564,13 @@ private fun RegionDialog(countries: List<String>, current: StoreRegion?, onPick:
         title = { Text(stringResource(R.string.deals_region_pick)) },
         text = {
             Column {
+                current?.let {
+                    Text(
+                        stringResource(R.string.deals_region, countryName(it.country)) + " · " + stringResource(regionSourceLabel(it.source)),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Spacer(Modifier.height(Spacing.xxs))
+                }
                 Text(stringResource(R.string.deals_region_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(Spacing.sm))
                 LazyColumn(Modifier.heightIn(max = 360.dp)) {

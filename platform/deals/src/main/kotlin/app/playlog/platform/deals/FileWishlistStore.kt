@@ -23,6 +23,7 @@ class FileWishlistStore(
     override suspend fun read(): List<WishlistItem> = withContext(io) {
         if (!file.exists()) return@withContext emptyList()
         runCatching { TrackerJson.decodeFromString(serializer, file.readText()) }.getOrDefault(emptyList()).map { it.toModel() }
+            .map { it.copy(storeUrl = NintendoStoreDeals.repairLink(it.storeUrl, it.title)) }
     }
 
     override suspend fun write(items: List<WishlistItem>) = withContext(io) {

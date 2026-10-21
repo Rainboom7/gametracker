@@ -23,6 +23,7 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.time.Instant
+import java.net.URLEncoder
 import java.time.OffsetDateTime
 
 /**
@@ -37,17 +38,20 @@ class NintendoStoreDeals(
     private val europeSearchUrl: String = "https://searching.nintendo-europe.com",
     private val algoliaUrl: String = "https://$ALGOLIA_APP-dsn.algolia.net",
     private val priceUrl: String = "https://api.ec.nintendo.com/v1/price",
+    private val siteUrl: String = "https://www.nintendo.com",
     private val log: (String) -> Unit = {},
 ) : StoreDealsSource {
     override val platform = Platform.NINTENDO
     override val countries = StoreRegions.NINTENDO
 
-    private data class Listing(
+    internal data class Listing(
         val nsuid: String,
         val title: String,
         val image: String?,
         val description: String?,
         val genres: List<String> = emptyList(),
+        /** The product page path on nintendo.com, as the catalogue gives it. */
+        val path: String? = null,
     )
 
     override suspend fun page(country: String, page: Int): StoreDealsPage {
@@ -58,7 +62,7 @@ class NintendoStoreDeals(
     }
 
     override suspend fun quotes(country: String, ids: List<String>): Map<String, StoreQuote> =
-        prices(country, ids).mapValues { (id, price) -> StoreQuote(storeUrl = storeUrl(id, country), price = price) }
+        prices(country, ids).mapValues { (_, price) -> StoreQuote(price = price) }
 
     override suspend fun search(country: String, query: String): List<DealPick> {
         if (query.isBlank()) return emptyList()
@@ -81,7 +85,7 @@ class NintendoStoreDeals(
                 storeId = l.nsuid,
                 title = l.title,
                 headerUrl = l.image ?: return@mapNotNull null,
-                storeUrl = storeUrl(l.nsuid, country),
+                storeUrl = storeUrl(l, country),
                 shortDescription = l.description,
                 discountPercent = p?.discountPercent ?: 0,
                 priceText = p?.priceText.orEmpty(),
@@ -93,7 +97,11 @@ class NintendoStoreDeals(
         }
     }
 
-    private fun storeUrl(nsuid: String, country: String) = "https://ec.nintendo.com/apps/$nsuid/$country"
+    /**
+     * The game's page on nintendo.com. The old `ec.nintendo.com/apps/<nsuid>` links no longer open a
+     * product, so without a catalogue path the link falls back to the regional site search.
+     */
+    private fun storeUrl(listing: Listing, country: String) = pageUrl(listing.path, listing.title, country, siteUrl)
 
     private suspend fun europe(language: String, page: Int, query: String?): Pair<List<Listing>, Boolean> {
         val response = client.get("$europeSearchUrl/$language/select") {
@@ -111,7 +119,7 @@ class NintendoStoreDeals(
             val nsuid = (d.array("nsuid_txt")?.firstOrNull() as? JsonPrimitive)?.content ?: return@mapNotNull null
             val image = d.string("image_url_h2x1_s") ?: d.string("image_url_sq_s") ?: d.string("image_url")
             val genres = d.array("pretty_game_categories_txt").orEmpty().mapNotNull { (it as? JsonPrimitive)?.content }
-            Listing(nsuid, d.string("title") ?: return@mapNotNull null, image?.let(::https), d.string("excerpt"), genres)
+            Listing(nsuid, d.string("title") ?: return@mapNotNull null, image?.let(::https), d.string("excerpt"), genres, d.string("url"))
         }
         val total = body.obj("response")?.string("numFound")?.toIntOrNull() ?: 0
         return listings to ((page + 1) * PAGE_SIZE < total)
@@ -137,7 +145,7 @@ class NintendoStoreDeals(
             val nsuid = h.string("nsuid") ?: return@mapNotNull null
             val image = h.string("horizontalHeaderImage") ?: h.string("productImage") ?: h.string("boxart")
             val genres = h.array("genres").orEmpty().mapNotNull { (it as? JsonPrimitive)?.content }
-            Listing(nsuid, h.string("title") ?: return@mapNotNull null, image?.let(::nintendoAsset), h.string("description"), genres)
+            Listing(nsuid, h.string("title") ?: return@mapNotNull null, image?.let(::nintendoAsset), h.string("description"), genres, h.string("url"))
         }
         val pages = body.string("nbPages")?.toIntOrNull() ?: 0
         return listings to (page + 1 < pages)
@@ -184,8 +192,43 @@ class NintendoStoreDeals(
     private fun nintendoAsset(id: String) =
         if (id.startsWith("http")) id else "https://assets.nintendo.com/image/upload/ar_16:9,c_lpad,w_656/b_white/f_auto/q_auto/$id"
 
-    private companion object {
+    internal companion object {
         const val PAGE_SIZE = 30
+
+        private val EUROPE_LOCALES = mapOf(
+            "DE" to "de-de", "AT" to "de-at", "CH" to "de-ch", "FR" to "fr-fr", "BE" to "fr-be", "LU" to "fr-fr", "NL" to "nl-nl",
+            "IT" to "it-it", "ES" to "es-es", "PT" to "pt-pt", "IE" to "en-ie", "AU" to "en-au", "NZ" to "en-nz", "ZA" to "en-za",
+        )
+        private val AMERICA_LOCALES = mapOf("US" to "us", "CA" to "en-ca", "MX" to "es-mx", "BR" to "pt-br")
+
+        /** Catalogue paths are written for the store's language, so the site locale follows it. */
+        fun europeLocale(country: String) = EUROPE_LOCALES[country] ?: "en-gb"
+
+        fun americaLocale(country: String) = AMERICA_LOCALES[country] ?: "us"
+
+        /**
+         * The game's page on nintendo.com. The old `ec.nintendo.com/apps/<nsuid>` links no longer open
+         * a product, so without a catalogue [path] the link falls back to the regional site search.
+         */
+        fun pageUrl(path: String?, title: String, country: String, site: String = "https://www.nintendo.com"): String {
+            val page = path?.takeIf { it.startsWith("/") }
+            val query = URLEncoder.encode(title, Charsets.UTF_8)
+            return if (country in StoreRegions.NINTENDO_AMERICA) {
+                page?.let { "$site$it" } ?: "$site/${americaLocale(country)}/search/#q=$query"
+            } else {
+                val locale = europeLocale(country)
+                page?.let { "$site/$locale$it" } ?: "$site/$locale/Search/Search-299117.html?q=$query"
+            }
+        }
+
+        private const val DEAD_ESHOP_PREFIX = "https://ec.nintendo.com/apps/"
+
+        /** Wishlist entries saved before the eShop links died point at the search instead. */
+        fun repairLink(url: String, title: String): String {
+            if (!url.startsWith(DEAD_ESHOP_PREFIX)) return url
+            val country = url.trimEnd('/').substringAfterLast('/').uppercase()
+            return pageUrl(null, title, country)
+        }
         const val PRICE_BATCH = 50
         const val PERCENT = 100
         const val ALGOLIA_APP = "U3B6GR4UA3"

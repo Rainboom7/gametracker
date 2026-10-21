@@ -101,7 +101,8 @@ class RoomLibraryStore(private val db: PlaylogDatabase) : LibraryStore {
 class RoomAccountStore(db: PlaylogDatabase) : AccountStore {
     private val dao = db.accounts()
 
-    override fun observeAccounts(): Flow<List<Account>> = dao.observeAll().map { list -> list.map { it.toModel() } }
+    // platform is stored by name, so SQL ORDER BY would be alphabetical; keep enum order (Steam, PSN, Nintendo).
+    override fun observeAccounts(): Flow<List<Account>> = dao.observeAll().map { list -> list.map { it.toModel() }.sortedBy { it.platform.ordinal } }
 
     override suspend fun upsert(account: Account) {
         val lastSynced = account.lastSyncedAt ?: dao.get(account.platform.name)?.lastSyncedAt?.let(Instant::ofEpochMilli)

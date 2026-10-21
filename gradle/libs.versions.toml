@@ -10,7 +10,8 @@ targetSdk = "36"
 
 # Kotlin / multiplatform-friendly libraries (Maven Central)
 coroutines = "1.11.0"
-serialization = "1.12.0"
+# 1.12 is built with Kotlin 2.4 (metadata 2.4.0), which Hilt's metadata reader rejects. Keep libraries on <= Kotlin 2.3.
+serialization = "1.11.0"
 ktor = "3.6.0"
 coil = "3.3.0"
 # Pinned strictly: Ktor 3.6 pulls OkHttp 5.5, whose Android AAR needs compileSdk 37 (AGP 8.13 tops out at 36).

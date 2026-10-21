@@ -99,7 +99,7 @@ interface ScreenshotDao {
 
 @Dao
 interface AccountDao {
-    @Query("SELECT * FROM accounts ORDER BY platform")
+    @Query("SELECT * FROM accounts")
     fun observeAll(): Flow<List<AccountEntity>>
 
     @Query("SELECT * FROM accounts WHERE platform = :platform")

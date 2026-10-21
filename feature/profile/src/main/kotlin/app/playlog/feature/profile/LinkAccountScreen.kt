@@ -108,7 +108,7 @@ fun LinkAccountScreen(
                     val url = step.url
                     when {
                         url != null && step.captureRedirectPrefix != null ->
-                            PrimaryButton(stringResource(R.string.link_step_sign_in), onClick = { webStep = step }, loading = state.isSubmitting)
+                            PrimaryButton(stringResource(app.playlog.core.ui.R.string.link_step_sign_in), onClick = { webStep = step }, loading = state.isSubmitting)
                         url != null ->
                             SecondaryButton(
                                 stringResource(app.playlog.core.ui.R.string.link_step_open),

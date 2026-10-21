@@ -1,6 +1,7 @@
 package app.playlog.di
 
 import android.content.Context
+import android.util.Log
 import app.playlog.BuildConfig
 import app.playlog.core.common.AppClock
 import app.playlog.core.common.SystemAppClock
@@ -11,8 +12,10 @@ import app.playlog.core.data.DefaultAccountRepository
 import app.playlog.core.data.DefaultActivityRepository
 import app.playlog.core.data.DefaultDiscoverRepository
 import app.playlog.core.data.DiscoverRepository
+import app.playlog.core.data.DefaultGameMetadataRepository
 import app.playlog.core.data.DefaultLibraryRepository
 import app.playlog.core.data.DefaultScreenshotRepository
+import app.playlog.core.data.GameMetadataRepository
 import app.playlog.core.data.LibraryRepository
 import app.playlog.core.data.LibraryStore
 import app.playlog.core.data.ScreenshotRepository
@@ -27,6 +30,8 @@ import app.playlog.core.database.RoomLibraryStore
 import app.playlog.core.network.HttpClientFactory
 import app.playlog.platform.api.CredentialStore
 import app.playlog.platform.api.GamePlatformSource
+import app.playlog.platform.metadata.FileMetadataStore
+import app.playlog.platform.metadata.OnlineMetadataSource
 import app.playlog.platform.nintendo.NintendoSource
 import app.playlog.platform.playstation.PlayStationSource
 import app.playlog.platform.steam.SteamSource
@@ -38,6 +43,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import java.io.File
 import javax.inject.Singleton
 
 @Module
@@ -103,6 +109,17 @@ object AppModule {
     @Provides
     @Singleton
     fun screenshotRepository(store: LibraryStore): ScreenshotRepository = DefaultScreenshotRepository(store)
+
+    /** HowLongToBeat and Steam store facts for the game page, cached as files in the cache dir. */
+    @Provides
+    @Singleton
+    fun gameMetadataRepository(@ApplicationContext context: Context, client: HttpClient, clock: AppClock): GameMetadataRepository =
+        DefaultGameMetadataRepository(
+            source = OnlineMetadataSource(client, clock),
+            store = FileMetadataStore(File(context.cacheDir, "metadata")),
+            clock = clock,
+            onError = { query, e -> Log.w("Playlog", "Metadata lookup failed for ${query.title}", e) },
+        )
 
     @Provides
     @Singleton

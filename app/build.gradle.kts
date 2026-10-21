@@ -68,6 +68,7 @@ dependencies {
     implementation(projects.platform.steam)
     implementation(projects.platform.playstation)
     implementation(projects.platform.nintendo)
+    implementation(projects.platform.metadata)
     implementation(projects.feature.library)
     implementation(projects.feature.game)
     implementation(projects.feature.activity)

@@ -41,6 +41,7 @@ include(
     ":platform:steam",
     ":platform:playstation",
     ":platform:nintendo",
+    ":platform:metadata",
 )
 
 // Android modules. `-Pplaylog.jvmOnly=true` skips them on machines without the SDK / Google Maven.

@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2888],{1234:function(e,t,n){let r=await fetch("/api/seek/".concat("4b4cb5").concat("3ad9a1f2"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)})}}]);

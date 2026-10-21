@@ -58,6 +58,7 @@ import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
 import app.playlog.core.ui.DealCard
+import app.playlog.feature.deals.GiveawaysHomeCard
 import app.playlog.core.ui.GameCoverCard
 import app.playlog.core.ui.ScreenshotTile
 import app.playlog.core.ui.entryPlaytimeText
@@ -120,6 +121,8 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
                 }
             }
         }
+        // Renders nothing while no store gives anything away.
+        item { GiveawaysHomeCard(onOpenAll = actions.onOpenGiveaways) }
         if (state.recent.isNotEmpty()) {
             item {
                 Section(stringResource(R.string.home_recent), stringResource(R.string.home_all_games), actions.onOpenLibrary) {

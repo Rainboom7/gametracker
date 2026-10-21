@@ -136,6 +136,7 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
                 onConnect = { navController.navigateToTab(TopLevel.PROFILE) },
                 onAsk = { navController.navigateToAsk() },
                 onOpenRecap = { navController.navigateToRecap() },
+                onOpenGiveaways = navController::navigateToGiveaways,
             ),
         )
         askScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)

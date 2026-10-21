@@ -118,6 +118,8 @@ flowchart TD
 
 **Нужно:** Android Studio (актуальная стабильная), JDK 17, Android SDK 36.
 
+> **JDK для Gradle: 17 или 21, не 25.** Gradle 8.14.3 (его требует AGP 8.13) запускается только на Java до 24. Если Android Studio пишет «Incompatible Gradle JVM version … JVM version 25», откройте *Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK* и выберите встроенный **JetBrains Runtime 21** (*Embedded JDK*). Для `./gradlew` в терминале `JAVA_HOME` тоже должен указывать на JDK 17 или 21.
+
 ```bash
 git clone https://github.com/Rainboom7/gametracker.git
 cd gametracker

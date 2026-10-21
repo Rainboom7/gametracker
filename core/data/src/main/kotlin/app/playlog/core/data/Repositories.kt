@@ -9,6 +9,7 @@ import app.playlog.core.model.GameId
 import app.playlog.core.model.GameStatus
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
+import app.playlog.core.model.PlayInsights
 import app.playlog.core.model.ProfileStats
 import app.playlog.core.model.Screenshot
 import app.playlog.platform.api.GamePlatformSource
@@ -43,6 +44,9 @@ interface ActivityRepository {
     fun observeEntryDays(entry: LibraryEntry, days: Int = 14): Flow<List<ActivityBucket>>
 
     fun observeStreak(): Flow<Int>
+
+    /** The last 53 weeks: calendar heatmap, weekday rhythm and records. */
+    fun observeInsights(): Flow<PlayInsights>
 }
 
 interface ScreenshotRepository {
@@ -133,6 +137,11 @@ class DefaultActivityRepository(
     override fun observeStreak(): Flow<Int> {
         val today = today()
         return store.observeDaily(today.minusDays(STREAK_WINDOW_DAYS), today).map { ActivityCalculator.currentStreak(it, today) }
+    }
+
+    override fun observeInsights(): Flow<PlayInsights> {
+        val today = today()
+        return store.observeDaily(PlayInsightsCalculator.start(today), today).map { PlayInsightsCalculator.insights(it, today) }
     }
 
     private fun today() = LocalDate.ofInstant(clock.now(), clock.zone())

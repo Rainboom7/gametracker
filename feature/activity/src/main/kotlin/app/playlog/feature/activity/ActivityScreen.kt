@@ -68,7 +68,8 @@ import java.util.Locale
 @Composable
 fun ActivityRoute(onOpenGame: (GameId) -> Unit, viewModel: ActivityViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    ActivityScreen(state, viewModel::selectPeriod, viewModel::previous, viewModel::next, onOpenGame)
+    val extras by viewModel.extras.collectAsStateWithLifecycle()
+    ActivityScreen(state, viewModel::selectPeriod, viewModel::previous, viewModel::next, onOpenGame, extras)
 }
 
 @Composable
@@ -78,6 +79,7 @@ fun ActivityScreen(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onOpenGame: (GameId) -> Unit,
+    extras: ActivityExtras = ActivityExtras(),
 ) {
     val content = state as? ActivityUiState.Content
     Column(
@@ -113,6 +115,9 @@ fun ActivityScreen(
                 }
             }
         }
+        extras.insights?.let { YearCalendar(it) }
+        extras.insights?.let { WeekdayRhythm(it) }
+        if (extras.taste.isNotEmpty()) TasteChart(extras.taste)
         Spacer(Modifier.height(Spacing.lg))
     }
 }

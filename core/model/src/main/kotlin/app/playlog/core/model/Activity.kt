@@ -1,5 +1,6 @@
 package app.playlog.core.model
 
+import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -57,6 +58,17 @@ data class ActivitySummary(
 )
 
 data class DayTotal(val date: LocalDate, val playtime: Duration)
+
+/** A year of play at a glance: the calendar heatmap, weekday rhythm and records. */
+data class PlayInsights(
+    /** Whole weeks, Monday first, ending with the current week; days after today are absent. */
+    val days: List<DayTotal>,
+    /** Average playtime per weekday over [days], counting days without play as zero. */
+    val weekdayAverage: Map<DayOfWeek, Duration>,
+    val activeDays: Int,
+    val longestStreak: Int,
+    val total: Duration,
+)
 
 data class ProfileStats(
     val gameCount: Int,

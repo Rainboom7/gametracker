@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import app.playlog.core.common.AppClock
 import app.playlog.core.data.ActivityCalculator
 import app.playlog.core.data.ActivityRepository
+import app.playlog.core.data.DealsRepository
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
+import app.playlog.core.model.DealsState
+import app.playlog.core.model.PlayInsights
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,10 +18,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import javax.inject.Inject
+
+/** Period-independent charts: the year calendar and the taste profile from deals. */
+data class ActivityExtras(val insights: PlayInsights? = null, val taste: List<Pair<String, Double>> = emptyList())
 
 data class ActivitySelection(val period: ActivityPeriod, val anchor: LocalDate)
 
@@ -32,6 +39,7 @@ sealed interface ActivityUiState {
 class ActivityViewModel @Inject constructor(
     private val activity: ActivityRepository,
     private val clock: AppClock,
+    deals: DealsRepository,
 ) : ViewModel() {
     private val today get() = LocalDate.ofInstant(clock.now(), clock.zone())
     private val selection = MutableStateFlow(ActivitySelection(ActivityPeriod.WEEK, today))
@@ -43,6 +51,13 @@ class ActivityViewModel @Inject constructor(
         val currentEnd = ActivityCalculator.range(s.period, today).endInclusive
         ActivityUiState.Content(summary, canGoForward = summary.endInclusive.isBefore(currentEnd), streakDays = streak)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityUiState.Loading)
+
+    val extras: StateFlow<ActivityExtras> = combine(
+        activity.observeInsights(),
+        deals.observe().map { (it as? DealsState.Ready)?.taste.orEmpty() }.onStart { emit(emptyMap()) },
+    ) { insights, taste ->
+        ActivityExtras(insights, taste.entries.sortedByDescending { it.value }.take(TasteTags).map { it.key to it.value })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ActivityExtras())
 
     fun selectPeriod(period: ActivityPeriod) = selection.update { ActivitySelection(period, today) }
 
@@ -57,3 +72,5 @@ class ActivityViewModel @Inject constructor(
         if (next.isAfter(today)) s.copy(anchor = today) else s.copy(anchor = next)
     }
 }
+
+private const val TasteTags = 8

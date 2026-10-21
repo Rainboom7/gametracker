@@ -23,4 +23,14 @@
     <string name="activity_share">%1$d%% времени</string>
     <string name="activity_game_of_period">Игра периода</string>
     <string name="activity_game_share">№1 · %1$d%% ВРЕМЕНИ</string>
+    <string name="activity_calendar">Год в играх</string>
+    <string name="activity_calendar_caption">%1$d активных дней · лучшая серия %2$d дн. · %3$s за год</string>
+    <string name="activity_calendar_description">Календарь игровой активности за год: %1$d активных дней</string>
+    <string name="activity_calendar_less">меньше</string>
+    <string name="activity_calendar_more">больше</string>
+    <string name="activity_weekdays">Ритм недели</string>
+    <string name="activity_weekdays_caption">Больше всего играешь: %1$s, в среднем %2$s</string>
+    <string name="activity_weekdays_description">Среднее игровое время по дням недели</string>
+    <string name="activity_taste">Твой вкус</string>
+    <string name="activity_taste_caption">Теги Steam, которые чаще всего встречаются в играх, где у тебя больше всего часов</string>
 </resources>

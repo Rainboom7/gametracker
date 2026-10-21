@@ -1,5 +1,6 @@
 package app.playlog.feature.home
 
+import app.playlog.core.data.UserSettings
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
 import app.playlog.core.model.DealPick
@@ -99,5 +100,14 @@ class HomeUiStateTest {
         assertEquals(DayPart.DAY, HomeUiState.dayPart(LocalTime.of(12, 0)))
         assertEquals(DayPart.EVENING, HomeUiState.dayPart(LocalTime.of(22, 59)))
         assertEquals(DayPart.NIGHT, HomeUiState.dayPart(LocalTime.of(2, 0)))
+    }
+
+    @Test
+    fun `weekly goal is off at zero hours and measures progress in minutes`() {
+        assertEquals(null, WeeklyGoal.of(UserSettings()))
+        val goal = WeeklyGoal.of(UserSettings(weeklyGoalHours = 10, weeklyGoalIsLimit = true))!!
+        assertTrue(goal.isLimit)
+        assertEquals(0.75f, goal.progress(Duration.ofMinutes(450)), 0.0001f)
+        assertEquals(1.2f, goal.progress(Duration.ofHours(12)), 0.0001f)
     }
 }

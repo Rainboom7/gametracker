@@ -8,6 +8,8 @@ import app.playlog.core.data.DealsRepository
 import app.playlog.core.data.DiscoverRepository
 import app.playlog.core.data.LibraryRepository
 import app.playlog.core.data.ScreenshotRepository
+import app.playlog.core.data.UserSettings
+import app.playlog.core.data.UserSettingsRepository
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
 import app.playlog.core.model.DealPick
@@ -22,12 +24,26 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
 
 enum class DayPart { MORNING, DAY, EVENING, NIGHT }
+
+/** Weekly playtime target set on Home: something to reach, or with [isLimit] a ceiling to stay under. */
+data class WeeklyGoal(val hours: Int, val isLimit: Boolean) {
+    /** Fraction of the target played so far; above 1 when it is passed. */
+    fun progress(played: Duration): Float = played.toMinutes().toFloat() / (hours * MINUTES_PER_HOUR)
+
+    companion object {
+        private const val MINUTES_PER_HOUR = 60
+
+        fun of(settings: UserSettings): WeeklyGoal? =
+            settings.weeklyGoalHours.takeIf { it > 0 }?.let { WeeklyGoal(it, settings.weeklyGoalIsLimit) }
+    }
+}
 
 /** A recent capture with the title it belongs to, when the game is in the library. */
 data class HomeShot(val screenshot: Screenshot, val title: String?)
@@ -50,6 +66,7 @@ sealed interface HomeUiState {
         val screenshots: List<HomeShot>,
         /** Games on sale that match what the user plays; empty until the stores answer. */
         val deals: List<DealPick> = emptyList(),
+        val goal: WeeklyGoal? = null,
     ) : HomeUiState
 
     companion object {
@@ -115,6 +132,7 @@ class HomeViewModel @Inject constructor(
     discover: DiscoverRepository,
     screenshots: ScreenshotRepository,
     deals: DealsRepository,
+    private val settings: UserSettingsRepository,
     private val clock: AppClock,
 ) : ViewModel() {
     private val today: LocalDate get() = LocalDate.ofInstant(clock.now(), clock.zone())
@@ -127,10 +145,18 @@ class HomeViewModel @Inject constructor(
         screenshots.observeScreenshots(),
     ) { entries, week, streak, summary, shots -> Sources(entries, week, streak, summary, shots) }
 
-    val uiState: StateFlow<HomeUiState> = combine(sources, deals.observe()) { s, dealsState ->
+    val uiState: StateFlow<HomeUiState> = combine(sources, deals.observe(), settings.settings) { s, dealsState, prefs ->
         val dayPart = HomeUiState.dayPart(clock.now().atZone(clock.zone()).toLocalTime())
-        HomeUiState.build(s.library, s.week, s.streak, s.discover, s.screenshots, dayPart, dealsState)
+        when (val state = HomeUiState.build(s.library, s.week, s.streak, s.discover, s.screenshots, dayPart, dealsState)) {
+            is HomeUiState.Content -> state.copy(goal = WeeklyGoal.of(prefs))
+            else -> state
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState.Loading)
+
+    /** [hours] 0 removes the goal. */
+    fun setGoal(hours: Int, isLimit: Boolean) {
+        viewModelScope.launch { settings.update { it.copy(weeklyGoalHours = hours, weeklyGoalIsLimit = isLimit) } }
+    }
 }
 
 private data class Sources(

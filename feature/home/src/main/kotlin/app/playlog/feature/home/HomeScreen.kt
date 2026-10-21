@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Schedule
@@ -30,6 +29,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,20 +69,25 @@ import java.util.Locale
 @Composable
 fun HomeRoute(actions: HomeActions, viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(state, actions)
+    HomeScreen(state, actions, onSetGoal = viewModel::setGoal)
 }
 
 @Composable
-fun HomeScreen(state: HomeUiState, actions: HomeActions, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    state: HomeUiState,
+    actions: HomeActions,
+    modifier: Modifier = Modifier,
+    onSetGoal: (hours: Int, isLimit: Boolean) -> Unit = { _, _ -> },
+) {
     when (state) {
         HomeUiState.Loading -> HomeSkeleton(modifier)
         is HomeUiState.Empty -> HomeEmpty(state, actions.onConnect, modifier)
-        is HomeUiState.Content -> HomeContent(state, actions, modifier)
+        is HomeUiState.Content -> HomeContent(state, actions, modifier, onSetGoal)
     }
 }
 
 @Composable
-private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifier: Modifier = Modifier) {
+private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifier: Modifier, onSetGoal: (Int, Boolean) -> Unit) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = Spacing.lg),
@@ -97,7 +104,7 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
             item { ContinueHero(entry, onClick = { actions.onOpenGame(entry.primary.id) }) }
         }
         item { StatBubbles(state) }
-        item { WeekCard(state, onClick = actions.onOpenActivity) }
+        item { WeekCard(state, onClick = actions.onOpenActivity, onOpenRecap = actions.onOpenRecap, onSetGoal = onSetGoal) }
         state.topPick?.let { pick ->
             item { PickCard(pick, onClick = { actions.onOpenGame(pick.entry.primary.id) }, onMore = actions.onOpenDiscover) }
         }
@@ -227,9 +234,10 @@ private data class Bubble(
 )
 
 @Composable
-private fun WeekCard(state: HomeUiState.Content, onClick: () -> Unit) {
+private fun WeekCard(state: HomeUiState.Content, onClick: () -> Unit, onOpenRecap: () -> Unit, onSetGoal: (Int, Boolean) -> Unit) {
     val week = state.week
     val locale = Locale.getDefault()
+    var editingGoal by rememberSaveable { mutableStateOf(false) }
     GradientCard(
         accents = listOf(PlaylogColors.Lime, PlaylogColors.Mint),
         onClick = onClick,
@@ -245,7 +253,7 @@ private fun WeekCard(state: HomeUiState.Content, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = PlaylogColors.Lime)
+            GoalBadge(state.goal, week.total, onEdit = { editingGoal = true })
         }
         Spacer(Modifier.height(Spacing.sm))
         DailyBarChart(
@@ -253,6 +261,20 @@ private fun WeekCard(state: HomeUiState.Content, onClick: () -> Unit) {
             contentDescription = stringResource(R.string.home_week_chart_description, formatPlaytime(week.total)),
             labels = week.buckets.map { it.start.dayOfWeek.getDisplayName(TextStyle.SHORT, locale) },
             height = 72.dp,
+        )
+        if (!week.total.isZero) {
+            Spacer(Modifier.height(Spacing.sm))
+            RecapChip(onOpenRecap)
+        }
+    }
+    if (editingGoal) {
+        GoalSheet(
+            current = state.goal,
+            onPick = { hours, isLimit ->
+                onSetGoal(hours, isLimit)
+                editingGoal = false
+            },
+            onDismiss = { editingGoal = false },
         )
     }
 }

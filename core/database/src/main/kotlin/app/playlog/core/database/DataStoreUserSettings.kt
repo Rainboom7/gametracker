@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import app.playlog.core.data.UserSettings
 import app.playlog.core.data.UserSettingsRepository
@@ -27,6 +28,8 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
             prefs[ONBOARDING_FINISHED] = next.onboardingFinished
             prefs[NINTENDO_BANNER_DISMISSED] = next.nintendoImportBannerDismissed
             prefs[LIBRARY_GRID] = next.libraryGrid
+            prefs[WEEKLY_GOAL_HOURS] = next.weeklyGoalHours
+            prefs[WEEKLY_GOAL_IS_LIMIT] = next.weeklyGoalIsLimit
         }
     }
 
@@ -39,6 +42,8 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
             onboardingFinished = this[ONBOARDING_FINISHED] ?: defaults.onboardingFinished,
             nintendoImportBannerDismissed = this[NINTENDO_BANNER_DISMISSED] ?: defaults.nintendoImportBannerDismissed,
             libraryGrid = this[LIBRARY_GRID] ?: defaults.libraryGrid,
+            weeklyGoalHours = this[WEEKLY_GOAL_HOURS] ?: defaults.weeklyGoalHours,
+            weeklyGoalIsLimit = this[WEEKLY_GOAL_IS_LIMIT] ?: defaults.weeklyGoalIsLimit,
         )
     }
 
@@ -49,5 +54,7 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
         val ONBOARDING_FINISHED = booleanPreferencesKey("onboarding_finished")
         val NINTENDO_BANNER_DISMISSED = booleanPreferencesKey("nintendo_banner_dismissed")
         val LIBRARY_GRID = booleanPreferencesKey("library_grid")
+        val WEEKLY_GOAL_HOURS = intPreferencesKey("weekly_goal_hours")
+        val WEEKLY_GOAL_IS_LIMIT = booleanPreferencesKey("weekly_goal_is_limit")
     }
 }

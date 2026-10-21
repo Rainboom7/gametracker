@@ -14,6 +14,10 @@ data class UserSettings(
     val nintendoImportBannerDismissed: Boolean = false,
     /** Library shows a cover grid instead of the list with per-platform sources. */
     val libraryGrid: Boolean = false,
+    /** Weekly playtime target on Home, in hours; 0 means no goal. */
+    val weeklyGoalHours: Int = 0,
+    /** The target is a ceiling to stay under rather than a goal to reach. */
+    val weeklyGoalIsLimit: Boolean = false,
 )
 
 interface UserSettingsRepository {

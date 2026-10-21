@@ -30,4 +30,15 @@
     <string name="home_empty_action">Подключить</string>
     <string name="home_ask">Во что поиграть?</string>
     <string name="home_ask_hint">Например: на двоих на одном экране</string>
+    <string name="home_goal_set">Цель</string>
+    <string name="home_goal_of">из %1$d ч</string>
+    <string name="home_goal_limit_of">лимит %1$d ч</string>
+    <string name="home_goal_title">Неделя в часах</string>
+    <string name="home_goal_mode_goal">Цель</string>
+    <string name="home_goal_mode_limit">Лимит</string>
+    <string name="home_goal_goal_hint">Сколько хочешь наиграть за неделю. Кольцо на главной заполнится, когда дойдёшь.</string>
+    <string name="home_goal_limit_hint">Потолок, за который не хочется выходить. Кольцо станет оранжевым ближе к лимиту и розовым после него.</string>
+    <string name="home_goal_hours">%1$d ч</string>
+    <string name="home_goal_remove">Убрать цель</string>
+    <string name="home_recap">Смотреть историю недели</string>
 </resources>

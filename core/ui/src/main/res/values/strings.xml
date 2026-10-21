@@ -47,7 +47,7 @@
     <string name="link_step_STEAM_MAKE_PROFILE_PUBLIC">Если игры не появятся, откройте настройки приватности профиля и сделайте «Сведения об играх» открытыми.</string>
     <string name="link_step_PSN_SIGN_IN">Войдите в аккаунт PlayStation. Приложение получит токен автоматически.</string>
     <string name="link_step_PSN_OPEN_NPSSO_PAGE">Запасной вариант: войдите на playstation.com в браузере, откройте эту ссылку и скопируйте значение npsso.</string>
-    <string name="link_step_NINTENDO_SIGN_IN">Войдите в Nintendo Account и нажмите «Выбрать этого пользователя».</string>
+    <string name="link_step_NINTENDO_SIGN_IN">Войдите в Nintendo Account и нажмите «Выбрать этого пользователя». Консоль должна быть привязана в приложении Nintendo Switch Parental Controls (ограничения можно не включать).</string>
     <string name="link_step_NINTENDO_COPY_LINK">Если вход открыт в браузере: долгим нажатием на кнопку «Выбрать этого пользователя» скопируйте ссылку и вставьте её ниже.</string>
     <string name="link_step_open">Открыть</string>
     <string name="link_step_sign_in">Войти</string>

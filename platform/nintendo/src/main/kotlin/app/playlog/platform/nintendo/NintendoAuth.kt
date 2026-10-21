@@ -32,6 +32,12 @@ internal data class NintendoCredentials(
     val sessionToken: String,
     val accessToken: String? = null,
     val accessTokenExpiresAt: Long = 0,
+    /** Parental Controls authenticates with the id token, minted together with the access token. */
+    val idToken: String? = null,
+    /** Which [NintendoClientConfig] the session token belongs to; null for tokens from older app versions. */
+    val clientId: String? = null,
+    /** Play history accumulated from Parental Controls, which only keeps the last ~30 days. */
+    val history: Map<String, NintendoTitleHistory> = emptyMap(),
     val userId: String? = null,
     val nickname: String? = null,
     val avatarUrl: String? = null,
@@ -45,7 +51,7 @@ internal class NintendoAuth(
     private val client: HttpClient,
     private val credentials: TypedCredentials<NintendoCredentials>,
     private val clock: AppClock,
-    private val config: NintendoClientConfig = NintendoClientConfig.PLAY_HISTORY,
+    private val config: NintendoClientConfig = NintendoClientConfig.PARENTAL,
     private val accountsBaseUrl: String = "https://accounts.nintendo.com/connect/1.0.0",
     private val usersBaseUrl: String = "https://api.accounts.nintendo.com/2.0.0",
     private val random: SecureRandom = SecureRandom(),
@@ -54,6 +60,7 @@ internal class NintendoAuth(
 
     val redirectUri: String get() = config.redirectUri
     val userAgent: String get() = config.userAgent
+    val clientId: String get() = config.clientId
 
     data class LoginRequest(val url: String, val state: String, val verifier: String)
 
@@ -112,11 +119,20 @@ internal class NintendoAuth(
         }.successBody(Platform.NINTENDO)
     }
 
-    suspend fun accessToken(forceRefresh: Boolean = false): String = mutex.withLock {
+    suspend fun accessToken(forceRefresh: Boolean = false): String = tokens(forceRefresh).accessToken!!
+
+    suspend fun idToken(forceRefresh: Boolean = false): String =
+        tokens(forceRefresh).idToken ?: throw PlatformException.Protocol(Platform.NINTENDO, "Token response has no id_token")
+
+    private suspend fun tokens(forceRefresh: Boolean): NintendoCredentials = mutex.withLock {
         val current = credentials.require()
+        if (current.clientId != config.clientId) {
+            // Signed in through the retired Nintendo Store client: its session token cannot read Parental Controls.
+            throw PlatformException.AuthExpired(Platform.NINTENDO, "Sign in to Nintendo again")
+        }
         val now = clock.now().epochSecond
         if (!forceRefresh && current.accessToken != null && current.accessTokenExpiresAt - 60 > now) {
-            return current.accessToken
+            return current
         }
         val minted = try {
             mintAccessToken(current.sessionToken)
@@ -124,8 +140,9 @@ internal class NintendoAuth(
             // 400 invalid_grant: session token revoked (password change, manual sign-out).
             throw PlatformException.AuthExpired(Platform.NINTENDO, "Session token rejected", e)
         }
-        credentials.write(current.copy(accessToken = minted.accessToken, accessTokenExpiresAt = now + minted.expiresIn))
-        minted.accessToken
+        val updated = current.copy(accessToken = minted.accessToken, idToken = minted.idToken, accessTokenExpiresAt = now + minted.expiresIn)
+        credentials.write(updated)
+        updated
     }
 
     private fun randomToken(bytes: Int): String = ByteArray(bytes).also(random::nextBytes).let(::base64Url)
@@ -138,11 +155,18 @@ internal data class NintendoClientConfig(val clientId: String, val scope: String
     val redirectUri get() = "npf$clientId://auth"
 
     companion object {
-        /** Nintendo Store app: can read `play_histories` (lifetime totals + recent days). */
-        val PLAY_HISTORY = NintendoClientConfig(
-            clientId = "5c38e31cd085304b",
-            scope = "openid user user.mii user.email user.links[].id",
-            userAgent = "com.nintendo.znej/1.13.0 (Android/7.1.2)",
+        /**
+         * Nintendo Switch Parental Controls app (data-sources/SPEC.md §4.3). Replaces the Nintendo Store
+         * client, whose `mypage-api.entry.nintendo.co.jp` play-history host no longer resolves.
+         */
+        val PARENTAL = NintendoClientConfig(
+            clientId = "54789befb391a838",
+            scope = listOf(
+                "openid", "user", "user.mii", "moonUser:administration", "moonDevice:create", "moonOwnedDevice:administration",
+                "moonParentalControlSetting", "moonParentalControlSetting:update", "moonParentalControlSettingState",
+                "moonPairingState", "moonSmartDevice:administration", "moonDailySummary", "moonMonthlySummary",
+            ).joinToString(" "),
+            userAgent = "moon_ANDROID/2.6.0 (com.nintendo.znma; build:700; ANDROID 34)",
         )
     }
 }

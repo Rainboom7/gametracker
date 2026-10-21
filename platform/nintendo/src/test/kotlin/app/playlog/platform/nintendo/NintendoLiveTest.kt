@@ -13,15 +13,15 @@ import kotlin.time.Duration.Companion.minutes
 
 /**
  * Unofficial Nintendo API. The link flow needs a browser, so the test starts from a saved
- * session token (valid ~2 years). Run with `./gradlew :platform:nintendo:liveTest` and NSO_SESSION_TOKEN set.
+ * session token (valid ~2 years) of the Parental Controls client. Run with `./gradlew :platform:nintendo:liveTest` and NSO_SESSION_TOKEN set.
  */
 class NintendoLiveTest {
     @Test
-    fun `session token refreshes and reads play history`() = runTest(timeout = 2.minutes) {
+    fun `session token refreshes and reads parental daily summaries`() = runTest(timeout = 2.minutes) {
         val sessionToken = requireEnv("NSO_SESSION_TOKEN")
         val store = InMemoryCredentialStore()
         TypedCredentials(store, Platform.NINTENDO, NintendoCredentials.serializer())
-            .write(NintendoCredentials(sessionToken = sessionToken))
+            .write(NintendoCredentials(sessionToken = sessionToken, clientId = NintendoClientConfig.PARENTAL.clientId))
         val source = NintendoSource.create(HttpClientFactory.create(CIO.create()), store)
 
         val games = source.fetchLibrary()

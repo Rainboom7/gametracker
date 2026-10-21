@@ -21,14 +21,13 @@ import app.playlog.platform.api.SourceCapability
 import app.playlog.platform.api.TypedCredentials
 import io.ktor.client.HttpClient
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.format.DateTimeParseException
 
 /**
- * Nintendo Switch / Switch 2 play activity. Nintendo exposes no screenshots online, so captures
- * come in through manual import in the app instead.
+ * Nintendo Switch / Switch 2 play activity from the Parental Controls API. It keeps only ~30 days,
+ * so the per-day history is accumulated in the credential store and lifetime totals count from the
+ * first sync (Nintendo offers no other working source of totals). Nintendo exposes no screenshots
+ * online, so captures come in through manual import in the app instead.
  */
 class NintendoSource internal constructor(
     private val api: NintendoApi,
@@ -50,27 +49,73 @@ class NintendoSource internal constructor(
         auth.me(auth.accessToken()).country?.uppercase()
     }.getOrNull()
 
-    override suspend fun fetchLibrary(): List<Game> =
-        api.playHistories().playHistories.map { h ->
-            Game(
-                id = GameId(platform, h.titleId),
-                title = h.titleName,
-                artwork = GameArtwork(coverUrl = h.imageUrl, iconUrl = h.imageUrl),
-                playtime = Duration.ofMinutes(h.totalPlayedMinutes),
-                firstPlayedAt = parseInstant(h.firstPlayedAt),
-                lastPlayedAt = parseInstant(h.lastPlayedAt),
-                devices = setOfNotNull(deviceName(h.deviceType)),
-            )
-        }
+    override suspend fun fetchLibrary(): List<Game> = refreshHistory().mapNotNull { (titleId, h) ->
+        val dates = h.minutesByDate.filterValues { it > 0 }.keys.mapNotNull { runCatching { LocalDate.parse(it) }.getOrNull() }
+        if (dates.isEmpty()) return@mapNotNull null
+        Game(
+            id = GameId(platform, titleId),
+            title = h.title,
+            artwork = GameArtwork(coverUrl = h.imageUrl, iconUrl = h.imageUrl),
+            playtime = Duration.ofMinutes(h.minutesByDate.values.sum()),
+            firstPlayedAt = dates.min().atStartOfDay(clock.zone()).toInstant(),
+            lastPlayedAt = dates.max().atStartOfDay(clock.zone()).toInstant(),
+            devices = setOfNotNull(h.device),
+        )
+    }
 
+    /** Exact daily minutes from the accumulated history; [fetchLibrary] refreshes it earlier in the same sync. */
     override suspend fun fetchDailyPlaytime(from: LocalDate): List<DailyPlaytime> =
-        api.playHistories().recentPlayHistories.flatMap { day ->
-            val date = runCatching { LocalDate.parse(day.playedDate) }.getOrNull() ?: return@flatMap emptyList()
-            if (date.isBefore(from)) return@flatMap emptyList()
-            day.dailyPlayHistories.filter { it.totalPlayedMinutes > 0 }.map {
-                DailyPlaytime(GameId(platform, it.titleId), date, Duration.ofMinutes(it.totalPlayedMinutes))
+        credentials.require().history.flatMap { (titleId, h) ->
+            h.minutesByDate.mapNotNull { (day, minutes) ->
+                val date = runCatching { LocalDate.parse(day) }.getOrNull()
+                if (date == null || date.isBefore(from) || minutes <= 0) null
+                else DailyPlaytime(GameId(platform, titleId), date, Duration.ofMinutes(minutes))
             }
         }
+
+    /**
+     * Merges the API's window into the stored history. Every date the API reports replaces the stored
+     * day entirely (today's `CALCULATING` total grows); older days are kept as they were.
+     */
+    private suspend fun refreshHistory(): Map<String, NintendoTitleHistory> {
+        val devices = api.ownedDevices()
+        if (devices.isEmpty()) throw PlatformException.Protocol(platform, NO_CONSOLE)
+        val coveredDates = mutableSetOf<String>()
+        val window = mutableMapOf<String, MutableMap<String, Long>>()
+        val meta = mutableMapOf<String, NintendoTitleHistory>()
+        for (device in devices) {
+            val deviceName = deviceName(device.device?.platformGeneration)
+            for (day in api.dailySummaries(device.deviceId)) {
+                coveredDates += day.date
+                for (game in day.players.flatMap { it.playedGames }) {
+                    val id = game.meta.applicationId
+                    window.getOrPut(id) { mutableMapOf() }.merge(day.date, game.playingTime, Long::plus)
+                    meta.putIfAbsent(
+                        id,
+                        NintendoTitleHistory(
+                            title = game.meta.title ?: id,
+                            imageUrl = game.meta.imageUri?.let { it.extraLarge ?: it.large ?: it.medium ?: it.small },
+                            device = deviceName,
+                        ),
+                    )
+                }
+            }
+        }
+        val current = credentials.require()
+        val merged = (current.history.keys + window.keys).associateWith { id ->
+            val stored = current.history[id]
+            val days = stored?.minutesByDate.orEmpty().filterKeys { it !in coveredDates } + window[id].orEmpty()
+            val fresh = meta[id]
+            NintendoTitleHistory(
+                title = fresh?.title ?: stored?.title ?: id,
+                imageUrl = fresh?.imageUrl ?: stored?.imageUrl,
+                device = fresh?.device ?: stored?.device,
+                minutesByDate = days.filterValues { it > 0 },
+            )
+        }
+        credentials.write(credentials.require().copy(history = merged))
+        return merged
+    }
 
     override val linker: AccountLinker = object : AccountLinker {
         override suspend fun start(): LinkFlow {
@@ -104,13 +149,18 @@ class NintendoSource internal constructor(
             }
             val access = auth.mintAccessToken(sessionToken)
             val user = auth.me(access.accessToken)
+            val previous = credentials.read()?.takeIf { it.userId == user.id }
             val creds = NintendoCredentials(
                 sessionToken = sessionToken,
                 accessToken = access.accessToken,
                 accessTokenExpiresAt = clock.now().epochSecond + access.expiresIn,
+                idToken = access.idToken,
+                clientId = auth.clientId,
                 userId = user.id,
                 nickname = user.nickname,
                 avatarUrl = user.mii?.imageOrigin,
+                // Relinking the same account keeps the accumulated history.
+                history = previous?.history.orEmpty(),
             )
             credentials.write(creds)
             return creds.toAccount()
@@ -131,26 +181,18 @@ class NintendoSource internal constructor(
     companion object {
         private const val STATE = "state"
         private const val VERIFIER = "verifier"
+        private const val NO_CONSOLE = "No console is paired with the Nintendo Switch Parental Controls app"
 
         fun create(client: HttpClient, credentialStore: CredentialStore, clock: AppClock = SystemAppClock): NintendoSource {
             val credentials = TypedCredentials(credentialStore, Platform.NINTENDO, NintendoCredentials.serializer())
             val auth = NintendoAuth(client, credentials, clock)
-            return NintendoSource(NintendoApi(client, auth), auth, credentials, clock)
+            return NintendoSource(NintendoApi(client, auth, clock::zone), auth, credentials, clock)
         }
 
-        internal fun deviceName(type: String?) = when (type) {
-            "HAC" -> "Switch"
-            "BEE" -> "Switch 2"
+        internal fun deviceName(platformGeneration: String?) = when (platformGeneration) {
+            "P00" -> "Switch"
+            "P01" -> "Switch 2"
             else -> null
-        }
-
-        /** Timestamps come with an offset (`2024-05-01T21:13:00+09:00`). */
-        internal fun parseInstant(value: String?): Instant? = value?.let {
-            try {
-                OffsetDateTime.parse(it).toInstant()
-            } catch (e: DateTimeParseException) {
-                runCatching { Instant.parse(it) }.getOrNull()
-            }
         }
     }
 }

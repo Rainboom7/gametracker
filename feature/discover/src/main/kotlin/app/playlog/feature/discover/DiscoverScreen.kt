@@ -168,7 +168,7 @@ private fun TopPickCard(pick: Pick, onClick: () -> Unit, modifier: Modifier = Mo
         )
         Box(
             Modifier.fillMaxSize().background(
-                Brush.verticalGradient(0.25f to Color.Transparent, 1f to TopPickScrim),
+                Brush.verticalGradient(TopPickScrimStart to Color.Transparent, 1f to TopPickScrim),
             ),
         )
         PlatformBadgeRow(entry.platforms, onImage = true, modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.sm))
@@ -535,3 +535,4 @@ private const val MaxAnniversaries = 5
 private const val TopPickAspect = 16f / 10f
 private const val CoverAspect = 3f / 4f
 private val TopPickScrim = Color(0xF20D0E12)
+private const val TopPickScrimStart = 0.25f

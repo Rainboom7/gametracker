@@ -60,11 +60,7 @@ class PlayStationSourceTest {
                 path.endsWith("/internal/users/$ACCOUNT_ID/profiles") ->
                     respond("""{"onlineId":"atreus","avatars":[{"size":"xl","url":"https://a/atreus.png"}]}""", HttpStatusCode.OK, json)
                 path.endsWith("/users/me/profile2") ->
-                    respond(
-                        """{"profile":{"onlineId":"kratos","accountId":"$ACCOUNT_ID","avatarUrls":[{"size":"s","avatarUrl":"https://a/s.png"},{"size":"xl","avatarUrl":"https://a/xl.png"}]}}""",
-                        HttpStatusCode.OK,
-                        json,
-                    )
+                    respond(legacyProfile, HttpStatusCode.OK, json)
                 path.endsWith("/gamelist/v2/users/me/titles") ->
                     respond(fixture(if (request.url.parameters["offset"] == "0") "played_titles_page1.json" else "played_titles_page2.json"), HttpStatusCode.OK, json)
                 path.endsWith("/trophyTitles") ->
@@ -211,6 +207,11 @@ class PlayStationSourceTest {
             assertEquals(Platform.PLAYSTATION, e.platform)
         }
     }
-}
 
-private const val ACCOUNT_ID = "1234567890123456789"
+    private companion object {
+        const val ACCOUNT_ID = "1234567890123456789"
+
+        val legacyProfile = """{"profile":{"onlineId":"kratos","accountId":"$ACCOUNT_ID","avatarUrls":[""" +
+            """{"size":"s","avatarUrl":"https://a/s.png"},{"size":"xl","avatarUrl":"https://a/xl.png"}]}}"""
+    }
+}

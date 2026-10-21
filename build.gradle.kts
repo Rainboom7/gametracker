@@ -65,6 +65,18 @@ subprojects {
         if (name.endsWith("UnitTest")) exclude("**/*LiveTest*")
     }
 
+    // Hilt 2.58 / Room ship kotlin-metadata-jvm 2.2.x, which reads metadata only up to 2.3.0, but
+    // kotlinx-serialization 1.12 is built with Kotlin 2.4 (metadata 2.4.0). Use the reader that
+    // matches our compiler on every annotation-processor classpath; it reads one version ahead.
+    configurations.matching { it.name.startsWith("ksp") || it.name.startsWith("kapt") }.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+                useVersion(libs.versions.kotlin.get())
+                because("read Kotlin 2.4 metadata from kotlinx-serialization 1.12")
+            }
+        }
+    }
+
     // Experimental Compose APIs are fine for a personal app: opt in module-wide instead of per call
     // site, so a newly used experimental API does not break the build. Unknown markers only warn.
     pluginManager.withPlugin("org.jetbrains.kotlin.plugin.compose") {

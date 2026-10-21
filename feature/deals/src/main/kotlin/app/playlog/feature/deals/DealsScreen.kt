@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Redeem
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
@@ -102,7 +103,7 @@ import app.playlog.core.ui.platformName
 import java.util.Locale
 
 @Composable
-fun DealsRoute(onBack: () -> Unit, viewModel: DealsViewModel = hiltViewModel()) {
+fun DealsRoute(onBack: () -> Unit, onOpenGiveaways: () -> Unit = {}, viewModel: DealsViewModel = hiltViewModel()) {
     val tab by viewModel.tab.collectAsStateWithLifecycle()
     val store by viewModel.store.collectAsStateWithLifecycle()
     val personal by viewModel.personal.collectAsStateWithLifecycle()
@@ -137,6 +138,7 @@ fun DealsRoute(onBack: () -> Unit, viewModel: DealsViewModel = hiltViewModel()) 
         countries = platform?.let(viewModel::countries).orEmpty(),
         actions = DealsActions(
             onBack = onBack,
+            onOpenGiveaways = onOpenGiveaways,
             onSelect = viewModel::select,
             onOpen = viewModel::open,
             onOpenWish = viewModel::openWish,
@@ -166,6 +168,7 @@ fun DealsRoute(onBack: () -> Unit, viewModel: DealsViewModel = hiltViewModel()) 
 /** Everything the screen can ask for, so the composable signature stays readable. */
 class DealsActions(
     val onBack: () -> Unit,
+    val onOpenGiveaways: () -> Unit,
     val onSelect: (DealsTab) -> Unit,
     val onOpen: (DealPick) -> Unit,
     val onOpenWish: (WishlistItem) -> Unit,
@@ -210,6 +213,9 @@ fun DealsScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = actions.onOpenGiveaways) {
+                        Icon(Icons.Default.Redeem, contentDescription = stringResource(R.string.deals_open_giveaways))
+                    }
                     IconButton(onClick = if (tab is DealsTab.Wishlist) actions.onCheckPrices else actions.onRefresh) {
                         Icon(Icons.Default.Refresh, contentDescription = null)
                     }

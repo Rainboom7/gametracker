@@ -18,6 +18,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +44,8 @@ import app.playlog.feature.discover.DiscoverDestination
 import app.playlog.feature.discover.discoverScreen
 import app.playlog.feature.deals.dealsScreen
 import app.playlog.feature.deals.navigateToDeals
+import app.playlog.sync.MainActivityTargets
+import app.playlog.feature.deals.navigateToGiveaways
 import app.playlog.feature.ask.askScreen
 import app.playlog.feature.ask.navigateToAsk
 import app.playlog.feature.game.gameScreen
@@ -75,7 +78,7 @@ private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon:
 }
 
 @Composable
-fun PlaylogApp(mainViewModel: MainViewModel = hiltViewModel()) {
+fun PlaylogApp(open: String? = null, onOpened: () -> Unit = {}, mainViewModel: MainViewModel = hiltViewModel()) {
     val start by mainViewModel.start.collectAsStateWithLifecycle()
     if (start == StartDestination.LOADING) {
         Box(Modifier.fillMaxSize())
@@ -85,6 +88,19 @@ fun PlaylogApp(mainViewModel: MainViewModel = hiltViewModel()) {
     val backStack by navController.currentBackStackEntryAsState()
     val destination = backStack?.destination
     val currentTab = TopLevel.entries.firstOrNull { tab -> destination?.hierarchy?.any { it.hasRoute(tab.routeClass) } == true }
+
+    LaunchedEffect(open) {
+        if (open == null) return@LaunchedEffect
+        when (open) {
+            MainActivityTargets.GIVEAWAYS -> navController.navigateToGiveaways()
+            MainActivityTargets.DEALS -> navController.navigateToDeals()
+            MainActivityTargets.ACTIVITY -> navController.navigateToTab(TopLevel.ACTIVITY)
+            MainActivityTargets.RECAP -> navController.navigateToRecap("WEEK")
+            MainActivityTargets.ASK -> navController.navigateToAsk()
+            MainActivityTargets.ROULETTE, MainActivityTargets.BADGES -> navController.navigateToTab(TopLevel.DISCOVER)
+        }
+        onOpened()
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -124,8 +140,12 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
         )
         askScreen(onBack = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         libraryScreen(onOpenGame = navController::navigateToGame, onConnect = { navController.navigateToTab(TopLevel.PROFILE) })
-        discoverScreen(onOpenGame = navController::navigateToGame, onOpenAllDeals = navController::navigateToDeals)
-        dealsScreen(onBack = { navController.popBackStack() })
+        discoverScreen(
+            onOpenGame = navController::navigateToGame,
+            onOpenAllDeals = navController::navigateToDeals,
+            onOpenGiveaways = navController::navigateToGiveaways,
+        )
+        dealsScreen(onBack = { navController.popBackStack() }, onOpenGiveaways = navController::navigateToGiveaways)
         activityScreen(onOpenGame = navController::navigateToGame, onOpenRecap = { navController.navigateToRecap(it.name) })
         recapScreen(onClose = { navController.popBackStack() }, onOpenGame = navController::navigateToGame)
         screenshotsScreen(

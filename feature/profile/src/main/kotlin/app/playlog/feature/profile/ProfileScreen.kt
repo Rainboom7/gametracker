@@ -51,6 +51,8 @@ fun ProfileRoute(onLink: (Platform) -> Unit, viewModel: ProfileViewModel = hiltV
         onBackgroundSync = viewModel::setBackgroundSync,
         onWifiOnlyMedia = viewModel::setWifiOnlyMedia,
         onWeeklySummary = viewModel::setWeeklySummary,
+        onDealAlerts = viewModel::setDealAlerts,
+        onBadgeAlerts = viewModel::setBadgeAlerts,
     )
 }
 
@@ -64,6 +66,8 @@ fun ProfileScreen(
     onBackgroundSync: (Boolean) -> Unit,
     onWifiOnlyMedia: (Boolean) -> Unit,
     onWeeklySummary: (Boolean) -> Unit,
+    onDealAlerts: (Boolean) -> Unit = {},
+    onBadgeAlerts: (Boolean) -> Unit = {},
 ) {
     var unlinkTarget by remember { mutableStateOf<Platform?>(null) }
     Column(
@@ -115,6 +119,13 @@ fun ProfileScreen(
                 onWeeklySummary,
                 subtitle = stringResource(R.string.profile_weekly_summary_hint),
             )
+            SettingSwitchRow(
+                stringResource(R.string.profile_deal_alerts),
+                state.settings.dealAlerts,
+                onDealAlerts,
+                subtitle = stringResource(R.string.profile_deal_alerts_hint),
+            )
+            SettingSwitchRow(stringResource(R.string.profile_badge_alerts), state.settings.badgeAlerts, onBadgeAlerts)
         }
         Spacer(Modifier.height(Spacing.lg))
     }

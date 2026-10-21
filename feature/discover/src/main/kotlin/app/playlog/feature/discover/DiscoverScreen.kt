@@ -83,10 +83,16 @@ import app.playlog.core.ui.DealDetailSheet
 import app.playlog.core.ui.entryPlaytimeText
 import app.playlog.core.ui.formatPlaytime
 import app.playlog.core.ui.platformName
+import app.playlog.feature.deals.GiveawaysHomeCard
 import java.time.Duration
 
 @Composable
-fun DiscoverRoute(onOpenGame: (GameId) -> Unit, onOpenAllDeals: () -> Unit, viewModel: DiscoverViewModel = hiltViewModel()) {
+fun DiscoverRoute(
+    onOpenGame: (GameId) -> Unit,
+    onOpenAllDeals: () -> Unit,
+    onOpenGiveaways: () -> Unit = {},
+    viewModel: DiscoverViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val deals by viewModel.deals.collectAsStateWithLifecycle()
     val openDeal by viewModel.openDeal.collectAsStateWithLifecycle()
@@ -99,6 +105,7 @@ fun DiscoverRoute(onOpenGame: (GameId) -> Unit, onOpenAllDeals: () -> Unit, view
         onOpenDeal = viewModel::openDeal,
         onRefreshDeals = viewModel::refreshDeals,
         onOpenAllDeals = onOpenAllDeals,
+        giveaways = { GiveawaysHomeCard(onOpenAll = onOpenGiveaways) },
     )
     openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
@@ -113,6 +120,7 @@ fun DiscoverScreen(
     onOpenDeal: (DealPick) -> Unit = {},
     onRefreshDeals: () -> Unit = {},
     onOpenAllDeals: () -> Unit = {},
+    giveaways: @Composable () -> Unit = {},
 ) {
     val content = state as? DiscoverUiState.Content
     val summary = content?.summary
@@ -148,6 +156,7 @@ fun DiscoverScreen(
                     item(key = "top") { TopPickCard(pick, onClick = { onOpenGame(pick.entry.primary.id) }, Modifier.padding(horizontal = Spacing.lg)) }
                 }
                 item(key = "deals") { DealsShelf(deals, onOpen = onOpenDeal, onRefresh = onRefreshDeals, onOpenAll = onOpenAllDeals) }
+                item(key = "giveaways") { giveaways() }
                 item(key = "roulette") {
                     RouletteCard(
                         state = content?.roulette ?: RouletteState(),

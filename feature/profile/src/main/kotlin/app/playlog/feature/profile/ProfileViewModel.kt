@@ -69,6 +69,14 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch { settingsRepository.update { it.copy(weeklySummary = enabled) } }
     }
 
+    fun setDealAlerts(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.update { it.copy(dealAlerts = enabled) } }
+    }
+
+    fun setBadgeAlerts(enabled: Boolean) {
+        viewModelScope.launch { settingsRepository.update { it.copy(badgeAlerts = enabled) } }
+    }
+
     fun finishOnboarding() {
         viewModelScope.launch { settingsRepository.update { it.copy(onboardingFinished = true) } }
     }

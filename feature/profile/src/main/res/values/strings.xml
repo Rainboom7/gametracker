@@ -13,6 +13,9 @@
     <string name="profile_wifi_media">Скриншоты только по Wi‑Fi</string>
     <string name="profile_weekly_summary">Итоги недели</string>
     <string name="profile_weekly_summary_hint">Уведомление по воскресеньям</string>
+    <string name="profile_deal_alerts">Скидки и раздачи</string>
+    <string name="profile_deal_alerts_hint">Игра из вишлиста подешевела или вышла, новая бесплатная игра</string>
+    <string name="profile_badge_alerts">Новые значки</string>
     <string name="profile_unlink">Отключить</string>
     <string name="profile_unlink_title">Отключить %1$s?</string>
     <string name="profile_unlink_body">Ключи будут удалены с устройства. Историю игр можно оставить или удалить.</string>

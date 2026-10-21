@@ -25,6 +25,8 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
             prefs[BACKGROUND_SYNC] = next.backgroundSync
             prefs[WIFI_ONLY_MEDIA] = next.wifiOnlyMedia
             prefs[WEEKLY_SUMMARY] = next.weeklySummary
+            prefs[DEAL_ALERTS] = next.dealAlerts
+            prefs[BADGE_ALERTS] = next.badgeAlerts
             prefs[ONBOARDING_FINISHED] = next.onboardingFinished
             prefs[NINTENDO_BANNER_DISMISSED] = next.nintendoImportBannerDismissed
             prefs[LIBRARY_GRID] = next.libraryGrid
@@ -39,6 +41,8 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
             backgroundSync = this[BACKGROUND_SYNC] ?: defaults.backgroundSync,
             wifiOnlyMedia = this[WIFI_ONLY_MEDIA] ?: defaults.wifiOnlyMedia,
             weeklySummary = this[WEEKLY_SUMMARY] ?: defaults.weeklySummary,
+            dealAlerts = this[DEAL_ALERTS] ?: defaults.dealAlerts,
+            badgeAlerts = this[BADGE_ALERTS] ?: defaults.badgeAlerts,
             onboardingFinished = this[ONBOARDING_FINISHED] ?: defaults.onboardingFinished,
             nintendoImportBannerDismissed = this[NINTENDO_BANNER_DISMISSED] ?: defaults.nintendoImportBannerDismissed,
             libraryGrid = this[LIBRARY_GRID] ?: defaults.libraryGrid,
@@ -51,6 +55,8 @@ class DataStoreUserSettings(context: Context) : UserSettingsRepository {
         val BACKGROUND_SYNC = booleanPreferencesKey("background_sync")
         val WIFI_ONLY_MEDIA = booleanPreferencesKey("wifi_only_media")
         val WEEKLY_SUMMARY = booleanPreferencesKey("weekly_summary")
+        val DEAL_ALERTS = booleanPreferencesKey("deal_alerts")
+        val BADGE_ALERTS = booleanPreferencesKey("badge_alerts")
         val ONBOARDING_FINISHED = booleanPreferencesKey("onboarding_finished")
         val NINTENDO_BANNER_DISMISSED = booleanPreferencesKey("nintendo_banner_dismissed")
         val LIBRARY_GRID = booleanPreferencesKey("library_grid")

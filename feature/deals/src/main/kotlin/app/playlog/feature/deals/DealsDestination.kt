@@ -10,6 +10,13 @@ data object DealsDestination
 
 fun NavController.navigateToDeals() = navigate(DealsDestination) { launchSingleTop = true }
 
-fun NavGraphBuilder.dealsScreen(onBack: () -> Unit) {
-    composable<DealsDestination> { DealsRoute(onBack = onBack) }
+@Serializable
+data object GiveawaysDestination
+
+fun NavController.navigateToGiveaways() = navigate(GiveawaysDestination) { launchSingleTop = true }
+
+/** Registers both the deals screen and the giveaways screen it links to. */
+fun NavGraphBuilder.dealsScreen(onBack: () -> Unit, onOpenGiveaways: () -> Unit = {}) {
+    composable<DealsDestination> { DealsRoute(onBack = onBack, onOpenGiveaways = onOpenGiveaways) }
+    composable<GiveawaysDestination> { GiveawaysRoute(onBack = onBack) }
 }

@@ -17,7 +17,9 @@ import app.playlog.core.data.DealsRepository
 import app.playlog.core.data.DefaultStoreDealsRepository
 import app.playlog.core.data.StoreDealsRepository
 import app.playlog.core.data.DefaultDealsRepository
+import app.playlog.core.data.DefaultGiveawaysRepository
 import app.playlog.core.data.DefaultWishlistRepository
+import app.playlog.core.data.GiveawaysRepository
 import app.playlog.core.data.PriceHistory
 import app.playlog.core.data.WishlistRepository
 import app.playlog.core.data.DefaultGameMetadataRepository
@@ -41,7 +43,9 @@ import app.playlog.platform.api.CredentialStore
 import app.playlog.platform.api.GamePlatformSource
 import app.playlog.platform.deals.CheapSharkPriceHistory
 import app.playlog.platform.deals.DealsDiskCache
+import app.playlog.platform.deals.FileGiveawaysStore
 import app.playlog.platform.deals.FileWishlistStore
+import app.playlog.platform.deals.OnlineGiveawaysSource
 import app.playlog.platform.deals.FileDealsRegionStore
 import app.playlog.platform.deals.NintendoStoreDeals
 import app.playlog.platform.deals.PlayStationStoreDeals
@@ -188,6 +192,17 @@ object AppModule {
             library = library,
             deals = deals,
             stores = stores,
+        )
+
+    @Provides
+    @Singleton
+    fun giveawaysRepository(@ApplicationContext context: Context, client: HttpClient, library: LibraryRepository, clock: AppClock): GiveawaysRepository =
+        DefaultGiveawaysRepository(
+            source = OnlineGiveawaysSource(client, country = { java.util.Locale.getDefault().country }, log = DealsLog),
+            store = FileGiveawaysStore(File(context.filesDir, "giveaways.json")),
+            library = library,
+            clock = clock,
+            onError = { Log.w("Playlog/deals", "Giveaways refresh failed", it) },
         )
 
     @Provides

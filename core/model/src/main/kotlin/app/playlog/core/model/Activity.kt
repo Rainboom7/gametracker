@@ -48,7 +48,15 @@ data class ActivitySummary(
     val buckets: List<ActivityBucket>,
     val perPlatform: Map<Platform, Duration>,
     val topGames: List<TopGame>,
+    /** Distinct titles (merged across platforms) played in the period. */
+    val gamesPlayed: Int = 0,
+    /** Days in the period with any playtime. */
+    val activeDays: Int = 0,
+    /** The day with the most playtime, null for an empty period. */
+    val bestDay: DayTotal? = null,
 )
+
+data class DayTotal(val date: LocalDate, val playtime: Duration)
 
 data class ProfileStats(
     val gameCount: Int,

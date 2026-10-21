@@ -2,6 +2,7 @@ package app.playlog.core.data
 
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.DailyPlaytime
+import app.playlog.core.model.DayTotal
 import app.playlog.core.model.Game
 import app.playlog.core.model.GameId
 import app.playlog.core.model.LibraryEntry
@@ -41,6 +42,23 @@ class ActivityCalculatorTest {
         assertEquals(Duration.ofMinutes(120), s.previousTotal)
         assertEquals(Duration.ofMinutes(75), s.buckets[1].total)
         assertEquals(Duration.ofMinutes(30), s.buckets[1].perPlatform[Platform.NINTENDO])
+    }
+
+    @Test
+    fun weekCountsTitlesActiveDaysAndBestDay() {
+        val s = ActivityCalculator.summarize(ActivityPeriod.WEEK, LocalDate.parse("2025-10-23"), daily, entries)
+
+        assertEquals(2, s.gamesPlayed) // Hades on two platforms counts once
+        assertEquals(3, s.activeDays)
+        assertEquals(DayTotal(LocalDate.parse("2025-10-21"), Duration.ofMinutes(75)), s.bestDay)
+    }
+
+    @Test
+    fun emptyPeriodHasNoBestDay() {
+        val s = ActivityCalculator.summarize(ActivityPeriod.WEEK, LocalDate.parse("2025-11-05"), daily, entries)
+
+        assertEquals(0, s.gamesPlayed)
+        assertEquals(null, s.bestDay)
     }
 
     @Test

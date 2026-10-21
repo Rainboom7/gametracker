@@ -4,6 +4,7 @@ import app.playlog.core.model.ActivityBucket
 import app.playlog.core.model.ActivityPeriod
 import app.playlog.core.model.ActivitySummary
 import app.playlog.core.model.DailyPlaytime
+import app.playlog.core.model.DayTotal
 import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
 import app.playlog.core.model.TopGame
@@ -50,6 +51,8 @@ object ActivityCalculator {
             ActivityBucket(bucket.start, bucket.endInclusive, perPlatform(inRange.filter { it.date in bucket }))
         }
         val total = inRange.sum()
+        val perDay = inRange.groupBy { it.date }.mapValues { (_, rows) -> rows.sum() }.filterValues { !it.isZero }
+        val entryKeyByGame = entries.flatMap { e -> e.games.map { it.id to e.key } }.toMap()
         return ActivitySummary(
             period = period,
             start = range.start,
@@ -59,6 +62,9 @@ object ActivityCalculator {
             buckets = buckets,
             perPlatform = perPlatform(inRange),
             topGames = topGames(inRange, entries, total, topCount),
+            gamesPlayed = inRange.filter { !it.playtime.isZero }.mapTo(HashSet()) { entryKeyByGame[it.gameId] ?: it.gameId.encode() }.size,
+            activeDays = perDay.size,
+            bestDay = perDay.maxByOrNull { it.value }?.let { DayTotal(it.key, it.value) },
         )
     }
 

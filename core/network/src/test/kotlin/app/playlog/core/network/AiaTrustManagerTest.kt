@@ -2,6 +2,7 @@ package app.playlog.core.network
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
 import java.security.KeyStore
@@ -59,11 +60,38 @@ class AiaTrustManagerTest {
         AiaTrustManager(rootOnly) { fail("unexpected download $it"); null }.checkServerTrusted(arrayOf(leaf, intermediate), "ECDHE_ECDSA")
     }
 
-    private fun assertRejected(tm: AiaTrustManager) {
+    @Test
+    fun `root missing from the system store is accepted from the bundled roots`() {
+        val systemWithoutRoot = trustManagerFor(listOf(AiaTrustManager.mozillaTrustManager()!!.acceptedIssuers.first()))
+        AiaTrustManager(systemWithoutRoot, extraRoots = rootOnly) { intermediate.encoded }.checkServerTrusted(arrayOf(leaf), "ECDHE_ECDSA")
+    }
+
+    @Test
+    fun `failure names the chain and the AIA url`() {
+        val e = assertRejected(AiaTrustManager(rootOnly, extraRoots = null) { null })
+        assertTrue(e.message, e.message!!.contains("example.test [by Test Intermediate]"))
+        assertTrue(e.message, e.message!!.contains("http://ca.example.test/int.crt"))
+    }
+
+    @Test
+    fun `mozilla root store is bundled`() {
+        val mozilla = AiaTrustManager.mozillaTrustManager()!!
+        assertTrue(mozilla.acceptedIssuers.size > 100)
+        assertTrue(mozilla.acceptedIssuers.any { it.subjectX500Principal.name.contains("SECOM TLS RSA Root CA 2024") })
+    }
+
+    private fun trustManagerFor(roots: List<X509Certificate>): X509TrustManager =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).run {
+            init(KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null); roots.forEachIndexed { i, c -> setCertificateEntry("r$i", c) } })
+            trustManagers.filterIsInstance<X509TrustManager>().first()
+        }
+
+    private fun assertRejected(tm: AiaTrustManager): CertificateException {
         try {
             tm.checkServerTrusted(arrayOf(leaf), "ECDHE_ECDSA")
-            fail("expected CertificateException")
-        } catch (_: CertificateException) {
+        } catch (e: CertificateException) {
+            return e
         }
+        throw AssertionError("expected CertificateException")
     }
 }

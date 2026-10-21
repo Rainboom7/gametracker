@@ -13,14 +13,17 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 /**
- * Wraps the system trust manager and, when a server sends an incomplete chain (no intermediate:
- * Nintendo's `mypage-api.entry.nintendo.co.jp` fails on Android with "Trust anchor for certification
- * path not found"), downloads the missing issuers from the certificates' Authority Information Access
- * `caIssuers` URLs, as desktop browsers do. The completed chain must still validate against the
- * system roots, so this never trusts anything the platform would not.
+ * Wraps the system trust manager for servers the device cannot verify on its own. Nintendo's
+ * `mypage-api.entry.nintendo.co.jp` fails on Android with "Trust anchor for certification path not
+ * found", either because the server omits its intermediate or because it chains to a root newer than
+ * the device's store (recent Japanese roots such as SECOM TLS 2024). So on failure this:
+ * 1. downloads missing issuers from the Authority Information Access `caIssuers` URLs, as browsers do;
+ * 2. retries against the system roots, then against the bundled Mozilla root store ([extraRoots]).
+ * Every path still has to validate against a well-known public root.
  */
 class AiaTrustManager(
     private val system: X509TrustManager = systemTrustManager(),
+    private val extraRoots: X509TrustManager? = mozillaTrustManager(),
     private val download: (String) -> ByteArray? = ::httpGet,
 ) : X509TrustManager {
     private val issuers = ConcurrentHashMap<String, X509Certificate>()
@@ -29,10 +32,20 @@ class AiaTrustManager(
         try {
             system.checkServerTrusted(chain, authType)
         } catch (e: CertificateException) {
-            val completed = complete(chain) ?: throw e
-            system.checkServerTrusted(completed, authType)
+            val completed = complete(chain) ?: chain
+            val verifiers = listOfNotNull(system.takeIf { completed !== chain }, extraRoots)
+            for (verifier in verifiers) {
+                if (runCatching { verifier.checkServerTrusted(completed, authType) }.isSuccess) return
+            }
+            // The message ends up in the sync error on screen: name the chain so a report says what is missing.
+            throw CertificateException("${e.message}; chain: ${describe(completed)}; aia: ${chain.lastOrNull()?.let(::caIssuersUrl)}", e)
         }
     }
+
+    private fun describe(chain: Array<X509Certificate>) =
+        chain.joinToString(" <- ") { "${commonName(it.subjectX500Principal.name)} [by ${commonName(it.issuerX500Principal.name)}]" }
+
+    private fun commonName(dn: String) = dn.split(',').firstOrNull { it.trim().startsWith("CN=") }?.trim()?.removePrefix("CN=") ?: dn
 
     override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = system.checkClientTrusted(chain, authType)
 
@@ -68,6 +81,17 @@ class AiaTrustManager(
         private const val LONG_LENGTH_1 = 0x81
         private const val BYTE_MASK = 0xFF
         private const val LONG_FORM = 0x80
+
+        /** Mozilla's root store (certifi), bundled because Android only gets new roots with OS updates. */
+        fun mozillaTrustManager(): X509TrustManager? = runCatching {
+            val pem = AiaTrustManager::class.java.getResourceAsStream("mozilla-roots.pem")?.use { it.readBytes() } ?: return null
+            val store = KeyStore.getInstance(KeyStore.getDefaultType()).apply { load(null) }
+            CertificateFactory.getInstance("X.509").generateCertificates(ByteArrayInputStream(pem))
+                .forEachIndexed { i, cert -> store.setCertificateEntry("mozilla-$i", cert) }
+            val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+            factory.init(store)
+            factory.trustManagers.filterIsInstance<X509TrustManager>().first()
+        }.getOrNull()
 
         fun systemTrustManager(): X509TrustManager {
             val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())

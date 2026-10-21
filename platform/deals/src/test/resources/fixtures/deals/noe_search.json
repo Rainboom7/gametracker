@@ -1,5 +1,1 @@
-{"response":{"numFound":75,"start":0,"docs":[
- {"type":"GAME","title":"Hollow Knight","nsuid_txt":["70010000003207"],"image_url_h2x1_s":"//fs-prod-cdn.nintendo-europe.com/hk.jpg","excerpt":"Forge your own path.","price_has_discount_b":true},
- {"type":"GAME","title":"No Nsuid"},
- {"type":"GAME","title":"Not Discounted Here","nsuid_txt":["70010000000001"],"image_url_sq_s":"https://x/sq.jpg"}
-]}}
+{"response": {"numFound": 75, "start": 0, "docs": [{"type": "GAME", "title": "Hollow Knight", "nsuid_txt": ["70010000003207"], "image_url_h2x1_s": "//fs-prod-cdn.nintendo-europe.com/hk.jpg", "excerpt": "Forge your own path.", "price_has_discount_b": true, "url": "/Games/Nintendo-Switch-download-software/Hollow-Knight-1234567.html"}, {"type": "GAME", "title": "No Nsuid"}, {"type": "GAME", "title": "Not Discounted Here", "nsuid_txt": ["70010000000001"], "image_url_sq_s": "https://x/sq.jpg"}]}}

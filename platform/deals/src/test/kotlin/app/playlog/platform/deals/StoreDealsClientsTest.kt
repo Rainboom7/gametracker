@@ -99,11 +99,20 @@ class StoreDealsClientsTest {
         assertEquals("32,00 zł", hk.priceText)
         assertEquals("64,00 zł", hk.originalPriceText)
         assertEquals("https://fs-prod-cdn.nintendo-europe.com/hk.jpg", hk.headerUrl)
-        assertEquals("https://ec.nintendo.com/apps/70010000003207/PL", hk.storeUrl)
+        assertEquals("https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/Hollow-Knight-1234567.html", hk.storeUrl)
         assertEquals(Instant.parse("2026-10-29T22:59:59Z"), hk.endsAt)
         assertTrue(page.hasMore)
         assertEquals("/en/select", requests.first().url.encodedPath)
         assertEquals("PL", requests.last().url.parameters["country"])
+    }
+
+    @Test
+    fun `dead eShop links from old wishlist entries become a store search`() {
+        assertEquals(
+            "https://www.nintendo.com/de-de/Search/Search-299117.html?q=Hollow+Knight",
+            NintendoStoreDeals.repairLink("https://ec.nintendo.com/apps/70010000003207/DE", "Hollow Knight"),
+        )
+        assertEquals("https://store.example/x", NintendoStoreDeals.repairLink("https://store.example/x", "X"))
     }
 
     @Test
@@ -120,6 +129,8 @@ class StoreDealsClientsTest {
         assertEquals(75, page.deals.single().discountPercent)
         assertEquals("/1/indexes/store_game_en_us/query", requests.first().url.encodedPath)
         assertTrue(page.deals.single().headerUrl.startsWith("https://assets.nintendo.com/"))
+        // No product path in this hit: the link falls back to the store search instead of a dead eShop URL.
+        assertEquals("https://www.nintendo.com/us/search/#q=Celeste", page.deals.single().storeUrl)
     }
 
     @Test

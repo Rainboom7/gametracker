@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_greeting_morning">Доброе утро</string>
+    <string name="home_greeting_day">Добрый день</string>
+    <string name="home_greeting_evening">Добрый вечер</string>
+    <string name="home_greeting_night">Доброй ночи</string>
+    <string name="home_subtitle">%1$d игр · %2$s всего</string>
+    <string name="home_hero_label">Продолжить игру</string>
+    <string name="home_hero_last">Последний запуск: %1$s</string>
+    <string name="home_stat_streak">дней подряд</string>
+    <string name="home_stat_week">за неделю</string>
+    <string name="home_stat_games">игр за неделю</string>
+    <string name="home_stat_backlog">в бэклоге</string>
+    <string name="home_week_title">Эта неделя</string>
+    <string name="home_week_previous">Прошлая неделя: %1$s</string>
+    <string name="home_week_chart_description">Игровое время за неделю, всего %1$s</string>
+    <string name="home_pick_label">Во что поиграть</string>
+    <string name="home_pick_CONTINUE">Недавно начато и ещё не пройдено</string>
+    <string name="home_pick_ALMOST_DONE">Почти все достижения собраны</string>
+    <string name="home_pick_RETURN_TO">Много часов, но давно не запускалась</string>
+    <string name="home_pick_BACKLOG">Есть в библиотеке, но почти не сыграно</string>
+    <string name="home_more_picks">Все подборки</string>
+    <string name="home_recent">Недавно в игре</string>
+    <string name="home_all_games">Все игры</string>
+    <string name="home_screenshots">Свежие скриншоты</string>
+    <string name="home_all">Все</string>
+    <string name="home_empty_title">Пока пусто</string>
+    <string name="home_empty_body">Подключи Steam, PlayStation или Nintendo, и здесь появятся твои игры, активность и подборки.</string>
+    <string name="home_empty_action">Подключить</string>
+</resources>

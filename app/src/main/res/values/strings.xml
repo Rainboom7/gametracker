@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Playlog</string>
-    <string name="tab_library">Библиотека</string>
+    <string name="tab_home">Главная</string>
+    <string name="tab_library">Игры</string>
     <string name="tab_discover">Подборки</string>
-    <string name="tab_activity">Активность</string>
-    <string name="tab_screenshots">Скриншоты</string>
+    <string name="tab_activity">Итоги</string>
     <string name="tab_profile">Профиль</string>
     <string name="offline_banner">Нет сети, показаны сохранённые данные</string>
     <string name="sync_failed_snackbar">%1$s: синхронизация не удалась</string>

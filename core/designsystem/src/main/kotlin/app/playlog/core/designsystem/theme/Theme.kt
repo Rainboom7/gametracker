@@ -38,6 +38,13 @@ object PlaylogColors {
     val LimeContainer = Color(0xFF24301A)
     val Warning = Color(0xFFFFB86B)
 
+    // Playful accents for home cards, stat bubbles and tab indicators. Lime stays the brand color.
+    val Violet = Color(0xFFB69CFF)
+    val Pink = Color(0xFFFF7EB6)
+    val Sky = Color(0xFF5CD0FF)
+    val Orange = Color(0xFFFFA24C)
+    val Mint = Color(0xFF5EE6B0)
+
     // Light theme (secondary; dark is the default)
     val LightBackground = Color(0xFFF6F7F9)
     val LightSurface = Color(0xFFFFFFFF)

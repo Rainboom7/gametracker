@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -20,8 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -34,12 +36,16 @@ import androidx.navigation.compose.rememberNavController
 import app.playlog.MainViewModel
 import app.playlog.R
 import app.playlog.StartDestination
+import app.playlog.core.designsystem.theme.PlaylogColors
 import app.playlog.feature.activity.ActivityDestination
 import app.playlog.feature.activity.activityScreen
 import app.playlog.feature.discover.DiscoverDestination
 import app.playlog.feature.discover.discoverScreen
 import app.playlog.feature.game.gameScreen
 import app.playlog.feature.game.navigateToGame
+import app.playlog.feature.home.HomeActions
+import app.playlog.feature.home.HomeDestination
+import app.playlog.feature.home.homeScreen
 import app.playlog.feature.library.LibraryDestination
 import app.playlog.feature.library.libraryScreen
 import app.playlog.feature.profile.ConnectDestination
@@ -53,12 +59,13 @@ import app.playlog.feature.screenshots.navigateToScreenshots
 import app.playlog.feature.screenshots.screenshotsScreen
 import kotlin.reflect.KClass
 
-private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon: ImageVector, val label: Int) {
-    LIBRARY(LibraryDestination, LibraryDestination::class, Icons.Default.GridView, R.string.tab_library),
-    DISCOVER(DiscoverDestination, DiscoverDestination::class, Icons.Default.AutoAwesome, R.string.tab_discover),
-    ACTIVITY(ActivityDestination, ActivityDestination::class, Icons.Default.BarChart, R.string.tab_activity),
-    SCREENSHOTS(ScreenshotsDestination(), ScreenshotsDestination::class, Icons.Default.PhotoLibrary, R.string.tab_screenshots),
-    PROFILE(ProfileDestination, ProfileDestination::class, Icons.Default.AccountCircle, R.string.tab_profile),
+/** Bottom tabs. Each has its own accent so the bar reads at a glance; screenshots live on Home and the game page. */
+private enum class TopLevel(val route: Any, val routeClass: KClass<*>, val icon: ImageVector, val label: Int, val accent: Color) {
+    HOME(HomeDestination, HomeDestination::class, Icons.Default.Home, R.string.tab_home, PlaylogColors.Lime),
+    LIBRARY(LibraryDestination, LibraryDestination::class, Icons.Default.GridView, R.string.tab_library, PlaylogColors.Sky),
+    DISCOVER(DiscoverDestination, DiscoverDestination::class, Icons.Default.AutoAwesome, R.string.tab_discover, PlaylogColors.Violet),
+    ACTIVITY(ActivityDestination, ActivityDestination::class, Icons.Default.BarChart, R.string.tab_activity, PlaylogColors.Orange),
+    PROFILE(ProfileDestination, ProfileDestination::class, Icons.Default.AccountCircle, R.string.tab_profile, PlaylogColors.Pink),
 }
 
 @Composable
@@ -79,7 +86,7 @@ fun PlaylogApp(mainViewModel: MainViewModel = hiltViewModel()) {
     ) { padding ->
         PlaylogNavHost(
             navController = navController,
-            startDestination = if (start == StartDestination.ONBOARDING) ConnectDestination else LibraryDestination,
+            startDestination = if (start == StartDestination.ONBOARDING) ConnectDestination else HomeDestination,
             contentPadding = padding,
         )
     }
@@ -91,17 +98,31 @@ private fun PlaylogNavHost(navController: NavHostController, startDestination: A
         connectScreen(
             onLink = navController::navigateToLink,
             onFinished = {
-                navController.navigate(LibraryDestination) {
+                navController.navigate(HomeDestination) {
                     popUpTo(ConnectDestination) { inclusive = true }
                 }
             },
+        )
+        homeScreen(
+            HomeActions(
+                onOpenGame = navController::navigateToGame,
+                onOpenLibrary = { navController.navigateToTab(TopLevel.LIBRARY) },
+                onOpenDiscover = { navController.navigateToTab(TopLevel.DISCOVER) },
+                onOpenActivity = { navController.navigateToTab(TopLevel.ACTIVITY) },
+                onOpenScreenshots = { navController.navigateToScreenshots(null) },
+                onConnect = { navController.navigateToTab(TopLevel.PROFILE) },
+            ),
         )
         libraryScreen(onOpenGame = navController::navigateToGame, onConnect = { navController.navigateToTab(TopLevel.PROFILE) })
         discoverScreen(onOpenGame = navController::navigateToGame)
         activityScreen(onOpenGame = navController::navigateToGame)
         screenshotsScreen(
             onOpenGame = navController::navigateToGame,
-            onClearFilter = { navController.navigateToTab(TopLevel.SCREENSHOTS) },
+            onClearFilter = {
+                navController.navigate(ScreenshotsDestination()) {
+                    popUpTo<ScreenshotsDestination> { inclusive = true }
+                }
+            },
         )
         profileScreen(onLink = navController::navigateToLink)
         gameScreen(
@@ -120,11 +141,20 @@ private fun BottomBar(current: TopLevel, onSelect: (TopLevel) -> Unit) {
                 selected = tab == current,
                 onClick = { onSelect(tab) },
                 icon = { Icon(tab.icon, contentDescription = null) },
-                label = { Text(stringResource(tab.label)) },
+                // One line, never wrapped: long Russian labels used to break onto a second line.
+                label = {
+                    Text(
+                        stringResource(tab.label),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.primary,
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                    indicatorColor = tab.accent,
+                    selectedIconColor = MaterialTheme.colorScheme.background,
+                    selectedTextColor = tab.accent,
                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),

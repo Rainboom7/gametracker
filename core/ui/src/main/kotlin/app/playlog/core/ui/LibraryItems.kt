@@ -22,7 +22,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +40,6 @@ import app.playlog.core.model.LibraryEntry
 import app.playlog.core.model.Platform
 import app.playlog.core.model.Screenshot
 import app.playlog.core.model.TopGame
-import java.time.Duration
 
 /** "No data" for PS4-only titles that report zero time (PSN tracks PS4 playtime poorly). */
 @Composable
@@ -62,7 +60,7 @@ fun GameCoverCard(entry: LibraryEntry, onClick: () -> Unit, modifier: Modifier =
                 placeholderText = entry.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(3f / 4f)
+                    .aspectRatio(CoverAspect)
                     .clip(MaterialTheme.shapes.small),
             )
             PlatformBadgeRow(entry.platforms, onImage = true, modifier = Modifier.padding(6.dp))
@@ -172,33 +170,6 @@ fun sourceName(entry: LibraryEntry, platform: Platform): String {
 }
 
 @Composable
-fun StatusPill(status: GameStatus, modifier: Modifier = Modifier) {
-    val (bg, fg) = when (status) {
-        GameStatus.PLAYING -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.primary
-        GameStatus.COMPLETED -> platformColors(Platform.PLAYSTATION).badgeBg to platformColors(Platform.PLAYSTATION).badgeText
-        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    Text(
-        statusName(status),
-        style = MaterialTheme.typography.labelSmall,
-        color = fg,
-        modifier = modifier.clip(MaterialTheme.shapes.extraSmall).background(bg).padding(horizontal = 7.dp, vertical = 1.dp),
-    )
-}
-
-@Composable
-@ReadOnlyComposable
-fun statusName(status: GameStatus): String = stringResource(
-    when (status) {
-        GameStatus.NONE -> R.string.status_NONE
-        GameStatus.PLAYING -> R.string.status_PLAYING
-        GameStatus.COMPLETED -> R.string.status_COMPLETED
-        GameStatus.SHELVED -> R.string.status_SHELVED
-        GameStatus.DROPPED -> R.string.status_DROPPED
-    },
-)
-
-@Composable
 fun NowPlayingCard(entry: LibraryEntry, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
@@ -271,7 +242,7 @@ fun TopGameRow(rank: Int, game: TopGame, onClick: () -> Unit, modifier: Modifier
             ) {
                 Box(
                     Modifier
-                        .fillMaxWidth(game.share.coerceIn(0.02f, 1f))
+                        .fillMaxWidth(game.share.coerceIn(MinShareWidth, 1f))
                         .height(6.dp)
                         .background(platformColors(platform).accent),
                 )
@@ -290,7 +261,7 @@ fun ScreenshotTile(screenshot: Screenshot, onClick: () -> Unit, modifier: Modifi
     Box(
         modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9f)
+            .aspectRatio(ScreenshotAspect)
             .clip(MaterialTheme.shapes.small)
             .clickable(role = Role.Image, onClick = onClick),
     ) {
@@ -323,5 +294,6 @@ fun platformSplitCaption(entry: LibraryEntry): String {
 fun LibraryEntry.platformShares(): List<Pair<Platform, Float>> =
     platforms.map { it to playtimeOn(it).toMinutes().toFloat() }.filter { it.second > 0f }
 
-fun Duration.toHoursFloat(): Float = toMinutes() / 60f
-
+private const val CoverAspect = 3f / 4f
+private const val ScreenshotAspect = 16f / 9f
+private const val MinShareWidth = 0.02f

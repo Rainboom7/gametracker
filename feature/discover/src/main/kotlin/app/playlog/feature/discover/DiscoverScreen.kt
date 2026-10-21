@@ -156,7 +156,7 @@ private fun TopPickCard(pick: Pick, onClick: () -> Unit, modifier: Modifier = Mo
     Box(
         modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 10f)
+            .aspectRatio(TopPickAspect)
             .clip(MaterialTheme.shapes.large)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
@@ -168,7 +168,7 @@ private fun TopPickCard(pick: Pick, onClick: () -> Unit, modifier: Modifier = Mo
         )
         Box(
             Modifier.fillMaxSize().background(
-                Brush.verticalGradient(0.25f to Color.Transparent, 1f to Color(0xF20D0E12)),
+                Brush.verticalGradient(0.25f to Color.Transparent, 1f to TopPickScrim),
             ),
         )
         PlatformBadgeRow(entry.platforms, onImage = true, modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.sm))
@@ -295,7 +295,7 @@ private fun PickCard(pick: Pick, onClick: () -> Unit) {
                 urls = listOf(entry.coverUrl, entry.fallbackCoverUrl),
                 contentDescription = entry.title,
                 placeholderText = entry.title,
-                modifier = Modifier.fillMaxWidth().aspectRatio(3f / 4f).clip(MaterialTheme.shapes.small),
+                modifier = Modifier.fillMaxWidth().aspectRatio(CoverAspect).clip(MaterialTheme.shapes.small),
             )
             PlatformBadgeRow(entry.platforms, onImage = true, modifier = Modifier.padding(6.dp))
         }
@@ -323,7 +323,7 @@ private fun PickCard(pick: Pick, onClick: () -> Unit) {
 private fun Anniversaries(items: List<Anniversary>, onOpenGame: (GameId) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
         SectionHeader(stringResource(R.string.discover_anniversaries))
-        items.take(MAX_ANNIVERSARIES).forEach { a ->
+        items.take(MaxAnniversaries).forEach { a ->
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -531,4 +531,7 @@ private fun milestoneIcon(kind: MilestoneKind): ImageVector = when (kind) {
     MilestoneKind.STREAK -> Icons.Default.LocalFireDepartment
 }
 
-private const val MAX_ANNIVERSARIES = 5
+private const val MaxAnniversaries = 5
+private const val TopPickAspect = 16f / 10f
+private const val CoverAspect = 3f / 4f
+private val TopPickScrim = Color(0xF20D0E12)

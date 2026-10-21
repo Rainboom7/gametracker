@@ -61,7 +61,7 @@ object LibraryFilter {
         }
 
     /** The most recently played title if it was played within [window] of [now]. */
-    fun nowPlaying(entries: List<LibraryEntry>, now: Instant, window: Duration = Duration.ofHours(24)): LibraryEntry? =
+    fun nowPlaying(entries: List<LibraryEntry>, now: Instant, window: Duration = NowPlayingWindow): LibraryEntry? =
         entries.filter { it.lastPlayedAt?.isAfter(now.minus(window)) == true }.maxByOrNull { it.lastPlayedAt!! }
 }
 
@@ -76,3 +76,5 @@ private fun <K : Comparable<K>> nullsFirst(): Comparator<K?> = Comparator { a, b
         else -> a.compareTo(b)
     }
 }
+
+private val NowPlayingWindow: Duration = Duration.ofHours(24)

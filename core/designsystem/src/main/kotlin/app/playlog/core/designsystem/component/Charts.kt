@@ -28,6 +28,7 @@ import app.playlog.core.model.Platform
 
 private val BarIdle = Color(0xFF4B5163)
 private val BarZero = Color(0xFF23262F)
+private const val BarCornerFraction = 0.25f
 
 /**
  * Day-by-day bars (game detail, 14 days). [highlightIndex] (today) is drawn in the accent color;
@@ -60,7 +61,7 @@ fun DailyBarChart(
                     color = color,
                     topLeft = Offset(i * slot + (slot - barWidth) / 2, size.height - h),
                     size = Size(barWidth, h),
-                    cornerRadius = CornerRadius(barWidth / 4),
+                    cornerRadius = CornerRadius(barWidth * BarCornerFraction),
                 )
             }
         }

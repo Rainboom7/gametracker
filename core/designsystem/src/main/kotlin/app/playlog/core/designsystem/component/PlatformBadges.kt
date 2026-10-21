@@ -34,7 +34,7 @@ fun PlatformBadge(platform: Platform, modifier: Modifier = Modifier, onImage: Bo
     Box(
         modifier = modifier
             .clip(MaterialTheme.shapes.extraSmall)
-            .background(if (onImage) Color(0xD10D0E12) else colors.badgeBg)
+            .background(if (onImage) BadgeOnImageBg else colors.badgeBg)
             .padding(horizontal = 6.dp, vertical = 2.dp)
             .semantics { contentDescription = platform.displayName },
     ) {
@@ -91,7 +91,7 @@ fun PlatformFilterChip(
                 Text(label, style = MaterialTheme.typography.labelMedium)
             }
         },
-        shape = RoundedCornerShape(50),
+        shape = CircleShape,
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.surface,
             labelColor = MaterialTheme.colorScheme.onSurface,
@@ -106,3 +106,5 @@ fun PlatformFilterChip(
         ),
     )
 }
+
+private val BadgeOnImageBg = Color(0xD10D0E12)

@@ -150,7 +150,7 @@ fun ScreenshotsScreen(
                 InfoBanner(
                     text = stringResource(R.string.screenshots_nintendo_banner),
                     background = LocalPlatformPalette.current.nintendo.badgeBg,
-                    border = Color(0xFF4A2529),
+                    border = NintendoBannerBorder,
                     action = { SecondaryButton(stringResource(R.string.screenshots_import), onClick = onImport) },
                     onDismiss = onDismissBanner,
                     dismissLabel = stringResource(R.string.screenshots_dismiss),
@@ -298,3 +298,5 @@ private fun readCapture(context: Context, uri: Uri): PickedCapture {
     }
     return PickedCapture(uri.toString(), takenAt, width, height)
 }
+
+private val NintendoBannerBorder = Color(0xFF4A2529)

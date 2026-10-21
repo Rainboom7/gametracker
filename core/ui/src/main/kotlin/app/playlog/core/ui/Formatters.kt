@@ -6,36 +6,12 @@ import androidx.compose.ui.res.stringResource
 import app.playlog.core.model.Platform
 import app.playlog.platform.api.LinkFieldType
 import app.playlog.platform.api.LinkStepType
-import java.text.DecimalFormat
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.time.temporal.ChronoUnit
-
-/** Pure formatting helpers; composable wrappers below pick the strings. */
-object PlaytimeFormat {
-    private val oneDecimal = DecimalFormat("0.#")
-
-    sealed interface Value {
-        data class Minutes(val minutes: Long) : Value
-        data class Hours(val text: String) : Value
-    }
-
-    /** < 1 h → minutes; < 10 h → one decimal ("4,5"); otherwise whole hours. */
-    fun of(duration: Duration): Value {
-        val minutes = duration.toMinutes()
-        if (minutes < 60) return Value.Minutes(minutes)
-        val hours = minutes / 60.0
-        return Value.Hours(if (hours < 10) oneDecimal.format(hours) else hours.toLong().toString())
-    }
-
-    /** Whole days between [instant] and [today] in [zone]; negative for the future. */
-    fun daysAgo(instant: Instant, today: LocalDate, zone: ZoneId): Long =
-        ChronoUnit.DAYS.between(LocalDate.ofInstant(instant, zone), today)
-}
 
 @Composable
 @ReadOnlyComposable
@@ -52,7 +28,7 @@ fun formatRelativeDate(instant: Instant?, zone: ZoneId = ZoneId.systemDefault())
     return when {
         days <= 0 -> stringResource(R.string.date_today)
         days == 1L -> stringResource(R.string.date_yesterday)
-        days < 30 -> stringResource(R.string.date_days_ago, days.toInt())
+        days < RelativeDaysLimit -> stringResource(R.string.date_days_ago, days.toInt())
         else -> DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(LocalDate.ofInstant(instant, zone))
     }
 }
@@ -92,3 +68,5 @@ fun linkFieldLabel(type: LinkFieldType): String = stringResource(
         LinkFieldType.NINTENDO_REDIRECT_URL -> R.string.link_field_NINTENDO_REDIRECT_URL
     },
 )
+
+private const val RelativeDaysLimit = 30

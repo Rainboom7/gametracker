@@ -57,10 +57,14 @@ data class PlatformColors(
 
 @Immutable
 data class PlatformPalette(
-    val steam: PlatformColors = PlatformColors(Color(0xFF66C0F4), Color(0xFF66C0F4), Color(0xFF16233A)),
-    val playstation: PlatformColors = PlatformColors(Color(0xFF6F97FF), Color(0xFF8FAEFF), Color(0xFF1A2142)),
-    val nintendo: PlatformColors = PlatformColors(Color(0xFFFF6B6B), Color(0xFFFF8A8A), Color(0xFF2A1719)),
+    val steam: PlatformColors = SteamColors,
+    val playstation: PlatformColors = PlayStationColors,
+    val nintendo: PlatformColors = NintendoColors,
 )
+
+private val SteamColors = PlatformColors(Color(0xFF66C0F4), Color(0xFF66C0F4), Color(0xFF16233A))
+private val PlayStationColors = PlatformColors(Color(0xFF6F97FF), Color(0xFF8FAEFF), Color(0xFF1A2142))
+private val NintendoColors = PlatformColors(Color(0xFFFF6B6B), Color(0xFFFF8A8A), Color(0xFF2A1719))
 
 val LocalPlatformPalette = staticCompositionLocalOf { PlatformPalette() }
 

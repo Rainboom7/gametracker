@@ -108,7 +108,10 @@ class LibraryFilterTest {
         )
         val completed = LibraryFilters(status = GameStatus.COMPLETED)
 
-        assertEquals(listOf("Hades", "The Legend of Zelda: Tears of the Kingdom"), LibraryFilter.apply(marked, "", null, LibrarySort.TITLE, completed).map { it.title })
+        assertEquals(
+            listOf("Hades", "The Legend of Zelda: Tears of the Kingdom"),
+            LibraryFilter.apply(marked, "", null, LibrarySort.TITLE, completed).map { it.title },
+        )
         assertEquals(listOf("Hades"), LibraryFilter.apply(marked, "", null, LibrarySort.TITLE, completed.copy(favoritesOnly = true)).map { it.title })
         assertEquals(2, completed.copy(favoritesOnly = true).activeCount)
     }

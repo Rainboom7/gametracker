@@ -169,7 +169,7 @@ private fun GameDetailContent(
                         }
                     }
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(Spacing.sm), contentPadding = PaddingValues(end = Spacing.lg)) {
-                        items(state.screenshots.take(MAX_SCREENSHOTS_IN_ROW), key = { it.id }) { shot ->
+                        items(state.screenshots.take(MaxScreenshotsInRow), key = { it.id }) { shot ->
                             ScreenshotTile(shot, onClick = { onOpenAllScreenshots(entry.primary.id) }, modifier = Modifier.width(240.dp))
                         }
                     }
@@ -183,7 +183,7 @@ private fun GameDetailContent(
 @Composable
 private fun Hero(entry: LibraryEntry, metadata: GameMetadata?, onBack: () -> Unit, onToggleFavorite: () -> Unit) {
     val background = MaterialTheme.colorScheme.background
-    Box(Modifier.fillMaxWidth().height(HERO_HEIGHT)) {
+    Box(Modifier.fillMaxWidth().height(HeroHeight)) {
         GameImage(
             urls = listOf(entry.heroUrl, entry.coverUrl),
             contentDescription = null,
@@ -193,7 +193,7 @@ private fun Hero(entry: LibraryEntry, metadata: GameMetadata?, onBack: () -> Uni
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(HERO_SCRIM_HEIGHT)
+                .height(HeroScrimHeight)
                 .align(Alignment.BottomCenter)
                 .background(Brush.verticalGradient(listOf(Color.Transparent, background.copy(alpha = 0.85f), background))),
         )
@@ -229,7 +229,13 @@ private fun Hero(entry: LibraryEntry, metadata: GameMetadata?, onBack: () -> Uni
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(entry.title, style = MaterialTheme.typography.headlineMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
                 byline(metadata)?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
                 PlatformBadgeRow(entry.platforms)
             }
@@ -245,7 +251,7 @@ private fun byline(metadata: GameMetadata?): String? =
 @Composable
 private fun StatusRow(status: GameStatus, onSetStatus: (GameStatus) -> Unit) {
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        STATUS_CHOICES.forEach { option ->
+        StatusChoices.forEach { option ->
             val selected = option == status
             FilterChip(
                 selected = selected,
@@ -291,10 +297,18 @@ private fun PlaytimeCard(entry: LibraryEntry, lastDays: List<app.playlog.core.mo
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 entry.firstPlayedAt?.let {
-                    Text(stringResource(R.string.game_first_played, formatRelativeDate(it)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        stringResource(R.string.game_first_played, formatRelativeDate(it)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 entry.achievementProgress?.let {
-                    Text(stringResource(R.string.game_achievements_value, it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        stringResource(R.string.game_achievements_value, it),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -363,7 +377,11 @@ private fun Scores(metadata: GameMetadata, open: (String) -> Unit) {
                         Modifier.size(44.dp).clip(MaterialTheme.shapes.small).background(metacriticColor(critic.score)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(critic.score.toString(), style = MaterialTheme.typography.titleLarge, color = if (critic.score in 50..74) Color(0xFF1B1B1B) else Color.White)
+                        Text(
+                            critic.score.toString(),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = if (metacriticColor(critic.score) == MetacriticMixed) MetacriticOnMixed else Color.White,
+                        )
                     }
                 }
             }
@@ -398,9 +416,9 @@ private fun ScoreTile(label: String, modifier: Modifier, onClick: (() -> Unit)? 
 
 /** Metacritic's own bands; the number is always shown, so color is not the only cue. */
 private fun metacriticColor(score: Int): Color = when {
-    score >= 75 -> Color(0xFF2E7D32)
-    score >= 50 -> Color(0xFFF9A825)
-    else -> Color(0xFFC62828)
+    score >= MetacriticGoodFrom -> MetacriticGood
+    score >= MetacriticMixedFrom -> MetacriticMixed
+    else -> MetacriticBad
 }
 
 /** One row per platform the title is owned on: where the hours, achievements and last session come from. */
@@ -441,14 +459,24 @@ private fun OwnedRow(game: Game, onClick: (() -> Unit)?) {
         Column(Modifier.weight(1f)) {
             Text(platformName(game.id.platform), style = MaterialTheme.typography.titleMedium)
             if (meta.isNotEmpty()) {
-                Text(meta, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(
+                    meta,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
         Spacer(Modifier.width(Spacing.sm))
         Column(horizontalAlignment = Alignment.End) {
             Text(formatPlaytime(game.playtime), style = MaterialTheme.typography.titleLarge)
             game.achievementProgress?.let {
-                Text(stringResource(R.string.game_achievements_value, it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    stringResource(R.string.game_achievements_value, it),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -500,9 +528,18 @@ private fun Links(links: List<ExternalLink>, open: (String) -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                    Text(link.url.substringAfter("://").substringBefore('/'), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        link.url.substringAfter("://").substringBefore('/'),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Spacer(Modifier.width(Spacing.xs))
-                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                    Icon(
+                        Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp),
+                    )
                 }
             }
         }
@@ -559,8 +596,14 @@ private fun RoundIconButton(onClick: () -> Unit, content: @Composable () -> Unit
     ) { content() }
 }
 
-private val STATUS_CHOICES = listOf(GameStatus.PLAYING, GameStatus.COMPLETED, GameStatus.SHELVED, GameStatus.DROPPED)
+private val StatusChoices = listOf(GameStatus.PLAYING, GameStatus.COMPLETED, GameStatus.SHELVED, GameStatus.DROPPED)
 private val FavoriteRed = Color(0xFFFF6B6B)
-private val HERO_HEIGHT = 320.dp
-private val HERO_SCRIM_HEIGHT = 220.dp
-private const val MAX_SCREENSHOTS_IN_ROW = 10
+private val HeroHeight = 320.dp
+private val HeroScrimHeight = 220.dp
+private const val MaxScreenshotsInRow = 10
+private const val MetacriticGoodFrom = 75
+private const val MetacriticMixedFrom = 50
+private val MetacriticGood = Color(0xFF2E7D32)
+private val MetacriticMixed = Color(0xFFF9A825)
+private val MetacriticOnMixed = Color(0xFF1B1B1B)
+private val MetacriticBad = Color(0xFFC62828)

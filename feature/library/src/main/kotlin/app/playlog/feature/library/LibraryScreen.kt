@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -378,7 +379,7 @@ private fun LibraryChip(
         label = { Text(label, style = MaterialTheme.typography.labelMedium) },
         leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(16.dp)) } },
         trailingIcon = trailingIcon?.let { { Icon(it, contentDescription = null, modifier = Modifier.size(18.dp)) } },
-        shape = RoundedCornerShape(50),
+        shape = CircleShape,
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.surface,
             labelColor = MaterialTheme.colorScheme.onSurface,
@@ -445,7 +446,7 @@ private fun SortSheet(current: LibrarySort, onSelect: (LibrarySort) -> Unit) {
 @Composable
 private fun LibrarySkeleton(modifier: Modifier = Modifier) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+        columns = GridCells.Fixed(GridColumns),
         contentPadding = PaddingValues(horizontal = Spacing.lg, vertical = Spacing.md),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
@@ -454,7 +455,7 @@ private fun LibrarySkeleton(modifier: Modifier = Modifier) {
     ) {
         fullWidth { Skeleton(Modifier.fillMaxWidth().height(64.dp)) }
         fullWidth { Skeleton(Modifier.fillMaxWidth().height(48.dp)) }
-        items(List(9) { it }) { Skeleton(Modifier.fillMaxWidth().aspectRatio(3f / 4f)) }
+        items(List(GridColumns * SkeletonRows) { it }) { Skeleton(Modifier.fillMaxWidth().aspectRatio(CoverAspect)) }
     }
 }
 
@@ -477,3 +478,7 @@ private fun LibraryEmpty(state: LibraryUiState.Empty, onConnect: () -> Unit, mod
         }
     }
 }
+
+private const val GridColumns = 3
+private const val SkeletonRows = 3
+private const val CoverAspect = 3f / 4f

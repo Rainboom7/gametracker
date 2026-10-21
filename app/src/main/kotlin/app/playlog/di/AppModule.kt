@@ -56,7 +56,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun httpClient(): HttpClient = HttpClientFactory.create(OkHttp.create(), enableLogging = BuildConfig.DEBUG)
+    fun httpClient(): HttpClient =
+        HttpClientFactory.create(OkHttp.create(), enableLogging = BuildConfig.DEBUG, logSink = { Log.d("Playlog/http", it) })
 
     @Provides
     @Singleton

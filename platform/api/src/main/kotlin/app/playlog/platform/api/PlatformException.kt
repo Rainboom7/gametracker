@@ -25,7 +25,9 @@ sealed class PlatformException(
 
     class RateLimited(platform: Platform, val retryAfter: Duration?) : PlatformException(platform, "Rate limited")
 
-    class Network(platform: Platform, cause: Throwable) : PlatformException(platform, cause.message ?: "Network error", cause)
+    // The exception class is kept in the message: "timeout" or "null" alone does not tell a DNS failure from a reset.
+    class Network(platform: Platform, cause: Throwable) :
+        PlatformException(platform, listOfNotNull(cause.javaClass.simpleName, cause.message).joinToString(": "), cause)
 
     /** The service answered something we do not understand: an API change or a bug. */
     class Protocol(platform: Platform, message: String, cause: Throwable? = null) : PlatformException(platform, message, cause)

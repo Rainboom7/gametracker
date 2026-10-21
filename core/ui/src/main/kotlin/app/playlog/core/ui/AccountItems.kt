@@ -28,8 +28,16 @@ import app.playlog.core.model.SyncState
 fun accountStatusText(account: Account?): String = when {
     account == null -> stringResource(R.string.account_not_connected)
     account.syncState is SyncState.Running -> stringResource(R.string.account_syncing)
-    account.syncState is SyncState.Failed -> stringResource(
-        when ((account.syncState as SyncState.Failed).reason) {
+    account.syncState is SyncState.Failed -> failedStatusText(account.syncState as SyncState.Failed)
+    account.lastSyncedAt != null -> stringResource(R.string.account_synced_at, formatRelativeDate(account.lastSyncedAt))
+    else -> stringResource(R.string.account_never_synced)
+}
+
+/** Network and unknown failures carry the underlying error, so a report from the device says what broke. */
+@Composable
+private fun failedStatusText(state: SyncState.Failed): String {
+    val base = stringResource(
+        when (state.reason) {
             SyncFailure.AUTH_EXPIRED -> R.string.account_auth_expired
             SyncFailure.NETWORK -> R.string.account_network_error
             SyncFailure.RATE_LIMITED -> R.string.account_rate_limited
@@ -37,9 +45,11 @@ fun accountStatusText(account: Account?): String = when {
             SyncFailure.UNKNOWN -> R.string.account_unknown_error
         },
     )
-    account.lastSyncedAt != null -> stringResource(R.string.account_synced_at, formatRelativeDate(account.lastSyncedAt))
-    else -> stringResource(R.string.account_never_synced)
+    val detail = state.message?.takeIf { state.reason == SyncFailure.NETWORK || state.reason == SyncFailure.UNKNOWN }
+    return if (detail.isNullOrBlank()) base else "$base (${detail.take(MaxDetailLength)})"
 }
+
+private const val MaxDetailLength = 120
 
 @Composable
 fun AccountRow(platform: Platform, account: Account?, onClick: () -> Unit, modifier: Modifier = Modifier) {

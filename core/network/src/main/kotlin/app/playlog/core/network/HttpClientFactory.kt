@@ -23,7 +23,7 @@ object HttpClientFactory {
      * Shared client configuration. Pass OkHttp's engine on Android and `MockEngine` in tests.
      * `expectSuccess` stays off: each platform maps HTTP errors to [app.playlog.platform.api.PlatformException] itself.
      */
-    fun create(engine: HttpClientEngine, enableLogging: Boolean = false, logger: Logger = Logger.SIMPLE): HttpClient =
+    fun create(engine: HttpClientEngine, enableLogging: Boolean = false, logSink: ((String) -> Unit)? = null): HttpClient =
         HttpClient(engine) {
             expectSuccess = false
             followRedirects = false
@@ -37,7 +37,7 @@ object HttpClientFactory {
             }
             if (enableLogging) {
                 install(Logging) {
-                    this.logger = logger
+                    this.logger = logSink?.let { sink -> object : Logger { override fun log(message: String) = sink(message) } } ?: Logger.SIMPLE
                     level = LogLevel.INFO
                     sanitizeHeader { it.equals("Authorization", ignoreCase = true) || it.equals("Cookie", ignoreCase = true) }
                 }

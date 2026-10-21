@@ -16,7 +16,7 @@ object AskParser {
         val features: Set<PlayFeature> = emptySet(),
         val apply: (Draft) -> Unit = {},
     ) {
-        val regex = Regex("(?U)$pattern")
+        val regex = unicodeRegex(pattern)
     }
 
     private class Draft {
@@ -115,12 +115,12 @@ object AskParser {
     )
 
     private val playersRules = listOf(
-        Regex("""(?U)(на|для) (2|двоих|двух|два)\b|вдво[её]м|2 игрок|two players?|2 ?players?|парой|в паре""") to 2,
-        Regex("""(?U)(на|для) (3|тро(их|е)|тр[её]х)\b|втро[её]м|3 игрок""") to 3,
-        Regex("""(?U)(на|для) (4|четверых|четыр[её]х)\b|вчетвером|4 игрок""") to 4,
+        unicodeRegex("""(на|для) (2|двоих|двух|два)\b|вдво[её]м|2 игрок|two players?|2 ?players?|парой|в паре""") to 2,
+        unicodeRegex("""(на|для) (3|тро(их|е)|тр[её]х)\b|втро[её]м|3 игрок""") to 3,
+        unicodeRegex("""(на|для) (4|четверых|четыр[её]х)\b|вчетвером|4 игрок""") to 4,
     )
 
-    private val similar = Regex("""(?U)(?:^|\s)(?:похож\w* на|вроде|типа|как в|как|like|наподобие|в духе)\s+(.+)$""")
+    private val similar = unicodeRegex("""(?:^|\s)(?:похож\w* на|вроде|типа|как в|как|like|наподобие|в духе)\s+(.+)$""")
 
     /** Filler words that never carry meaning on their own. */
     private val stopWords = setOf(
@@ -213,4 +213,16 @@ object AskParser {
         .replace(Regex("""[^\p{L}\p{N}\- ]"""), " ")
         .replace(Regex("""\s+"""), " ")
         .trim()
+
+    /**
+     * Android's ICU regex rejects `(?U)` and the class fails to initialise, while the JVM's `\b` and
+     * `\w` are ASCII-only without it. Spelling both out with Unicode classes works on both.
+     */
+    private fun unicodeRegex(pattern: String): Regex = Regex(
+        pattern
+            .replace("\\w", WORD_CHAR)
+            .replace("\\b", "(?:(?<=$WORD_CHAR)(?!$WORD_CHAR)|(?<!$WORD_CHAR)(?=$WORD_CHAR))"),
+    )
+
+    private const val WORD_CHAR = "[\\p{L}\\p{N}_]"
 }

@@ -69,4 +69,11 @@ class AskParserTest {
         assertFalse(intent.understood)
         assertEquals("celeste", intent.leftover)
     }
+
+    @Test
+    fun `word boundaries work for cyrillic without the Unicode flag Android rejects`() {
+        assertTrue("Cats" in AskParser.parse("игра про котов и с котом").tags)
+        assertFalse("Cats" in AskParser.parse("котлета").tags)
+        assertEquals(3, AskParser.parse("для троих").players)
+    }
 }

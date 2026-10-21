@@ -33,24 +33,6 @@
 
     <string name="discover_anniversaries">В эти дни</string>
 
-    <string name="discover_milestones">Достижения игрока</string>
-    <string name="discover_milestone_level">Ур. %1$d из %2$d</string>
-    <string name="discover_milestone_maxed">Максимум</string>
-    <string name="discover_milestone_next">Следующий уровень: %1$s</string>
-    <string name="discover_milestone_MARATHON">Марафонец</string>
-    <string name="discover_milestone_VETERAN">Ветеран</string>
-    <string name="discover_milestone_COLLECTOR">Коллекционер</string>
-    <string name="discover_milestone_FINISHER">Финишёр</string>
-    <string name="discover_milestone_PERFECTIONIST">Перфекционист</string>
-    <string name="discover_milestone_MULTIPLATFORM">Мультиплатформа</string>
-    <string name="discover_milestone_STREAK">Серия</string>
-    <string name="discover_milestone_desc_MARATHON">Часов в одной игре</string>
-    <string name="discover_milestone_desc_VETERAN">Часов всего</string>
-    <string name="discover_milestone_desc_COLLECTOR">Игр в библиотеке</string>
-    <string name="discover_milestone_desc_FINISHER">Пройденных игр</string>
-    <string name="discover_milestone_desc_PERFECTIONIST">Игр со всеми ачивками</string>
-    <string name="discover_milestone_desc_MULTIPLATFORM">Игр на нескольких платформах</string>
-    <string name="discover_milestone_desc_STREAK">Дней подряд за год</string>
 
     <plurals name="discover_years_ago">
         <item quantity="one">%1$d год назад ты впервые запустил её</item>

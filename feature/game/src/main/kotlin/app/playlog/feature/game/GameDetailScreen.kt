@@ -81,6 +81,7 @@ import app.playlog.core.model.GameMetadata
 import app.playlog.core.model.GameStatus
 import app.playlog.core.model.HowLongToBeat
 import app.playlog.core.model.LibraryEntry
+import app.playlog.feature.journal.RatingNotesCard
 import app.playlog.core.model.LinkKind
 import app.playlog.core.model.Platform
 import app.playlog.core.model.externalLinks
@@ -171,6 +172,7 @@ private fun GameDetailContent(
             ) {
                 StatusRow(entry.status, onSetStatus)
                 PlaytimeCard(entry, state.lastDays, state.metadata)
+                RatingNotesCard(entry)
                 if (metadata != null) Scores(metadata, open)
                 Owned(entry, open)
                 SimilarCard(entry.title, metadata?.genres.orEmpty(), onFindSimilar = { onFindSimilar(entry.title) })

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="badges_title">Значки</string>
+    <string name="badges_title_new">Значки · новых: %1$d</string>
+    <string name="badges_back">Назад</string>
+    <string name="badges_count">%1$d из %2$d</string>
+    <string name="badges_new">Новый!</string>
+    <string name="badges_level_short">Ур. %1$d/%2$d</string>
+    <string name="badges_level">Уровень %1$d</string>
+    <string name="badges_maxed">Максимальный уровень</string>
+    <string name="badges_next">Дальше: %1$s</string>
+    <string name="badges_unlocked_on">Ур. %1$d получен %2$s</string>
+    <string name="badges_recent">Недавно открытые</string>
+    <string name="badges_all">Все значки</string>
+    <string name="badges_summary">Открыто %1$d из %2$d</string>
+    <string name="badges_summary_levels">Уровней собрано: %1$d из %2$d</string>
+
+    <string name="badge_MARATHON">Марафонец</string>
+    <string name="badge_VETERAN">Ветеран</string>
+    <string name="badge_COLLECTOR">Коллекционер</string>
+    <string name="badge_FINISHER">Финишёр</string>
+    <string name="badge_PERFECTIONIST">Перфекционист</string>
+    <string name="badge_MULTIPLATFORM">Мультиплатформа</string>
+    <string name="badge_STREAK">Серия</string>
+    <string name="badge_BIG_DAY">Большой день</string>
+    <string name="badge_LOYAL">Верность</string>
+    <string name="badge_PHOTOGRAPHER">Фотограф</string>
+    <string name="badge_CRITIC">Критик</string>
+    <string name="badge_desc_MARATHON">Часов в одной игре</string>
+    <string name="badge_desc_VETERAN">Часов всего</string>
+    <string name="badge_desc_COLLECTOR">Игр в библиотеке</string>
+    <string name="badge_desc_FINISHER">Пройденных игр</string>
+    <string name="badge_desc_PERFECTIONIST">Игр со всеми ачивками</string>
+    <string name="badge_desc_MULTIPLATFORM">Игр на нескольких платформах</string>
+    <string name="badge_desc_STREAK">Дней подряд за год</string>
+    <string name="badge_desc_BIG_DAY">Рекорд часов за один день</string>
+    <string name="badge_desc_LOYAL">Лет возвращаешься к одной игре</string>
+    <string name="badge_desc_PHOTOGRAPHER">Скриншотов и клипов</string>
+    <string name="badge_desc_CRITIC">Игр с твоей оценкой</string>
+    <plurals name="badge_days">
+        <item quantity="one">%1$d день</item>
+        <item quantity="few">%1$d дня</item>
+        <item quantity="many">%1$d дней</item>
+        <item quantity="other">%1$d дня</item>
+    </plurals>
+    <plurals name="badge_years">
+        <item quantity="one">%1$d год</item>
+        <item quantity="few">%1$d года</item>
+        <item quantity="many">%1$d лет</item>
+        <item quantity="other">%1$d года</item>
+    </plurals>
+
+    <string name="notes_title">Моя оценка</string>
+    <string name="notes_unrated">Без оценки</string>
+    <string name="notes_rate">Оценить на %1$d</string>
+    <string name="notes_placeholder">Заметки: что понравилось, где остановился, что попробовать…</string>
+    <string name="notes_private">Видно только тебе, хранится на телефоне</string>
+    <string-array name="rating_verdicts">
+        <item>мучение</item>
+        <item>плохо</item>
+        <item>слабо</item>
+        <item>так себе</item>
+        <item>средне</item>
+        <item>неплохо</item>
+        <item>хорошо</item>
+        <item>отлично</item>
+        <item>шедевр</item>
+        <item>любимая</item>
+    </string-array>
+</resources>

@@ -11,6 +11,12 @@ import app.playlog.core.data.ActivityRepository
 import app.playlog.core.data.DefaultAccountRepository
 import app.playlog.core.data.DefaultActivityRepository
 import app.playlog.core.data.DefaultDiscoverRepository
+import app.playlog.core.data.BadgesRepository
+import app.playlog.core.data.DefaultBadgesRepository
+import app.playlog.core.data.DefaultGameNotesRepository
+import app.playlog.core.data.GameNotesRepository
+import app.playlog.core.database.FileBadgeStore
+import app.playlog.core.database.FileGameNotesStore
 import app.playlog.core.data.DiscoverRepository
 import app.playlog.core.data.AskEngine
 import app.playlog.core.data.DealsRepository
@@ -146,6 +152,21 @@ object AppModule {
     @Provides
     @Singleton
     fun screenshotRepository(store: LibraryStore): ScreenshotRepository = DefaultScreenshotRepository(store)
+
+    @Provides
+    @Singleton
+    fun gameNotesRepository(@ApplicationContext context: Context, clock: AppClock): GameNotesRepository =
+        DefaultGameNotesRepository(FileGameNotesStore(File(context.filesDir, "game-notes.json")), clock)
+
+    @Provides
+    @Singleton
+    fun badgesRepository(
+        @ApplicationContext context: Context,
+        discover: DiscoverRepository,
+        screenshots: ScreenshotRepository,
+        notes: GameNotesRepository,
+        clock: AppClock,
+    ): BadgesRepository = DefaultBadgesRepository(discover, screenshots, notes, FileBadgeStore(File(context.filesDir, "badges.json")), clock)
 
     /** HowLongToBeat and Steam store facts for the game page, cached as files in the cache dir. */
     @Provides

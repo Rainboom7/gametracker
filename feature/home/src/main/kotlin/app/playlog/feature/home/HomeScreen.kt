@@ -60,6 +60,7 @@ import app.playlog.core.model.PickReason
 import app.playlog.core.ui.DealCard
 import app.playlog.feature.deals.GiveawaysHomeCard
 import app.playlog.feature.journal.BadgesStrip
+import app.playlog.feature.journal.TodayHomeCard
 import app.playlog.core.ui.GameCoverCard
 import app.playlog.core.ui.ScreenshotTile
 import app.playlog.core.ui.entryPlaytimeText
@@ -104,6 +105,14 @@ private fun HomeContent(state: HomeUiState.Content, actions: HomeActions, modifi
         item { AskPill(onClick = actions.onAsk) }
         state.continuePlaying?.let { entry ->
             item { ContinueHero(entry, onClick = { actions.onOpenGame(entry.primary.id) }) }
+        }
+        // Anniversaries of first launches and old screenshots; nothing on an ordinary day.
+        item {
+            TodayHomeCard(
+                onOpenGame = actions.onOpenGame,
+                onOpenScreenshots = actions.onOpenScreenshotsOf,
+                modifier = Modifier.padding(horizontal = Spacing.lg),
+            )
         }
         item { StatBubbles(state) }
         // Hides itself until the first badge is earned.

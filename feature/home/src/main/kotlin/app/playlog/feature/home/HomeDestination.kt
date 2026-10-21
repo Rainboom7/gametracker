@@ -24,6 +24,8 @@ data class HomeActions(
     val onOpenRecap: () -> Unit = {},
     val onOpenGiveaways: () -> Unit = {},
     val onOpenBadges: () -> Unit = {},
+    /** Screenshots of one game, or all of them for null. */
+    val onOpenScreenshotsOf: (GameId?) -> Unit = {},
 )
 
 fun NavGraphBuilder.homeScreen(actions: HomeActions) {

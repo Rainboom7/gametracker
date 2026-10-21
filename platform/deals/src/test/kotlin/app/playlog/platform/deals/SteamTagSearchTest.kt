@@ -74,4 +74,33 @@ class SteamTagSearchTest {
             search.tagsOf("Celeste"),
         )
     }
+
+    @Test
+    fun `falls back to the json search mode when the html mode fails`() = runTest {
+        val seen = mutableListOf<HttpRequestData>()
+        val flaky = HttpClientFactory.create(
+            MockEngine { request ->
+                seen += request
+                when {
+                    request.url.encodedPath == "/search/results/" && request.url.parameters["infinite"] == "1" ->
+                        respond("<html>busy</html>", HttpStatusCode.OK)
+                    request.url.encodedPath == "/search/results/" ->
+                        respond(fixture("steam_search.json"), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                    request.url.encodedPath == "/tagdata/populartags/english" ->
+                        respond(fixture("steam_tags.json"), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                    request.url.encodedPath == "/api/appdetails" ->
+                        respond(fixture("steam_prices.json"), HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                    else -> respond("nope", HttpStatusCode.NotFound)
+                }
+            },
+        )
+        val fallback = SteamTagSearch(flaky, SteamStoreDeals(flaky, baseUrl = "https://store.test"), SteamSpyClient(flaky), baseUrl = "https://store.test")
+
+        val picks = fallback.find(FinderQuery("TR", tags = listOf("Roguelike"), limit = 10))
+
+        assertEquals("Dead Cells", picks.first().title)
+        val json = seen.last { it.url.encodedPath == "/search/results/" }
+        assertEquals("1", json.url.parameters["json"])
+        assertEquals("1716", json.url.parameters["tags"])
+    }
 }

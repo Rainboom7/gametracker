@@ -1,5 +1,6 @@
 package app.playlog.feature.ask
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,6 +50,7 @@ class AskViewModel @Inject constructor(
         state.update { it.copy(query = text, result = AskResult.Thinking) }
         job = viewModelScope.launch {
             val result = runSuspendCatching { engine.ask(text) }
+                .onFailure { Log.w(TAG, "Ask failed: ${it.javaClass.simpleName}: ${it.message}", it) }
                 .fold({ AskResult.Answer(it) }, { AskResult.Failed(it.message) })
             state.update { it.copy(result = result) }
         }
@@ -61,3 +63,5 @@ class AskViewModel @Inject constructor(
 
     fun openDeal(pick: DealPick?) = state.update { it.copy(openDeal = pick) }
 }
+
+private const val TAG = "Playlog/ask"

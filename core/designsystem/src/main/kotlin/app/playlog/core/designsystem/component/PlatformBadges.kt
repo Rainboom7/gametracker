@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,15 +20,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.playlog.core.designsystem.theme.monogram
+import app.playlog.core.designsystem.R
 import app.playlog.core.designsystem.theme.platformColors
 import app.playlog.core.model.Platform
 
-/** Small label on covers and lists. Color is never the only cue: it always carries the monogram. */
+/** The platform's logo mark, monochrome so it can be tinted. */
+@Composable
+fun platformIcon(platform: Platform): Painter = painterResource(
+    when (platform) {
+        Platform.STEAM -> R.drawable.ic_platform_steam
+        Platform.PLAYSTATION -> R.drawable.ic_platform_playstation
+        Platform.NINTENDO -> R.drawable.ic_platform_nintendo
+    },
+)
+
+/** Small label on covers and lists. Color is never the only cue: it always carries the logo. */
 @Composable
 fun PlatformBadge(platform: Platform, modifier: Modifier = Modifier, onImage: Boolean = false) {
     val colors = platformColors(platform)
@@ -35,10 +48,10 @@ fun PlatformBadge(platform: Platform, modifier: Modifier = Modifier, onImage: Bo
         modifier = modifier
             .clip(MaterialTheme.shapes.extraSmall)
             .background(if (onImage) BadgeOnImageBg else colors.badgeBg)
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .padding(horizontal = 5.dp, vertical = 3.dp)
             .semantics { contentDescription = platform.displayName },
     ) {
-        Text(platform.monogram, style = MaterialTheme.typography.labelSmall, color = colors.badgeText)
+        Icon(platformIcon(platform), contentDescription = null, tint = colors.badgeText, modifier = Modifier.size(BadgeIcon))
     }
 }
 
@@ -49,7 +62,7 @@ fun PlatformBadgeRow(platforms: Collection<Platform>, modifier: Modifier = Modif
     }
 }
 
-/** Square tile with the platform monogram, used on account cards. */
+/** Square tile with the platform logo, used on account cards. */
 @Composable
 fun PlatformMonogram(platform: Platform, modifier: Modifier = Modifier, size: Dp = 44.dp) {
     val colors = platformColors(platform)
@@ -60,7 +73,7 @@ fun PlatformMonogram(platform: Platform, modifier: Modifier = Modifier, size: Dp
             .background(colors.badgeBg),
         contentAlignment = Alignment.Center,
     ) {
-        Text(platform.monogram, style = MaterialTheme.typography.titleLarge, color = colors.accent)
+        Icon(platformIcon(platform), contentDescription = platform.displayName, tint = colors.accent, modifier = Modifier.size(size * TileIconRatio))
     }
 }
 
@@ -85,7 +98,7 @@ fun PlatformFilterChip(
         label = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (platform != null) {
-                    PlatformDot(platformColors(platform).accent)
+                    Icon(platformIcon(platform), contentDescription = null, tint = platformColors(platform).accent, modifier = Modifier.size(ChipIcon))
                     Spacer(Modifier.width(6.dp))
                 }
                 Text(label, style = MaterialTheme.typography.labelMedium)
@@ -108,3 +121,6 @@ fun PlatformFilterChip(
 }
 
 private val BadgeOnImageBg = Color(0xD10D0E12)
+private val BadgeIcon = 12.dp
+private val ChipIcon = 14.dp
+private const val TileIconRatio = 0.5f

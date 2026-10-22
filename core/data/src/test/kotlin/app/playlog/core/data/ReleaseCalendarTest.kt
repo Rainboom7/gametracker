@@ -34,16 +34,16 @@ class ReleaseCalendarTest {
     )
 
     @Test
-    fun `days are sorted, past releases dropped, wishlist on top and merged in`() {
+    fun `days are sorted, past releases dropped, wishlist marked and merged in`() {
         val calendar = ReleaseCalendar.build(store, wishlist, taste, today, ReleaseFilter.ALL, zone)
 
         assertEquals(listOf(today.plusDays(2), today.plusDays(15), today.plusDays(30)), calendar.days.map { it.date })
-        assertEquals(listOf("2", "1"), calendar.days.first().games.map { it.game.storeId })
-        assertTrue(calendar.days.first().games.first().wishlisted)
+        assertEquals(listOf("1", "2"), calendar.days.first().games.map { it.game.storeId })
+        assertTrue(calendar.days.first().games[1].wishlisted)
         assertEquals(listOf("70010"), calendar.days[1].games.map { it.game.storeId })
         assertEquals("Q1 2027", calendar.undated.single().game.dateText)
         assertEquals("1", calendar.highlight?.game?.storeId)
-        assertEquals(listOf("Roguelike", "Action"), calendar.days.first().games[1].sharedTags)
+        assertEquals(listOf("Roguelike", "Action"), calendar.days.first().games[0].sharedTags)
     }
 
     @Test
@@ -54,5 +54,14 @@ class ReleaseCalendarTest {
 
         val wished = ReleaseCalendar.build(store, wishlist, taste, today, ReleaseFilter.WISHLIST, zone)
         assertEquals(setOf("2", "70010"), wished.days.flatMap { it.games }.map { it.game.storeId }.toSet())
+    }
+
+    @Test
+    fun `wishlisting a game keeps its place in the list`() {
+        val before = ReleaseCalendar.build(store, emptyList(), taste, today, ReleaseFilter.ALL, zone)
+        val after = ReleaseCalendar.build(store, wishlist, taste, today, ReleaseFilter.ALL, zone)
+
+        val ids = { c: ReleaseCalendar -> c.days.first { it.date == today.plusDays(2) }.games.map { it.game.storeId } }
+        assertEquals(ids(before), ids(after))
     }
 }

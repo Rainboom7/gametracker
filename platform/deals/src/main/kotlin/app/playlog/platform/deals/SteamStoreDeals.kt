@@ -48,6 +48,8 @@ class SteamStoreDeals(
         val discount: Int? = null,
         /** Release column as shown: "24 Oct, 2026", "Q1 2027", "Coming soon". */
         val released: String? = null,
+        /** The row's own small capsule: the real (hashed) asset path, unlike one built from the id. */
+        val capsule: String? = null,
     )
 
     private val tagLock = Mutex()
@@ -224,6 +226,7 @@ class SteamStoreDeals(
         private val ROW_TITLE = Regex("<span class=\"title\">([^<]*)</span>")
         private val ROW_DISCOUNT = Regex("data-discount=\"(\\d{1,3})\"")
         private val ROW_RELEASED = Regex("search_released[^\"]*\">([^<]*)<")
+        private val ROW_CAPSULE = Regex("search_capsule\"[^>]*>\\s*<img[^>]*?src=\"([^\"]+)\"")
         private val ROW_REVIEW = Regex("data-tooltip-html=\"[^\"]*?(\\d{1,3})%")
 
         /** Search result rows; bundles and packages (several appids) are skipped. */
@@ -239,6 +242,7 @@ class SteamStoreDeals(
                 review = ROW_REVIEW.find(chunk)?.groupValues?.get(1)?.toIntOrNull(),
                 discount = ROW_DISCOUNT.find(chunk)?.groupValues?.get(1)?.toIntOrNull(),
                 released = ROW_RELEASED.find(chunk)?.groupValues?.get(1)?.let(::unescape)?.takeIf(String::isNotBlank),
+                capsule = ROW_CAPSULE.find(chunk)?.groupValues?.get(1)?.replace("capsule_sm_120", "header"),
             )
         }
 

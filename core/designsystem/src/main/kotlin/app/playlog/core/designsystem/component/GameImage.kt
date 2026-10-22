@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -13,7 +14,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import coil3.SingletonImageLoader
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
 
 /**
  * Remote image that walks down [urls] when one fails (Steam library art 404s for some apps, then
@@ -44,6 +49,21 @@ fun GameImage(
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+/**
+ * Warms the disk cache for images just below the fold, so a fast scroll does not wait on the
+ * network row by row. Memory is left to the visible items.
+ */
+@Composable
+fun PreloadImages(urls: List<String>) {
+    val context = LocalPlatformContext.current
+    LaunchedEffect(urls) {
+        val loader = SingletonImageLoader.get(context)
+        urls.forEach { url ->
+            loader.enqueue(ImageRequest.Builder(context).data(url).memoryCachePolicy(CachePolicy.DISABLED).build())
         }
     }
 }

@@ -52,9 +52,18 @@ import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** Sharp wide art first: Steam's 616px capsule, then the header the store gave. */
-internal fun UpcomingGame.artUrls(): List<String?> =
-    listOfNotNull(DealPick.steamCapsuleUrl(storeId).takeIf { platform == Platform.STEAM }) + headerUrl
+/**
+ * Steam rows carry the real (hashed) asset folder; the 616px capsule from that folder is only worth
+ * its weight on the hero, small tiles take the ~30 KB header first.
+ */
+internal fun UpcomingGame.artUrls(sharp: Boolean = false): List<String?> {
+    if (platform != Platform.STEAM) return listOf(headerUrl)
+    val wide = headerUrl.takeIf { HEADER in it }?.replace(HEADER, CAPSULE) ?: DealPick.steamCapsuleUrl(storeId)
+    return if (sharp) listOf(wide, headerUrl) else listOf(headerUrl, wide)
+}
+
+private const val HEADER = "/header.jpg"
+private const val CAPSULE = "/capsule_616x353.jpg"
 
 @Composable
 internal fun HighlightCard(card: ReleaseCard, today: LocalDate, onClick: () -> Unit, onToggleWishlist: () -> Unit) {
@@ -67,7 +76,7 @@ internal fun HighlightCard(card: ReleaseCard, today: LocalDate, onClick: () -> U
             .clip(MaterialTheme.shapes.extraLarge)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
-        GameImage(urls = game.artUrls(), contentDescription = null, placeholderText = game.title, modifier = Modifier.fillMaxSize())
+        GameImage(urls = game.artUrls(sharp = true), contentDescription = null, placeholderText = game.title, modifier = Modifier.fillMaxSize())
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Scrim))))
         Text(
             stringResource(R.string.releases_highlight).uppercase(),

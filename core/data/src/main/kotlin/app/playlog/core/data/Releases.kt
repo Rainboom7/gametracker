@@ -137,7 +137,9 @@ data class ReleaseCalendar(
                         ReleaseFilter.WISHLIST -> it.wishlisted
                     }
                 }
-            val order = compareByDescending<ReleaseCard> { it.wishlisted }.thenByDescending { it.match }
+            // Wishlisting must not move a card: when it floated to the top, the tapped row jumped out
+            // of view and looked removed. The heart marks it; the Wishlist filter gathers them.
+            val order = compareByDescending<ReleaseCard> { it.match }.thenBy { it.game.title }
             val days = cards.filter { it.game.date != null }
                 .groupBy { it.game.date!! }
                 .toSortedMap()

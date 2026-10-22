@@ -55,7 +55,7 @@ class SteamUpcoming(
                 platform = Platform.STEAM,
                 storeId = row.appId.toString(),
                 title = row.name,
-                headerUrl = steamHeader(row.appId),
+                headerUrl = row.capsule ?: steamHeader(row.appId),
                 storeUrl = DealPick.steamStoreUrl(row.appId),
                 date = date,
                 dateText = row.released.takeIf { date == null },

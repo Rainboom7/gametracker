@@ -49,6 +49,11 @@ class SteamUpcomingTest {
 
         assertEquals(LocalDate.of(2026, 10, 24), games.getValue("900001").date)
         assertEquals(listOf("Roguelike", "Action", "Crafting"), games.getValue("900001").tags)
+        assertEquals(
+            "the row's hashed asset folder is kept",
+            "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/900001/0a1b2c3d/header.jpg?t=1",
+            games.getValue("900001").headerUrl,
+        )
         assertEquals("Iron Tide & Co", games.getValue("900002").title)
         assertNull(games.getValue("900002").date)
         assertEquals("Q1 2027", games.getValue("900002").dateText)

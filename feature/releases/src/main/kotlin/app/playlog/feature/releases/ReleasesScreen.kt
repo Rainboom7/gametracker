@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.playlog.core.data.ReleaseCard
 import app.playlog.core.data.ReleaseFilter
+import app.playlog.core.designsystem.component.PreloadImages
 import app.playlog.core.designsystem.theme.PlaylogColors
 import app.playlog.core.designsystem.theme.Spacing
 import kotlinx.coroutines.launch
@@ -103,6 +104,10 @@ private fun Calendar(state: ReleasesUiState.Content, onFilter: (ReleaseFilter) -
     val selected by remember(dayIndex) {
         derivedStateOf { dayIndex.indexOfLast { it <= listState.firstVisibleItemIndex }.takeIf { it >= 0 } ?: 0 }
     }
+    val ahead = remember(calendar) {
+        (calendar.days.flatMap { it.games } + calendar.undated).take(PreloadAhead).mapNotNull { it.game.artUrls().firstOrNull() }
+    }
+    PreloadImages(ahead)
     LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Spacing.xxl)) {
         calendar.highlight?.let { card ->
             item(key = "highlight") { HighlightCard(card, state.today, onClick = { open(card) }, onToggleWishlist = { onToggleWishlist(card) }) }
@@ -193,3 +198,5 @@ internal fun relativeDay(date: LocalDate, today: LocalDate): String? {
 }
 
 private const val RelativeDaysLimit = 14L
+
+private const val PreloadAhead = 40

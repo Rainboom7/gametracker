@@ -8,15 +8,20 @@ import app.playlog.core.model.PriceLow
 import app.playlog.core.model.PriceDrop
 import app.playlog.core.model.StorePrice
 import app.playlog.core.model.StoreQuote
+import app.playlog.core.model.TitleKey
+import app.playlog.core.model.WishMatcher
 import app.playlog.core.model.WishlistCheck
+import app.playlog.core.model.WishlistGame
 import app.playlog.core.model.WishlistItem
 import app.playlog.platform.api.GamePlatformSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.time.Instant
 
 interface WishlistStore {
     suspend fun read(): List<WishlistItem>
@@ -38,9 +43,17 @@ interface WishlistRepository {
     /** Newest first. */
     fun observe(): Flow<List<WishlistItem>>
 
-    /** Adds the game, or removes it when it is already wishlisted. */
-    suspend fun toggle(pick: DealPick)
+    /** The list grouped into games: one entry per title across stores. */
+    fun observeGames(): Flow<List<WishlistGame>> = observe().map(WishlistGame::group)
 
+    /**
+     * Adds the game, or removes it when it (or the same title in another store) is already
+     * wishlisted. A new wish is then looked up in the other stores by title, so its price is tracked
+     * everywhere. Pass [comingSoon] and [releaseDate] for unreleased games so the release is announced.
+     */
+    suspend fun toggle(pick: DealPick, comingSoon: Boolean = false, releaseDate: Instant? = null)
+
+    /** Removes the item with [key] and every copy of the same game in other stores. */
     suspend fun remove(key: String)
 
     /** Adds the games on the linked accounts' own wishlists; returns how many were new. */
@@ -66,11 +79,48 @@ class DefaultWishlistRepository(
 
     override fun observe(): Flow<List<WishlistItem>> = state.onStart { lock.withLock { load() } }.filterNotNull()
 
-    override suspend fun toggle(pick: DealPick) = update { items ->
-        if (items.any { it.key == pick.key }) items.filterNot { it.key == pick.key } else listOf(pick.toItem()) + items
+    override suspend fun toggle(pick: DealPick, comingSoon: Boolean, releaseDate: Instant?) {
+        val titleKey = TitleKey.of(pick.title)
+        var added: WishlistItem? = null
+        update { items ->
+            if (pick in WishMatcher(items)) {
+                items.filterNot { it.key == pick.key || it.titleKey == titleKey }
+            } else {
+                val item = pick.toItem().copy(comingSoon = comingSoon, releaseDate = releaseDate)
+                added = item
+                listOf(item) + items
+            }
+        }
+        added?.let { linkAcrossStores(it) }
     }
 
-    override suspend fun remove(key: String) = update { items -> items.filterNot { it.key == key } }
+    override suspend fun remove(key: String) = update { items ->
+        val titleKey = items.firstOrNull { it.key == key }?.titleKey
+        items.filterNot { it.key == key || (titleKey != null && it.titleKey == titleKey) }
+    }
+
+    /**
+     * Finds the same game in the other stores by normalized title and adds those copies, so one wish
+     * tracks every store's price. Only exact [TitleKey] matches count: a wrong link would alert on
+     * someone else's sale. Failures just leave the wish on its own store.
+     */
+    private suspend fun linkAcrossStores(item: WishlistItem) {
+        val found = stores.platforms.filter { it != item.platform }.mapNotNull { platform ->
+            runSuspendCatching { stores.search(platform, item.title) }.onFailure { onError(platform, it) }.getOrNull()
+                ?.firstOrNull { it.title.isNotBlank() && TitleKey.of(it.title) == item.titleKey }
+        }
+        if (found.isEmpty()) return
+        update { items ->
+            // The wish may have been removed while the stores answered.
+            if (items.none { it.key == item.key }) return@update items
+            val known = items.mapTo(HashSet()) { it.key }
+            val copies = found.filter { it.key !in known }.map {
+                it.toItem().copy(linked = true, comingSoon = item.comingSoon && it.priceText.isBlank(), releaseDate = item.releaseDate)
+            }
+            val at = items.indexOfFirst { it.key == item.key } + 1
+            items.take(at) + copies + items.drop(at)
+        }
+    }
 
     override suspend fun importFromAccounts(): Int {
         var added = 0

@@ -87,4 +87,7 @@
     <string name="deals_open_giveaways">Раздачи</string>
     <string name="deals_wish_coming">Ещё не вышла, напомню о релизе</string>
     <string name="deals_wish_coming_on">Выходит %1$s, напомню о релизе</string>
+    <string name="catalog_title">В магазинах</string>
+    <string name="catalog_searching">Ищу в Steam, PlayStation Store и eShop…</string>
+    <string name="catalog_empty">В магазинах ничего не нашлось по запросу «%1$s»</string>
 </resources>

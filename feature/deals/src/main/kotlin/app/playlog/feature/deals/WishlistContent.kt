@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,17 +34,23 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.playlog.core.designsystem.component.GameImage
-import app.playlog.core.designsystem.component.PlatformBadge
+import app.playlog.core.designsystem.component.PlatformBadgeRow
 import app.playlog.core.designsystem.theme.Spacing
 import app.playlog.core.model.Platform
+import app.playlog.core.model.WishlistGame
 import app.playlog.core.model.WishlistItem
 import app.playlog.core.ui.DiscountBadge
 import app.playlog.core.ui.formatShortDate
+import app.playlog.core.ui.platformName
 
-/** Wishlisted games, on-sale ones first, with a manual price check and Steam import. */
+/** Wishlisted games, one row per game across stores, on-sale ones first, with a manual price check and Steam import. */
 @Composable
 internal fun WishlistContent(items: List<WishlistItem>, action: WishlistAction, actions: DealsActions) {
-    val sorted = items.sortedWith(compareByDescending<WishlistItem> { it.price?.discountPercent ?: 0 }.thenByDescending { it.addedAt })
+    val games = remember(items) {
+        WishlistGame.group(items).sortedWith(
+            compareByDescending<WishlistGame> { it.bestSale?.price?.discountPercent ?: 0 }.thenByDescending { it.main.addedAt },
+        )
+    }
     LazyColumn(
         contentPadding = PaddingValues(start = Spacing.lg, end = Spacing.lg, top = Spacing.sm, bottom = Spacing.xl),
         verticalArrangement = Arrangement.spacedBy(Spacing.sm),
@@ -76,12 +83,15 @@ internal fun WishlistContent(items: List<WishlistItem>, action: WishlistAction, 
         if (items.isEmpty()) {
             item(key = "empty") { Message(stringResource(R.string.deals_wish_empty), null, {}) }
         }
-        items(sorted, key = { it.key }) { item -> WishRow(item, onClick = { actions.onOpenWish(item) }, onRemove = { actions.onRemoveWish(item) }) }
+        items(games, key = { it.main.key }) { game ->
+            val shown = game.bestSale ?: game.main
+            WishRow(game, shown, onClick = { actions.onOpenWish(shown) }, onRemove = { actions.onRemoveWish(game.main) })
+        }
     }
 }
 
 @Composable
-private fun WishRow(item: WishlistItem, onClick: () -> Unit, onRemove: () -> Unit) {
+private fun WishRow(game: WishlistGame, item: WishlistItem, onClick: () -> Unit, onRemove: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -109,7 +119,7 @@ private fun WishRow(item: WishlistItem, onClick: () -> Unit, onRemove: () -> Uni
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 Spacer(Modifier.width(Spacing.xs))
-                PlatformBadge(item.platform)
+                PlatformBadgeRow(game.platforms)
             }
             val price = item.price
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -139,6 +149,7 @@ private fun WishRow(item: WishlistItem, onClick: () -> Unit, onRemove: () -> Uni
                     )
                 }
             }
+            if (game.items.size > 1) StorePrices(game, item)
             item.checkedAt?.let {
                 Text(
                     stringResource(R.string.deals_wish_checked_at, formatShortDate(it)),
@@ -149,6 +160,18 @@ private fun WishRow(item: WishlistItem, onClick: () -> Unit, onRemove: () -> Uni
         }
         IconButton(onClick = onRemove) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.deals_wish_remove)) }
     }
+}
+
+/** "Steam 499 ₽ · Nintendo 1 200 ₽": every store's price for the game, the shown one highlighted. */
+@Composable
+private fun StorePrices(game: WishlistGame, shown: WishlistItem) {
+    val others = game.items.filter { it.key != shown.key }
+    val parts = others.map { other ->
+        val price = other.price?.priceText?.takeIf { it.isNotBlank() } ?: "—"
+        "${platformName(other.platform)} $price" + (other.price?.discountPercent?.takeIf { it > 0 }?.let { " (−$it%)" } ?: "")
+    }
+    val text = parts.joinToString("  ·  ")
+    Text(text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
 }
 
 private val ImageWidth = 96.dp

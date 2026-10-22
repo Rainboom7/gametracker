@@ -87,6 +87,8 @@ class ReleasesViewModel @Inject constructor(
                     priceText = "",
                     tags = game.tags,
                 ),
+                comingSoon = true,
+                releaseDate = game.date?.atStartOfDay(clock.zone())?.toInstant(),
             )
         }
     }

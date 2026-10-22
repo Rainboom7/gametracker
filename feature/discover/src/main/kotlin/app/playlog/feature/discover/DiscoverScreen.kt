@@ -80,11 +80,11 @@ import app.playlog.core.model.Pick
 import app.playlog.core.model.PickReason
 import app.playlog.core.model.Platform
 import app.playlog.core.model.RouletteMood
-import app.playlog.core.ui.DealDetailSheet
 import app.playlog.core.ui.entryPlaytimeText
 import app.playlog.core.ui.formatPlaytime
 import app.playlog.core.ui.platformName
 import app.playlog.feature.deals.GiveawaysHomeCard
+import app.playlog.feature.deals.WishableDealSheet
 import app.playlog.feature.journal.BadgesStrip
 import app.playlog.feature.releases.ReleasesTeaser
 import java.time.Duration
@@ -115,7 +115,7 @@ fun DiscoverRoute(
         badges = { BadgesStrip(onOpenAll = onOpenBadges) },
         upcoming = { ReleasesTeaser(onOpenAll = onOpenReleases) },
     )
-    openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
+    openDeal?.let { WishableDealSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
 
 @Composable

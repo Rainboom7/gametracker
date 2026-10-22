@@ -5,6 +5,9 @@ import app.playlog.core.common.runSuspendCatching
 import app.playlog.core.model.Platform
 import app.playlog.core.model.ReleasesState
 import app.playlog.core.model.UpcomingGame
+import app.playlog.core.model.TitleKey
+import app.playlog.core.model.WishMatcher
+import app.playlog.core.model.WishlistGame
 import app.playlog.core.model.WishlistItem
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -116,8 +119,13 @@ data class ReleaseCalendar(
             filter: ReleaseFilter,
             zone: java.time.ZoneId,
         ): ReleaseCalendar {
-            val wishKeys = wishlist.mapTo(HashSet()) { it.key }
-            val fromWishlist = wishlist.filter { it.comingSoon || it.releaseDate?.let { d -> LocalDate.ofInstant(d, zone) >= today } == true }
+            val wished = WishMatcher(wishlist)
+            // One card per wished game: copies in other stores and titles the store list already has are skipped.
+            val storeTitles = store.mapTo(HashSet()) { TitleKey.of(it.title) }
+            val fromWishlist = WishlistGame.group(wishlist)
+                .filter { g -> g.titleKey !in storeTitles }
+                .map { it.main }
+                .filter { it.comingSoon || it.releaseDate?.let { d -> LocalDate.ofInstant(d, zone) >= today } == true }
                 .map { it.toUpcoming(zone) }
             val strength = taste.entries.associate { it.key.lowercase() to it.value }
             val games = (store + fromWishlist).distinctBy { it.key }.filter { g -> g.date.let { it == null || it >= today } }
@@ -128,7 +136,7 @@ data class ReleaseCalendar(
                     val shared = game.tags.filter { strength.containsKey(it.lowercase()) }
                         .sortedByDescending { strength.getValue(it.lowercase()) }
                         .take(SHARED_TAGS)
-                    ReleaseCard(game, (raw.getValue(game.key) / best).toFloat(), shared, game.key in wishKeys)
+                    ReleaseCard(game, (raw.getValue(game.key) / best).toFloat(), shared, wished.contains(game.platform, game.storeId, game.title))
                 }
                 .filter {
                     when (filter) {

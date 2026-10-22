@@ -95,6 +95,7 @@ import app.playlog.core.model.Platform
 import app.playlog.core.model.RegionSource
 import app.playlog.core.model.StoreDealsState
 import app.playlog.core.model.StoreRegion
+import app.playlog.core.model.WishMatcher
 import app.playlog.core.model.WishlistItem
 import app.playlog.core.ui.DealCard
 import app.playlog.core.ui.DealDetailSheet
@@ -115,12 +116,12 @@ fun DealsRoute(onBack: () -> Unit, onOpenGiveaways: () -> Unit = {}, viewModel: 
     val wishlistAction by viewModel.wishlistAction.collectAsStateWithLifecycle()
     val openDeal by viewModel.openDeal.collectAsStateWithLifecycle()
     val lowest by viewModel.lowest.collectAsStateWithLifecycle()
-    val wished = remember(wishlist) { wishlist.mapTo(HashSet()) { it.key } }
+    val wished = remember(wishlist) { WishMatcher(wishlist) }
 
     // Price-drop alerts need the notification permission; ask the first time something is wishlisted.
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
     val toggleWish: (DealPick) -> Unit = { pick ->
-        if (wished.isEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        if (wished.isEmpty && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
         viewModel.toggleWish(pick)
     }
     val platform = (tab as? DealsTab.Store)?.platform
@@ -159,7 +160,7 @@ fun DealsRoute(onBack: () -> Unit, onOpenGiveaways: () -> Unit = {}, viewModel: 
         DealDetailSheet(
             pick,
             onDismiss = { viewModel.open(null) },
-            wished = pick.key in wished,
+            wished = pick in wished,
             onToggleWish = { toggleWish(pick) },
             lowest = lowest,
         )
@@ -197,7 +198,7 @@ fun DealsScreen(
     search: SearchState,
     wishlist: List<WishlistItem>,
     wishlistAction: WishlistAction,
-    wished: Set<String>,
+    wished: WishMatcher,
     countries: List<String>,
     actions: DealsActions,
 ) {
@@ -386,7 +387,7 @@ private fun StoreContent(
     personal: DealsState,
     query: String,
     search: SearchState,
-    wished: Set<String>,
+    wished: WishMatcher,
     actions: DealsActions,
     onPickRegion: () -> Unit,
     header: @Composable () -> Unit,
@@ -446,7 +447,7 @@ private fun StoreContent(
                     store.visible.isEmpty() && !state.loadingMore -> fullWidth { Message(stringResource(R.string.deals_nothing_filtered), null, {}) }
                 }
                 items(store.visible, key = { it.key }) { pick ->
-                    DealTile(pick, wished = pick.key in wished, onClick = { actions.onOpen(pick) }, onWish = { actions.onToggleWish(pick) })
+                    DealTile(pick, wished = pick in wished, onClick = { actions.onOpen(pick) }, onWish = { actions.onToggleWish(pick) })
                 }
                 if (state.loadingMore) fullWidth { Progress() }
             }
@@ -459,7 +460,7 @@ private fun wantsMore(ready: StoreDealsState.Ready, nearEnd: Boolean, visible: I
     return nearEnd || (visible < MinVisible && ready.deals.size < MaxAutoLoaded)
 }
 
-private fun LazyGridScope.searchSection(query: String, search: SearchState, wished: Set<String>, actions: DealsActions) {
+private fun LazyGridScope.searchSection(query: String, search: SearchState, wished: WishMatcher, actions: DealsActions) {
     when (search) {
         SearchState.Idle -> fullWidth {
             OutlinedButton(onClick = actions.onSearchStore, modifier = Modifier.fillMaxWidth()) {
@@ -479,7 +480,7 @@ private fun LazyGridScope.searchSection(query: String, search: SearchState, wish
                 )
             }
             items(search.results, key = { "search:" + it.key }) { pick ->
-                DealTile(pick, wished = pick.key in wished, onClick = { actions.onOpen(pick) }, onWish = { actions.onToggleWish(pick) })
+                DealTile(pick, wished = pick in wished, onClick = { actions.onOpen(pick) }, onWish = { actions.onToggleWish(pick) })
             }
             fullWidth { SectionHeader(stringResource(R.string.deals_all_store)) }
         }

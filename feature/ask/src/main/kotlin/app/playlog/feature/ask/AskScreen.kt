@@ -52,7 +52,7 @@ import app.playlog.core.model.DealPick
 import app.playlog.core.model.GameId
 import app.playlog.core.model.PlayFeature
 import app.playlog.core.ui.DealCard
-import app.playlog.core.ui.DealDetailSheet
+import app.playlog.feature.deals.WishableDealSheet
 import app.playlog.core.ui.LibraryListRow
 import app.playlog.core.ui.platformName
 
@@ -68,7 +68,7 @@ fun AskRoute(onBack: () -> Unit, onOpenGame: (GameId) -> Unit, viewModel: AskVie
         onOpenGame = onOpenGame,
         onOpenDeal = viewModel::openDeal,
     )
-    state.openDeal?.let { DealDetailSheet(it, onDismiss = { viewModel.openDeal(null) }) }
+    state.openDeal?.let { WishableDealSheet(it, onDismiss = { viewModel.openDeal(null) }) }
 }
 
 @Composable

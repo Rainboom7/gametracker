@@ -81,6 +81,7 @@ import app.playlog.core.ui.NowPlayingCard
 import app.playlog.core.ui.formatPlaytime
 import app.playlog.core.ui.platformName
 import app.playlog.core.ui.statusName
+import app.playlog.feature.deals.CatalogSearchSection
 
 @Composable
 fun LibraryRoute(
@@ -99,6 +100,7 @@ fun LibraryRoute(
         onRefresh = viewModel::refresh,
         onFiltersChange = viewModel::onFiltersChange,
         onLayoutChange = viewModel::onLayoutChange,
+        storeResults = { CatalogSearchSection(it) },
     )
 }
 
@@ -115,6 +117,7 @@ fun LibraryScreen(
     modifier: Modifier = Modifier,
     onFiltersChange: (LibraryFilters) -> Unit = {},
     onLayoutChange: (LibraryLayout) -> Unit = {},
+    storeResults: @Composable (query: String) -> Unit = {},
 ) {
     when (state) {
         LibraryUiState.Loading -> LibrarySkeleton(modifier)
@@ -171,6 +174,8 @@ fun LibraryScreen(
                             GameCoverCard(entry, onClick = { onOpenGame(entry.primary.id) })
                         }
                     }
+                    // After the user's own games: the same search across the stores' catalogues.
+                    if (controls.query.isNotBlank()) fullWidth { storeResults(controls.query) }
                 }
             }
             if (showSort) {

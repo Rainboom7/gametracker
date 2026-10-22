@@ -15,7 +15,9 @@ import app.playlog.core.data.DefaultDiscoverRepository
 import app.playlog.core.data.BadgesRepository
 import app.playlog.core.data.DefaultBadgesRepository
 import app.playlog.core.data.DefaultGameNotesRepository
+import app.playlog.core.data.CatalogSearch
 import app.playlog.core.data.DefaultTodayRepository
+import app.playlog.core.data.StoreCatalogSearch
 import app.playlog.core.data.TodayRepository
 import app.playlog.core.data.GameNotesRepository
 import app.playlog.core.database.FileBadgeStore
@@ -235,6 +237,12 @@ object AppModule {
             clock = clock,
             onError = { Log.w("Playlog/deals", "Giveaways refresh failed", it) },
         )
+
+    /** Store-wide game search for the Games tab, merged across Steam, PlayStation and Nintendo. */
+    @Provides
+    @Singleton
+    fun catalogSearch(stores: StoreDealsRepository, library: LibraryRepository): CatalogSearch =
+        StoreCatalogSearch(stores, library, onError = { platform, e -> Log.w("Playlog/deals", "Catalog search failed for $platform", e) })
 
     @Provides
     @Singleton

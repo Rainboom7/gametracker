@@ -120,10 +120,59 @@ data class WishlistItem(
     /** Not out yet as of the last check; flips to false on release, which is announced once. */
     val comingSoon: Boolean = false,
     val releaseDate: Instant? = null,
+    /** Found by the app in another store when the game was wishlisted, not picked by the user there. */
+    val linked: Boolean = false,
 ) {
     val key: String get() = "${platform.name}:$storeId"
 
     val isOnSale: Boolean get() = (price?.discountPercent ?: 0) > 0
+
+    /** The same game in every store shares this, so one wish covers Steam, PlayStation and Nintendo. */
+    val titleKey: String get() = TitleKey.of(title)
+}
+
+/** One wished game across stores: the user's pick first, then copies found in other stores. */
+data class WishlistGame(val items: List<WishlistItem>) {
+    init {
+        require(items.isNotEmpty())
+    }
+
+    val main: WishlistItem get() = items.first()
+    val title: String get() = main.title
+    val titleKey: String get() = main.titleKey
+    val platforms: List<Platform> get() = items.map { it.platform }.distinct()
+    val comingSoon: Boolean get() = items.all { it.comingSoon }
+    val releaseDate: Instant? get() = items.firstNotNullOfOrNull { it.releaseDate }
+
+    /** The deepest current discount; ties go to the lower price. */
+    val bestSale: WishlistItem? get() = items.filter { it.isOnSale }
+        .maxWithOrNull(compareBy<WishlistItem> { it.price?.discountPercent ?: 0 }.thenByDescending { it.price?.priceValue ?: Double.MAX_VALUE })
+
+    companion object {
+        /** Groups by [WishlistItem.titleKey], keeping the order of each game's newest item. */
+        fun group(items: List<WishlistItem>): List<WishlistGame> =
+            items.groupBy { it.titleKey }.values.map { list -> WishlistGame(list.sortedBy { it.linked }) }
+    }
+}
+
+/**
+ * Answers "is this game wishlisted?" for any screen: the exact store product, or the same title in
+ * another store. Titles go through [TitleKey], so editions and platform suffixes still match.
+ */
+class WishMatcher(items: List<WishlistItem>) {
+    private val keys = items.mapTo(HashSet()) { it.key }
+    private val titles = items.mapTo(HashSet()) { it.titleKey }
+
+    val isEmpty: Boolean get() = keys.isEmpty()
+
+    fun contains(platform: Platform, storeId: String, title: String): Boolean =
+        "${platform.name}:$storeId" in keys || TitleKey.of(title).let { it.isNotEmpty() && it in titles }
+
+    operator fun contains(pick: DealPick): Boolean = contains(pick.platform, pick.storeId, pick.title)
+
+    companion object {
+        val EMPTY = WishMatcher(emptyList())
+    }
 }
 
 /** A wishlisted game that went on sale or got cheaper since the last check. */

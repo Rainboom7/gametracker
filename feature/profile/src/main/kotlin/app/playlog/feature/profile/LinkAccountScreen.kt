@@ -96,6 +96,7 @@ fun LinkAccountScreen(
             Spacer(Modifier.padding(start = Spacing.sm))
             Text(stringResource(R.string.link_title, platformName(state.platform)), style = MaterialTheme.typography.headlineMedium)
         }
+        LinkGuide(state.platform)
         if (flow == null && state.error != null) {
             ErrorText(state.error)
             SecondaryButton(stringResource(R.string.link_retry), onClick = onRetry)

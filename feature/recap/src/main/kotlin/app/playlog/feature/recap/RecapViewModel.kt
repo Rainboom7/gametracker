@@ -35,7 +35,7 @@ class RecapViewModel @Inject constructor(
         .getOrDefault(ActivityPeriod.WEEK)
 
     val uiState: StateFlow<RecapUiState> = combine(
-        activity.observeSummary(period, LocalDate.ofInstant(clock.now(), clock.zone())),
+        activity.observeSummary(period, clock.now().atZone(clock.zone()).toLocalDate()),
         activity.observeInsights().map { it.longestStreak },
         deals.observe().map { state -> (state as? DealsState.Ready)?.taste.orEmpty().entries.sortedByDescending { it.value }.map { it.key } }
             .onStart { emit(emptyList()) },

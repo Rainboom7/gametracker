@@ -41,7 +41,7 @@ class ActivityViewModel @Inject constructor(
     private val clock: AppClock,
     deals: DealsRepository,
 ) : ViewModel() {
-    private val today get() = LocalDate.ofInstant(clock.now(), clock.zone())
+    private val today get() = clock.now().atZone(clock.zone()).toLocalDate()
     private val selection = MutableStateFlow(ActivitySelection(ActivityPeriod.WEEK, today))
 
     val uiState: StateFlow<ActivityUiState> = combine(

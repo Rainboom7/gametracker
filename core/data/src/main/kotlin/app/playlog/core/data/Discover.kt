@@ -61,7 +61,7 @@ class DefaultDiscoverRepository(
         return DiscoverCalculator.roulette(entries, today(), clock.zone(), query, liked(), random)
     }
 
-    private fun today() = LocalDate.ofInstant(clock.now(), clock.zone())
+    private fun today() = clock.now().atZone(clock.zone()).toLocalDate()
 
     private companion object {
         const val DAILY_WINDOW_DAYS = 366L
@@ -118,7 +118,7 @@ object DiscoverCalculator {
 
     fun picks(entries: List<LibraryEntry>, today: LocalDate, zone: ZoneId): List<Pick> = entries.mapNotNull { entry ->
         if (entry.status == GameStatus.COMPLETED || entry.status == GameStatus.DROPPED) return@mapNotNull null
-        val days = entry.lastPlayedAt?.let { ChronoUnit.DAYS.between(LocalDate.ofInstant(it, zone), today) }
+        val days = entry.lastPlayedAt?.let { ChronoUnit.DAYS.between(it.atZone(zone).toLocalDate(), today) }
         val reason = ASSIGN_ORDER.firstOrNull { matches(it, entry, days) } ?: return@mapNotNull null
         Pick(entry, reason, score(reason, entry, days), days)
     }
@@ -194,7 +194,7 @@ object DiscoverCalculator {
     /** Titles first played this week (±[ANNIVERSARY_WINDOW_DAYS]) one or more years ago, oldest first. */
     fun anniversaries(entries: List<LibraryEntry>, today: LocalDate, zone: ZoneId): List<Anniversary> =
         entries.mapNotNull { entry ->
-            val first = entry.firstPlayedAt?.let { LocalDate.ofInstant(it, zone) } ?: return@mapNotNull null
+            val first = entry.firstPlayedAt?.let { it.atZone(zone).toLocalDate() } ?: return@mapNotNull null
             val years = (today.year - first.year downTo 1).firstOrNull { y ->
                 val date = first.plusYears(y.toLong())
                 kotlin.math.abs(ChronoUnit.DAYS.between(date, today)) <= ANNIVERSARY_WINDOW_DAYS

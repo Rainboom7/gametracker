@@ -103,11 +103,11 @@ class ScreenshotsViewModel @Inject constructor(
         val zone = clock.zone()
         return shots
             .sortedByDescending { it.takenAt }
-            .groupBy { s -> s.takenAt?.let { LocalDate.ofInstant(it, zone) } to s.gameId?.let { entryByGame[it]?.key } }
+            .groupBy { s -> s.takenAt?.let { it.atZone(zone).toLocalDate() } to s.gameId?.let { entryByGame[it]?.key } }
             .map { (_, list) ->
                 val first = list.first()
                 ScreenshotGroup(
-                    date = first.takenAt?.let { LocalDate.ofInstant(it, zone) },
+                    date = first.takenAt?.let { it.atZone(zone).toLocalDate() },
                     entry = first.gameId?.let { entryByGame[it] },
                     screenshots = list,
                 )

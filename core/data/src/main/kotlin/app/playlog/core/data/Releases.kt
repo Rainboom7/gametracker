@@ -125,7 +125,7 @@ data class ReleaseCalendar(
             val fromWishlist = WishlistGame.group(wishlist)
                 .filter { g -> g.titleKey !in storeTitles }
                 .map { it.main }
-                .filter { it.comingSoon || it.releaseDate?.let { d -> LocalDate.ofInstant(d, zone) >= today } == true }
+                .filter { it.comingSoon || it.releaseDate?.let { d -> d.atZone(zone).toLocalDate() >= today } == true }
                 .map { it.toUpcoming(zone) }
             val strength = taste.entries.associate { it.key.lowercase() to it.value }
             val games = (store + fromWishlist).distinctBy { it.key }.filter { g -> g.date.let { it == null || it >= today } }
@@ -164,7 +164,7 @@ data class ReleaseCalendar(
             title = title,
             headerUrl = headerUrl,
             storeUrl = storeUrl,
-            date = releaseDate?.let { LocalDate.ofInstant(it, zone) },
+            date = releaseDate?.let { it.atZone(zone).toLocalDate() },
         )
     }
 }

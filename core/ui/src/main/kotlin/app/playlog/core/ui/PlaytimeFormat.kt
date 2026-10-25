@@ -26,7 +26,7 @@ object PlaytimeFormat {
 
     /** Whole days between [instant] and [today] in [zone]; negative for the future. */
     fun daysAgo(instant: Instant, today: LocalDate, zone: ZoneId): Long =
-        ChronoUnit.DAYS.between(LocalDate.ofInstant(instant, zone), today)
+        ChronoUnit.DAYS.between(instant.atZone(zone).toLocalDate(), today)
 }
 
 fun Duration.toHoursFloat(): Float = toMinutes() / MinutesPerHour.toFloat()

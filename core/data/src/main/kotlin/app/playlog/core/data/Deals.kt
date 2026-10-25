@@ -117,7 +117,7 @@ class DefaultDealsRepository(
         if (!force && fresh) return@withLock
 
         val entries = library.observeLibrary().first()
-        val seeds = TasteProfile.seeds(entries, LocalDate.ofInstant(clock.now(), clock.zone()), clock.zone())
+        val seeds = TasteProfile.seeds(entries, clock.now().atZone(clock.zone()).toLocalDate(), clock.zone())
         if (seeds.isEmpty()) {
             state.value = DealsState.NoTaste
             return@withLock
@@ -163,7 +163,7 @@ object TasteProfile {
     @Suppress("MagicNumber")
     internal fun weight(entry: LibraryEntry, today: LocalDate, zone: ZoneId): Double {
         val hours = entry.totalPlaytime.toMinutes() / 60.0
-        val days = entry.lastPlayedAt?.let { ChronoUnit.DAYS.between(LocalDate.ofInstant(it, zone), today) }
+        val days = entry.lastPlayedAt?.let { ChronoUnit.DAYS.between(it.atZone(zone).toLocalDate(), today) }
         val recency = when {
             days == null -> 0.6
             days <= 90 -> 1.0

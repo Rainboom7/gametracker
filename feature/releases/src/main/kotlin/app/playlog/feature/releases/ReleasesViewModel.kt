@@ -52,7 +52,7 @@ class ReleasesViewModel @Inject constructor(
         .onStart { emit(emptyMap()) }
 
     val uiState: StateFlow<ReleasesUiState> = combine(releases.observe(), wishlist.observe(), taste, filter) { state, wished, taste, filter ->
-        val today = LocalDate.ofInstant(clock.now(), clock.zone())
+        val today = clock.now().atZone(clock.zone()).toLocalDate()
         val (games, stale) = when (state) {
             ReleasesState.Loading -> return@combine ReleasesUiState.Loading
             is ReleasesState.Ready -> state.games to false

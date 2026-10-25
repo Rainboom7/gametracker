@@ -67,7 +67,7 @@ class SyncEngine(
         val platform = source.platform
         val games = source.fetchLibrary()
         val previous = library.latestTotals(platform)
-        val today = LocalDate.ofInstant(now, clock.zone())
+        val today = now.atZone(clock.zone()).toLocalDate()
         val hasExactDaily = SourceCapability.DAILY_PLAYTIME in source.capabilities
 
         val snapshots = mutableListOf<PlaytimeSnapshot>()
@@ -115,7 +115,7 @@ class SyncEngine(
 
     /** The day the play most likely happened: the game's last-played date if it is recent, else today. */
     private fun attributionDay(game: Game, today: LocalDate): LocalDate {
-        val lastPlayed = game.lastPlayedAt?.let { LocalDate.ofInstant(it, clock.zone()) } ?: return today
+        val lastPlayed = game.lastPlayedAt?.let { it.atZone(clock.zone()).toLocalDate() } ?: return today
         if (lastPlayed.isAfter(today)) return today
         if (lastPlayed.isBefore(today.minusDays(MAX_ATTRIBUTION_LAG_DAYS))) return today
         return lastPlayed

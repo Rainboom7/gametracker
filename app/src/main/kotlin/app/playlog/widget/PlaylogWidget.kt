@@ -54,7 +54,7 @@ class PlaylogWidget : GlanceAppWidget() {
     private suspend fun load(context: Context): WidgetSnapshot {
         val deps = EntryPointAccessors.fromApplication(context, WidgetDeps::class.java)
         val clock = deps.clock()
-        val today = LocalDate.ofInstant(clock.now(), clock.zone())
+        val today = clock.now().atZone(clock.zone()).toLocalDate()
         val nowPlaying = deps.library().observeLibrary().first().filter { it.lastPlayedAt != null }.maxByOrNull { it.lastPlayedAt!! }
         val week = deps.activity().observeSummary(ActivityPeriod.WEEK, today).first().total
         val settings = deps.settings().settings.first()

@@ -31,7 +31,7 @@ fun formatRelativeDate(instant: Instant?, zone: ZoneId = ZoneId.systemDefault())
         days <= 0 -> stringResource(R.string.date_today)
         days == 1L -> stringResource(R.string.date_yesterday)
         days < RelativeDaysLimit -> stringResource(R.string.date_days_ago, days.toInt())
-        else -> DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(LocalDate.ofInstant(instant, zone))
+        else -> DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(instant.atZone(zone).toLocalDate())
     }
 }
 

@@ -144,7 +144,7 @@ class DefaultActivityRepository(
         return store.observeDaily(PlayInsightsCalculator.start(today), today).map { PlayInsightsCalculator.insights(it, today) }
     }
 
-    private fun today() = LocalDate.ofInstant(clock.now(), clock.zone())
+    private fun today() = clock.now().atZone(clock.zone()).toLocalDate()
 
     private companion object {
         const val STREAK_WINDOW_DAYS = 366L

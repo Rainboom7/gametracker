@@ -34,7 +34,7 @@ class DefaultTodayRepository(
     override fun observeToday(): Flow<List<TodayItem>> {
         val now = clock.now()
         val zone = clock.zone()
-        val today = LocalDate.ofInstant(now, zone)
+        val today = now.atZone(zone).toLocalDate()
         val free = giveaways.observe().map { it.items }.onStart { emit(emptyList()) }
         val memories = combine(
             library.observeLibrary(),
@@ -71,7 +71,7 @@ object TodayCalculator {
             .sortedWith(compareByDescending<TodayItem.PlayedOnThisDay> { it.years }.thenByDescending { it.playtime })
             .take(MAX_ITEMS_PER_KIND)
         val captured = shots.asSequence()
-            .mapNotNull { s -> s.takenAt?.let { LocalDate.ofInstant(it, zone) }?.takeIf { MonthDay.from(it) == day && it.year < today.year }?.let { s to it } }
+            .mapNotNull { s -> s.takenAt?.let { it.atZone(zone).toLocalDate() }?.takeIf { MonthDay.from(it) == day && it.year < today.year }?.let { s to it } }
             .groupBy { (_, date) -> today.year - date.year }
             .map { (years, list) ->
                 val inYear = list.map { it.first }
@@ -80,7 +80,7 @@ object TodayCalculator {
             .sortedByDescending { it.years }
             .take(MAX_ITEMS_PER_KIND)
         val anniversaries = entries.mapNotNull { entry ->
-            val first = entry.firstPlayedAt?.let { LocalDate.ofInstant(it, zone) } ?: return@mapNotNull null
+            val first = entry.firstPlayedAt?.let { it.atZone(zone).toLocalDate() } ?: return@mapNotNull null
             val years = (today.year - first.year).takeIf { it in 1..MAX_YEARS && MonthDay.from(first) == day } ?: return@mapNotNull null
             TodayItem.FirstPlayedAnniversary(entry, years)
         }.sortedByDescending { it.years }.take(MAX_ITEMS_PER_KIND)

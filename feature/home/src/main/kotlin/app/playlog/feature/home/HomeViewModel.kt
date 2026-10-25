@@ -135,7 +135,7 @@ class HomeViewModel @Inject constructor(
     private val settings: UserSettingsRepository,
     private val clock: AppClock,
 ) : ViewModel() {
-    private val today: LocalDate get() = LocalDate.ofInstant(clock.now(), clock.zone())
+    private val today: LocalDate get() = clock.now().atZone(clock.zone()).toLocalDate()
 
     private val sources = combine(
         library.observeLibrary(),

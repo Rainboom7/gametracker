@@ -11,3 +11,4 @@ captures/
 *.jks
 *.keystore
 secrets.properties
+keystore.properties
